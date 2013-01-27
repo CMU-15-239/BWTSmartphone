@@ -24,7 +24,6 @@ local.properties
 #######################################################
 
 *.pydevproject
-.project
 .metadata
 bin/**
 tmp/**
