@@ -2,15 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    tools:context=".MainActivity" >
+    android:background="#000000" >
 
-    <TextView
-        android:id="@+id/textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:textColor="#FFFFFF" />
+    <ScrollView
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:fillViewport="true"
+      android:scrollbars="none">
+    
+	    <TextView
+	        android:id="@+id/textview"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textColor="#FFFFFF" 
+	        android:textSize="24sp" />
 
+	</ScrollView>
+	    
 </RelativeLayout>
