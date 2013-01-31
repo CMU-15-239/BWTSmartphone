@@ -1,132 +1,123 @@
 package org.techbridgeworld.bwt;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.os.Handler;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.util.HexDump;
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 public class MainActivity extends Activity {
 	
-	TextView textView; 
-	UsbDevice usbDevice;
-	UsbManager usbManager; 
-	UsbInterface usbInterface;
-	UsbDeviceConnection usbConnection;
-	UsbEndpoint usbEndpointOut;
-	UsbEndpoint usbEndpointIn;
-	UsbSerialDriver usbDriver;
+	int BAUDRATE = 57600;
+	int TIMEOUT = 1000;
 	
-	private static int TIMEOUT = 10000;
-	private boolean forceClaim = true;
+	private ScrollView scrollView; 
+	private TextView textView; 
+	
+	private UsbManager usbManager; 
+	private UsbSerialDriver usbDriver;
+	private SerialInputOutputManager serialManager; 
+	
+	private final ExecutorService executor = Executors.newSingleThreadExecutor();
+	
+	private final SerialInputOutputManager.Listener listener =
+			new SerialInputOutputManager.Listener() {
+
+		@Override
+		public void onRunError(Exception e) {
+			//Ignore
+		}
+
+		@Override
+		public void onNewData(final byte[] data) {
+			MainActivity.this.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					MainActivity.this.updateReceivedData(data);
+				}
+			});
+		}
+	};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        scrollView = (ScrollView) findViewById(R.id.scrollview);
         textView = (TextView) findViewById(R.id.textview);
-        
-//        Intent intent = getIntent(); 
-//        usbDevice = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopIoManager();
+        if (usbDriver != null) {
+            try {
+                usbDriver.close();
+            } catch (IOException e) {
+                // Ignore.
+            }
+            usbDriver = null;
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        usbDriver = UsbSerialProber.acquire(usbManager);
+        if (usbDriver != null) {
+            try {
+            	usbDriver.open();
+				usbDriver.setBaudRate(BAUDRATE);
+				byte[] bt = "bt".getBytes();
+				usbDriver.write(bt, TIMEOUT);
+            } catch (IOException e) {
+                try {
+                	usbDriver.close();
+                } catch (IOException e2) {
+                    // Ignore.
+                }
+                usbDriver = null;
+                return;
+            }
+        }
+        onDeviceStateChange();
+    }
+    
+    private void stopIoManager() {
+        if (serialManager != null) {
+            serialManager.stop();
+            serialManager = null;
+        }
+    }
 
-		usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-		
-		usbDriver = UsbSerialProber.acquire(usbManager);
-		
-		if(usbDriver != null) {
-			try {
-				usbDriver.open();
-				usbDriver.setBaudRate(57600);
-			} catch (IOException e) {
-				textView.setText("Error: " + e.getMessage()); 
-			} 
-		}
-		
-		final Handler handler = new Handler();
-		final Runnable r = new Runnable()
-		{
-		    public void run() 
-		    {
-		    	try {
-		    		byte[] buffer = new byte[16];
-		    		usbDriver.read(buffer, 1000);
-		    		String s = new String(buffer); 
-		    		textView.setText(textView.getText() + "\n" + s);
-		    	} catch (IOException e) {
-		    		textView.setText("Error: " + e.getMessage());
-		    	}
-		        handler.postDelayed(this, 1000);
-		    }
-		};
+    private void startIoManager() {
+        if (usbDriver != null) {
+            serialManager = new SerialInputOutputManager(usbDriver, listener);
+            executor.submit(serialManager);
+        }
+    }
 
-		handler.postDelayed(r, 1000);
-
-		
-//		usbInterface = usbDevice.getInterface(0);
-//		
-//		//Endpoint 0 is in, Endpoint 1 is out
-//		usbEndpointIn = usbInterface.getEndpoint(0);
-//		usbEndpointOut = usbInterface.getEndpoint(1);
-//		
-//		usbConnection = usbManager.openDevice(usbDevice); 
-//		
-//		usbConnection.claimInterface(usbInterface, forceClaim);
-//		
-//		try {
-//			usbConnection.controlTransfer(0x21, 34, 0, 0, null, 0, 0);
-//			usbConnection.controlTransfer(0x21, 32, 0, 0, new byte[] { (byte) 0x80,
-//					0x25, 0x00, 0x00, 0x00, 0x00, 0x08 }, 7, 0);
-//		}
-//		catch(Exception e) {
-//			textView.setText(e.getMessage());
-//		}
-//		
-//		usbConnection.controlTransfer(0x20, 34, 0, 0, null, 0, 0);
-//		usbConnection.controlTransfer(0x20, 32, 0, 0, new byte[] { (byte) 0x80,
-//				0x25, 0x00, 0x00, 0x00, 0x00, 0x08 }, 7, 0);
-//		usbConnection.controlTransfer(0x20, 0x03, 0x0034, 0, null, 0, 0);
-//		
-//		String b = "b";  
-//	    byte[] bytes = b.getBytes();
-//		Integer result = usbConnection.bulkTransfer(usbEndpointOut, bytes, bytes.length, TIMEOUT);
-//		if (result > 0) { textView.setText(result +  " bytes of data transferred!!"); }
-//		
-//		String t = "t";  
-//	    bytes = t.getBytes();
-//		result = usbConnection.bulkTransfer(usbEndpointOut, bytes, bytes.length, TIMEOUT);
-//        if (result > 0) { textView.setText(result +  " bytes of data transferred!! x2"); }
-//		
-//		final Handler handler = new Handler();
-//		final Runnable r = new Runnable()
-//		{
-//		    public void run() 
-//		    {
-//	            byte[] buffer = new byte[64];
-//
-//	            StringBuilder s = new StringBuilder(); 
-//
-//	 			if(usbConnection.bulkTransfer(usbEndpointIn, buffer, 64, TIMEOUT) >= 0) {
-//	 				for(int i = 0; i < 64; i++) {
-//	 					//if(buffer[i] != 0)
-//	 					s.append(buffer[i]);
-//	 				}
-//	 			}
-//
-//	 			textView.setText(textView.getText() + "\n" + s); 
-//		        handler.postDelayed(this, 1000);
-//		    }
-//		};
-//
-//		handler.postDelayed(r, 1000);
+    private void onDeviceStateChange() {
+        stopIoManager();
+        startIoManager();
+    }
+    
+    private void updateReceivedData(byte[] data) {
+        final String message = "Read " + data.length + " bytes: \n"
+                + HexDump.dumpHexString(data) + "\n\n";
+        textView.append(message);
+        scrollView.smoothScrollTo(0, textView.getBottom());
     }
 }
