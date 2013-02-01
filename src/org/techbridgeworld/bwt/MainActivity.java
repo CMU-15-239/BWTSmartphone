@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
 			MainActivity.this.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
+		            textView.append("NOTE onNewData, about to run()\n");
 					MainActivity.this.updateReceivedData(data);
 				}
 			});
@@ -56,14 +57,20 @@ public class MainActivity extends Activity {
         scrollView = (ScrollView) findViewById(R.id.scrollview);
         textView = (TextView) findViewById(R.id.textview);
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        textView.append("NOTE onCreate, created stuff\n");
     }
     
     @Override
     protected void onPause() {
         super.onPause();
+        textView.append("NOTE onPause, about to stopIoManager()\n");
         stopIoManager();
         if (usbDriver != null) {
             try {
+                textView.append("NOTE onPause, about to close usbDriver()\n");
+				usbDriver.setBaudRate(BAUDRATE);
+				byte[] bt = "bt".getBytes();
+				usbDriver.write(bt, TIMEOUT);
                 usbDriver.close();
             } catch (IOException e) {
                 // Ignore.
@@ -78,12 +85,14 @@ public class MainActivity extends Activity {
         usbDriver = UsbSerialProber.acquire(usbManager);
         if (usbDriver != null) {
             try {
+                textView.append("NOTE onResume, about to open usbDriver()\n");
             	usbDriver.open();
 				usbDriver.setBaudRate(BAUDRATE);
 				byte[] bt = "bt".getBytes();
 				usbDriver.write(bt, TIMEOUT);
             } catch (IOException e) {
                 try {
+                    textView.append("ERROR onResume, about to close usbDriver()\n");
                 	usbDriver.close();
                 } catch (IOException e2) {
                     // Ignore.
@@ -92,6 +101,7 @@ public class MainActivity extends Activity {
                 return;
             }
         }
+        textView.append("NOTE onResume, about to deviceStateChange()\n");
         onDeviceStateChange();
     }
     
