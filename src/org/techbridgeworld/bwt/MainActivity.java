@@ -165,12 +165,21 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 	    		
 	    		Log.i("Salem", "currently parsing " + (char)data[i] + " (" + (int)data[i] + ")");
 	    		
-	    		
 //	    		if(data[i] == 32){
 //	    		}
+	    		
 	    		// If we are done, and if the buffer represents a non-blocked key, then
 	    		// log the buffer, clear it, and set its index to 0.
-	    		if(data[i] == 110){
+	    		
+
+	    		if(data[i] == 110 || data[i] == 116){
+	    			
+	    			// This is to catch the initial "bt" received from the device.
+		    		if(data[i] == 116){
+	    				dataBuffer[bufferIdx] = data[i];	
+	    				bufferIdx++;
+		    		}
+	    			
 	    			String message = "";
 	    			for(int j = 0; j < bufferIdx; j++){
 	    				message += (char)dataBuffer[j];
