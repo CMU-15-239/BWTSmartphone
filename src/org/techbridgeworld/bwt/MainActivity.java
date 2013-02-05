@@ -4,7 +4,6 @@
 	import java.util.Hashtable;
 	import java.util.concurrent.ExecutorService;
 	import java.util.concurrent.Executors;
-	import org.techbridgeworld.bwtlibs.Braille;
 	
 	import android.app.Activity;
 	import android.content.Context;
@@ -185,12 +184,13 @@
 	    				message += (char)dataBuffer[j];
 	    			}
 	    			
-	    			if(!isDebounced(message)){
+	    			if(!isDebounced(message)){ //Fire a trigger!
 			    		textView.append("\n\n----------------------");
 			    		textView.append("\nBuffer:  '" + message + "'");
 			    		
 		    			Log.i("Salem", "Buffer: " + message);
 		    			debounceKey(message);
+		    			
 	    			}
 	    			else{
 	    				Log.i("Salem", "Button press blocked!");

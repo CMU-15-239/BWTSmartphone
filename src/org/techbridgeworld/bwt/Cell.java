@@ -1,6 +1,6 @@
 package org.techbridgeworld.bwt;
 
-import android.util.SparseArray;
+import org.techbridgeworld.bwtlibs.Braille;
 
 public class Cell {
 /**
@@ -12,19 +12,49 @@ public class Cell {
 	public static final int FOUR 	= 0x08;
 	public static final int FIVE 	= 0x10;
 	public static final int SIX 	= 0x20;	//bottom left button
-	
+
 	/**
 	 * The braille code for this cell is the result of bitwise OR
-	 * on the dot values
+	 * on the dot values.
+	 * 
+	 * We keep a static instance of the Braille library to do 
+	 * cell-to-glyph conversions.
 	 */
-	private int						brailleCode	= 0;
-
-	private SparseArray<Character>	characterMap;
-
-	public void setCharacterMap(final SparseArray<Character> map) {
-		characterMap = map;
+	
+	private int brailleCode;
+	private static Braille braille = new Braille();
+	
+	
+	public Cell(){
+		this.brailleCode = 0;
 	}
+	
+	public Cell(int brailleCode){
+		this.brailleCode = brailleCode;
+	}
+	
 
+	/** 
+	 * Checks to see if a dot is marked.
+	 * 
+	 * i.e. if brailleCode represents 'a':
+	 *		checkDot(1) == true;
+	 * 		checkDot(4) == false;
+	 */
+	public boolean checkDot(int dot){
+		return ((brailleCode >> (dot - 1)) & 0x01) == 1;
+	}
+	
+	/**
+	 *  Checks for equality between two cell classes.
+	 */
+	public boolean isEqual(Cell cell){
+		return (cell.getBrailleCode() == this.brailleCode);
+	}
+	
+	/**
+	 *  Returns the raw Braille integer representation for the cell.
+	 */
 	public int getBrailleCode() {
 		return brailleCode;
 	}
@@ -58,18 +88,18 @@ public class Cell {
 	 * 
 	 * @return Character | null
 	 */
-	public Character getGlyph() {
-		return characterMap.get(brailleCode);
-	}
+//	public Character getGlyph() {
+//		return characterMap.get(brailleCode);
+//	}
 
 	/**
 	 * Return true if this cell currently encodes a valid character
 	 * 
 	 * @return boolean true if this cell encodes a valid character
 	 */
-	public boolean isGlyph() {
-		return getGlyph() != null;
-	}
+//	public boolean isGlyph() {
+//		return getGlyph() != null;
+//	}
 
 	/**
 	 * Return true if this cell encodes the character passed as a parameter
@@ -78,7 +108,7 @@ public class Cell {
 	 *            the character to check against
 	 * @return boolean true if this cell is encoding the passed in character
 	 */
-	public boolean isGlyph(final Character targetChar) {
-		return getGlyph() == targetChar;
-	}
+//	public boolean isGlyph(final Character targetChar) {
+//		return getGlyph() == targetChar;
+//	}
 }
