@@ -18,13 +18,9 @@ public class Cell {
 	 * on the dot values
 	 */
 	private int						brailleCode	= 0;
-
 	private SparseArray<Character>	characterMap;
 
-	public void setCharacterMap(final SparseArray<Character> map) {
-		characterMap = map;
-	}
-
+	
 	public int getBrailleCode() {
 		return brailleCode;
 	}
@@ -53,7 +49,8 @@ public class Cell {
 	}
 
 	/**
-	 * Return the character corresponding to this sequence of dots, according the the character map
+	 * Return the character corresponding to this sequence of dots,
+	 * according to the character map
 	 * If the character is not present in the map, the return value is null
 	 * 
 	 * @return Character | null
