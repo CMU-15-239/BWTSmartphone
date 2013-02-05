@@ -1,38 +1,41 @@
 	package org.techbridgeworld.bwt;
 	
 	import java.io.IOException;
-import java.util.Hashtable;
+	import java.util.Hashtable;
 	import java.util.concurrent.ExecutorService;
 	import java.util.concurrent.Executors;
+	import org.techbridgeworld.bwtlibs.Braille;
 	
 	import android.app.Activity;
 	import android.content.Context;
 	import android.hardware.usb.UsbManager;
 	import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
+	import android.os.Handler;
+	import android.util.Log;
 	import android.widget.ScrollView;
 	import android.widget.TextView;
 	
 	import com.hoho.android.usbserial.driver.UsbSerialDriver;
 	import com.hoho.android.usbserial.driver.UsbSerialProber;
-	import com.hoho.android.usbserial.util.HexDump;
-import com.hoho.android.usbserial.util.SerialInputOutputManager;
+	import com.hoho.android.usbserial.util.SerialInputOutputManager;
 	
 	public class MainActivity extends Activity {
+
 		// Constants
-		static int BAUDRATE = 57600;
-		static int TIMEOUT = 1000;
-		static int DEBOUNCE = 800; //Milliseconds to disable a button for
+		private static final int BAUDRATE = 57600;
+		private static final int TIMEOUT = 1000;
+		private static final int DEBOUNCE = 800; //Milliseconds to disable a button for
 		
 		// Buffer / Debounce stuff
 		private byte[] dataBuffer = new byte[6]; 
 		private int bufferIdx = 0;
 		private Hashtable<String, Boolean> debounceHash = new Hashtable<String, Boolean>();
 		
+		// UI stuff
 		private ScrollView scrollView; 
 		private TextView textView; 
 		
+		// USB connections
 		private UsbManager usbManager; 
 		private UsbSerialDriver usbDriver;
 		private SerialInputOutputManager serialManager; 
@@ -69,7 +72,7 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 	        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 	        textView.append("NOTE onCreate, created stuff\n");
 	    }
-	    
+
 	    @Override
 	    protected void onPause() {
 	        super.onPause();
@@ -165,13 +168,10 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 	    		
 	    		Log.i("Salem", "currently parsing " + (char)data[i] + " (" + (int)data[i] + ")");
 	    		
-//	    		if(data[i] == 32){
-//	    		}
-	    		
 	    		// If we are done, and if the buffer represents a non-blocked key, then
 	    		// log the buffer, clear it, and set its index to 0.
 	    		
-
+	    		
 	    		if(data[i] == 110 || data[i] == 116){
 	    			
 	    			// This is to catch the initial "bt" received from the device.
@@ -187,7 +187,7 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 	    			
 	    			if(!isDebounced(message)){
 			    		textView.append("\n\n----------------------");
-			    		textView.append("\nBuffer:  " + message);
+			    		textView.append("\nBuffer:  '" + message + "'");
 			    		
 		    			Log.i("Salem", "Buffer: " + message);
 		    			debounceKey(message);
