@@ -76,12 +76,12 @@ public class Braille {
 	}};
 	
 	
-	public Integer toBraille(char c){
+	public Integer get(char c){
 		Integer query = CharToBraille.get(c);
 		return (query == null? 0 : query);
 	}
 	
-	public Character toBraille(int i){
+	public Character get(int i){
 		Character query = BrailleToChar.get(i);
 		return (query == null? '\u0000' : query);
 	}

@@ -88,18 +88,18 @@ public class Cell {
 	 * 
 	 * @return Character | null
 	 */
-//	public Character getGlyph() {
-//		return characterMap.get(brailleCode);
-//	}
+	public Character getGlyph() {
+		return braille.get(brailleCode);
+	}
 
 	/**
 	 * Return true if this cell currently encodes a valid character
 	 * 
 	 * @return boolean true if this cell encodes a valid character
 	 */
-//	public boolean isGlyph() {
-//		return getGlyph() != null;
-//	}
+	public boolean isGlyph() {
+		return getGlyph() != null;
+	}
 
 	/**
 	 * Return true if this cell encodes the character passed as a parameter
@@ -108,7 +108,7 @@ public class Cell {
 	 *            the character to check against
 	 * @return boolean true if this cell is encoding the passed in character
 	 */
-//	public boolean isGlyph(final Character targetChar) {
-//		return getGlyph() == targetChar;
-//	}
+	public boolean isGlyph(final Character targetChar) {
+		return getGlyph() == targetChar;
+	}
 }
