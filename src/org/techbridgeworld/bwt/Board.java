@@ -8,8 +8,15 @@ import android.util.SparseArray;
 
 
 public class Board {
+	private final int WRONG = -1;
+	private final int IN_PROCESS = 0;
+	private final int FINISHED_LETTER = 1;
+	private final int FINISHED_WORD = 2;
+	
+	
+	
 	private Cell board[];
-	public SparseArray<Character> bitToGlyphMap;
+	private SparseArray<Character> bitToGlyphMap;
 	private ArrayList<Integer> expectedInput;
 	private int expectedInputInd;
 	private int currCellInd;
@@ -62,12 +69,13 @@ public class Board {
 	 * Return -1 if wrote incorrect letter
 	 * 
 	 * Can setExpectedInput, then call
-	 * while(handleInput(data) == 0) continue of some sort;
-	 * 
-	 * Or if(handleInput(data) == -1) alert error sound
+	 * while(handleInput(data) != 2) do stuff below;
+	 * {
+	 * if(handleInput(data) == -1) alert error sound
 	 * else if(handleInput(data) == 1) alert next letter
-	 * else if(handleInput(data) == 2) alert next word
-	 * else keep waiting for input, make no sound.
+	 * else if(handleInput(data) == 0) keep waiting for input, make no sound.
+	 * }
+	 * alert next word
 	 * 
 	 * @param data
 	 * @return
@@ -76,13 +84,13 @@ public class Board {
 		if (data == "a") {
 			
 			
-			return 2;	//returns -1 if failed
+			return FINISHED_WORD;
 		}
 		else
 			if(isDone()) {
 				//simply record what they input? Not sure
 				//Not applicable for current implementation
-				return 2;
+				return FINISHED_WORD;
 			}
 			else
 				return handleExpectedGlyphs(data);
@@ -98,7 +106,7 @@ public class Board {
 		if(currCellInd != newCellInd) {			
 			expectedInputInd = 0;
 			currCellInd = -1;
-			return -1;
+			return WRONG;
 		}
 		
 		int btnHit = 1; //ranges from button 1 - 6
@@ -110,9 +118,9 @@ public class Board {
 			if(expectedInputInd == expectedInput.size()) {
 				expectedInput.clear();
 				expectedInputInd = -1;
-				return 2;
+				return FINISHED_WORD;
 			}
-			else return 1;
+			else return FINISHED_LETTER;
 		}
 		else {
 			//check wrong button hit
@@ -120,10 +128,10 @@ public class Board {
 			if (extras != 0) {
 				expectedInputInd = 0;
 				currCellInd = -1;
-				return -1;
+				return WRONG;
 			}			
 		}
-		return 0;
+		return IN_PROCESS;
 		
 	}
 	

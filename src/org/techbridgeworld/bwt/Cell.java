@@ -3,6 +3,14 @@ package org.techbridgeworld.bwt;
 import android.util.SparseArray;
 
 public class Cell {
+	static final int ONE = 0x01;	//top right button
+	static final int TWO = 0x02;
+	static final int THREE = 0x04;
+	static final int FOUR = 0x08;
+	static final int FIVE = 0x10;
+	static final int SIX = 0x20;	//bottom left button
+	
+	
 	/*value ranges from 000000 to 111111 to indicate
 	 *which button of cell was pushed down
 	 */
@@ -45,8 +53,6 @@ public class Cell {
 	
 	public Character getGlyph() {
 		Character glyph = map.get(value);
-		if(glyph == null)
-			return null;
 		return glyph;
 	}
 	
