@@ -24,11 +24,10 @@ public class Cell {
 	private int brailleCode;
 	private static Braille braille = new Braille();
 	
-	
+	//Constructors
 	public Cell(){
 		this.brailleCode = 0;
 	}
-	
 	public Cell(int brailleCode){
 		this.brailleCode = brailleCode;
 	}
@@ -43,6 +42,30 @@ public class Cell {
 	 */
 	public boolean checkDot(int dot){
 		return ((brailleCode >> (dot - 1)) & 0x01) == 1;
+	}
+	
+	
+	/**
+	 * Sets a given dot to true.
+	 * @param dot
+	 */
+	public void setDot(int dot){
+		setDot(dot, true);
+	}
+	
+	/**
+	 * Sets a given dot to the given value.
+	 * @param dot
+	 * @param value
+	 */
+	public void setDot(int dot, boolean value){
+		// Clear the value
+		brailleCode = ((1 << (dot - 1)) ^ brailleCode);
+		
+		// Replace the value with new value.
+		int val = value ? 1 : 0;
+		brailleCode = ((val << (dot - 1)) | brailleCode);
+		
 	}
 	
 	/**
