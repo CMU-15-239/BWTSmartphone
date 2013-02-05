@@ -40,27 +40,25 @@
 		private SerialInputOutputManager serialManager; 
 		
 		private final ExecutorService executor = Executors.newSingleThreadExecutor();
-		
 		private final SerialInputOutputManager.Listener listener =
-				new SerialInputOutputManager.Listener() {
-	
+			new SerialInputOutputManager.Listener() {	
 			
-			@Override
-			public void onRunError(Exception e) {
-				//Ignore
-			}
-	
-			@Override
-			public void onNewData(final byte[] data) {
-				MainActivity.this.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-			            //textView.append("NOTE onNewData, about to run()\n");
-						MainActivity.this.updateReceivedData(data);
-					}
-				});
-			}
-		};
+				@Override
+				public void onRunError(Exception e) {
+					//Ignore
+				}
+		
+				@Override
+				public void onNewData(final byte[] data) {
+					MainActivity.this.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+				            //textView.append("NOTE onNewData, about to run()\n");
+							MainActivity.this.updateReceivedData(data);
+						}
+					});
+				}
+			};
 	
 	    @Override
 	    protected void onCreate(Bundle savedInstanceState) {
