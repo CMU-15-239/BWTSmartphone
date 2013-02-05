@@ -20,9 +20,6 @@ public class Board {
 	public Board() {
 		bitToGlyphMap = initializeBitToGlyph();
 		board = new Cell[33];
-		for (final Cell c : board) {
-			c.setCharacterMap(bitToGlyphMap);
-		}
 
 		expectedInput = new ArrayList<Integer>();
 		expectedInputInd = -1;

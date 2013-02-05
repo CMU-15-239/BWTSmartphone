@@ -20,7 +20,6 @@ public class Cell {
 	 * We keep a static instance of the Braille library to do 
 	 * cell-to-glyph conversions.
 	 */
-	
 	private int brailleCode;
 	private static Braille braille = new Braille();
 	
@@ -106,7 +105,8 @@ public class Cell {
 	}
 
 	/**
-	 * Return the character corresponding to this sequence of dots, according the the character map
+	 * Return the character corresponding to this sequence of dots,
+	 * according to the character map
 	 * If the character is not present in the map, the return value is null
 	 * 
 	 * @return Character | null
