@@ -4,11 +4,6 @@ import java.util.Hashtable;
 
 public class Braille {
 	
-	//Takes a binary string and returns an integer value.
-	private static int bin(String binary){
-		return Integer.parseInt(binary, 2);
-	}
-	
 	private static final Hashtable<Character, Integer> CharToBraille = new Hashtable<Character, Integer>(){
 		
 		private static final long serialVersionUID = 1L;
@@ -75,15 +70,34 @@ public class Braille {
 	    put(bin("00110101"), 'z');
 	}};
 	
-	
+	/**
+	 * Returns the braille representation of a given character
+	 * @param character
+	 * @return braille integer representation of the character
+	 */
 	public Integer get(char c){
 		Integer query = CharToBraille.get(c);
 		return (query == null? 0 : query);
 	}
 	
+	/**	
+	 * Returns the character interpretation of a braille integer code
+	 * @param integer
+	 * @return braille integer code
+	 */
 	public Character get(int i){
 		Character query = BrailleToChar.get(i);
 		return (query == null? '\u0000' : query);
+	}
+	
+	/**	
+	 * Takes a binary string and returns an integer value.
+	 * Used as a helper function to construct the hashtables.
+	 * @param String representation of binary
+	 * @return base-10 integer representation of given binary
+	 */
+	private static int bin(String binary){
+		return Integer.parseInt(binary, 2);
 	}
 	
 	
