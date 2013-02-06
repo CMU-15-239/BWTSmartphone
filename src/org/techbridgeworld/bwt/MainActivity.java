@@ -1,216 +1,58 @@
 	package org.techbridgeworld.bwt;
 	
-	import java.io.IOException;
-	import java.util.Hashtable;
-	import java.util.concurrent.ExecutorService;
-	import java.util.concurrent.Executors;
-	
+	import org.techbridgeworld.bwtApi.BWT;
+
 	import android.app.Activity;
-	import android.content.Context;
-	import android.hardware.usb.UsbManager;
 	import android.os.Bundle;
-	import android.os.Handler;
-	import android.util.Log;
 	import android.widget.ScrollView;
 	import android.widget.TextView;
 	
-	import com.hoho.android.usbserial.driver.UsbSerialDriver;
-	import com.hoho.android.usbserial.driver.UsbSerialProber;
-	import com.hoho.android.usbserial.util.SerialInputOutputManager;
-	
 	public class MainActivity extends Activity {
-
-		// Constants
-		private static final int BAUDRATE = 57600;
-		private static final int TIMEOUT = 1000;
-		private static final int DEBOUNCE = 800; //Milliseconds to disable a button for
-		
-		// Buffer / Debounce stuff
-		private byte[] dataBuffer = new byte[6]; 
-		private int bufferIdx = 0;
-		private Hashtable<String, Boolean> debounceHash = new Hashtable<String, Boolean>();
 		
 		// UI stuff
 		private ScrollView scrollView; 
 		private TextView textView; 
 		
-		// USB connections
-		private UsbManager usbManager; 
-		private UsbSerialDriver usbDriver;
-		private SerialInputOutputManager serialManager; 
+		// BWT object
+		private final BWT bwt = new BWT(this, MainActivity.this);
 		
-		private final ExecutorService executor = Executors.newSingleThreadExecutor();
-		private final SerialInputOutputManager.Listener listener =
-			new SerialInputOutputManager.Listener() {	
-			
-				@Override
-				public void onRunError(Exception e) {
-					//Ignore
-				}
 		
-				@Override
-				public void onNewData(final byte[] data) {
-					MainActivity.this.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-				            //textView.append("NOTE onNewData, about to run()\n");
-							MainActivity.this.updateReceivedData(data);
-						}
-					});
-				}
-			};
-	
 	    @Override
 	    protected void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
 	        setContentView(R.layout.main);
 	        scrollView = (ScrollView) findViewById(R.id.scrollview);
 	        textView = (TextView) findViewById(R.id.textview);
-	        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 	        textView.append("NOTE onCreate, created stuff\n");
+	        
+	        bwt.init();
 	    }
 
 	    @Override
 	    protected void onPause() {
 	        super.onPause();
 	        textView.append("NOTE onPause, about to stopIoManager()\n");
-	        stopIoManager();
-	        if (usbDriver != null) {
-	            try {
-	                textView.append("NOTE onPause, about to close usbDriver()\n");
-					usbDriver.setBaudRate(BAUDRATE);
-					byte[] bt = "bt".getBytes();
-					usbDriver.write(bt, TIMEOUT);
-	                usbDriver.close();
-	            } catch (IOException e) {
-	                // Ignore.
-	            }
-	            usbDriver = null;
-	        }
+	        
+	        bwt.stop();
 	    }
 	    
 	    @Override
-	    protected void onResume() {
+	    protected void onResume() {	    	
 	        super.onResume();
-	        usbDriver = UsbSerialProber.acquire(usbManager);
-	        if (usbDriver != null) {
-	            try {
-	                textView.append("NOTE onResume, about to open usbDriver()\n");
-	            	usbDriver.open();
-					usbDriver.setBaudRate(BAUDRATE);
-					byte[] bt = "bt".getBytes();
-					usbDriver.write(bt, TIMEOUT);
-	            } catch (IOException e) {
-	                try {
-	                    textView.append("ERROR onResume, about to close usbDriver()\n");
-	                	usbDriver.close();
-	                } catch (IOException e2) {
-	                    // Ignore.
-	                }
-	                usbDriver = null;
-	                return;
-	            }
-	        }
 	        textView.append("NOTE onResume, about to deviceStateChange()\n");
-	        onDeviceStateChange();
+	        
+	        bwt.start();
 	    }
 	    
-	    private void stopIoManager() {
-	        if (serialManager != null) {
-	            serialManager.stop();
-	            serialManager = null;
-	        }
-	    }
-	
-	    private void startIoManager() {
-	        if (usbDriver != null) {
-	            serialManager = new SerialInputOutputManager(usbDriver, listener);
-	            executor.submit(serialManager);
-	        }
-	    }
-	
-	    private void onDeviceStateChange() {
-	        stopIoManager();
-	        startIoManager();
+	    // Used to print simple text to the screen
+	    private void display(String text){
+	        textView.append(text);
+	    	scrollView.smoothScrollTo(0, textView.getBottom());
 	    }
 	    
-	    // Passes a byte array to the debounce hashtable.
-	    private void debounceKey(String key){
-	    	final String newKey = key;
-	    	debounceHash.put(newKey, true);
-	    	
-	    	//Start a runnable to un-block the key after a set time.
-	    	Handler handler=new Handler();
-	    	Runnable r=new Runnable() {
-	    	    public void run() {
-	    	    	debounceHash.put(newKey, false);
-	    	    }
-	    	};
-	    	handler.postDelayed(r, DEBOUNCE);
+	    // Prints simple text + a line break
+	    private void displayln(String text){
+	        display(text + "\n");
 	    }
-	    
-	    // Returns true if a key is currently being ignored.
-	    private boolean isDebounced(String key){
-	    	boolean query = (debounceHash.get(key) == null? false : debounceHash.get(key));
-	    	return query;
-	    }
-	    
-	    
-	    // Takes the received data, checks to see if it should be ignored/debounced,
-	    // and print the results to device screen (triggers events later).
-	    private void updateReceivedData(byte[] data) {	
-	    	
-	    	//For every byte in the incoming data...
-	    	for (int i = 0; i < data.length; i++){
-	    		
-	    		Log.i("Salem", "currently parsing " + (char)data[i] + " (" + (int)data[i] + ")");
-	    		
-	    		// If we are done, and if the buffer represents a non-blocked key, then
-	    		// log the buffer, clear it, and set its index to 0.
-	    		
-	    		
-	    		if(data[i] == 110 || data[i] == 116){
-	    			
-	    			// This is to catch the initial "bt" received from the device.
-		    		if(data[i] == 116){
-	    				dataBuffer[bufferIdx] = data[i];	
-	    				bufferIdx++;
-		    		}
-	    			
-	    			String message = "";
-	    			for(int j = 0; j < bufferIdx; j++){
-	    				message += (char)dataBuffer[j];
-	    			}
-	    			
-	    			if(!isDebounced(message)){ //Fire a trigger!
-			    		textView.append("\n\n----------------------");
-			    		textView.append("\nBuffer:  '" + message + "'");
-			    		
-		    			Log.i("Salem", "Buffer: " + message);
-		    			debounceKey(message);
-		    			
-	    			}
-	    			else{
-	    				Log.i("Salem", "Button press blocked!");
-	    			}
-	    			
-	    			bufferIdx = 0;
-	    			dataBuffer = new byte[6];
 
-	    		}
-	    		else{
-	    			if(bufferIdx >= 6){
-	    				Log.e("Salem", "bufferIdx out of range: " + bufferIdx);
-	    			}
-	    			else{
-	    				dataBuffer[bufferIdx] = data[i];	
-	    				bufferIdx++;
-	    			}
-	    		}
-	    		
-	    		scrollView.smoothScrollTo(0, textView.getBottom());
-	    	}
-	    				    	
-
-	    }
 	}
