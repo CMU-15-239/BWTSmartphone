@@ -74,6 +74,11 @@ public class BWT {
         startIoManager();
 	}
 	
+	// Add listeners
+	public void addListener(){
+		
+	}
+	
 	// Starts USB connection
 	public void start(){
 		Log.i("Salem", "BWT.start()");
