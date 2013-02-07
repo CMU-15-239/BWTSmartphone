@@ -61,7 +61,6 @@ public class Cell {
 	 */
 	public int setDot(int dot, boolean value){
 		// Clear the value
-		//brailleCode = ((1 << (dot - 1)) ^ brailleCode);
 		brailleCode = (~(1 << (dot - 1)) & brailleCode);
 		
 		// Replace the value with new value.

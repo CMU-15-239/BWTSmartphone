@@ -1,5 +1,7 @@
 package org.techbridgeworld.bwtApi.events;
 
-public class AltBtnEvent {
+import javaEventing.EventObject;
+
+public class AltBtnEvent extends EventObject {
 
 }
