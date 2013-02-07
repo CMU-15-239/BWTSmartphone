@@ -18,9 +18,11 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 public class BWT {
 
-	// Activity context
+	// App Context
 	private Context context;
 	private MainActivity activity;
+	
+	// 
 	
 	// Constants
 	private static final int BAUDRATE = 57600;
@@ -72,6 +74,11 @@ public class BWT {
         startIoManager();
 	}
 	
+	// Add listeners
+	public void addListener(){
+		
+	}
+	
 	// Starts USB connection
 	public void start(){
 		Log.i("Salem", "BWT.start()");
@@ -89,6 +96,7 @@ public class BWT {
                 	Log.e("Salem", "Error starting USB driver, attempting to close.");
                 	usbDriver.close();
                 } catch (IOException e2) {
+                	Log.e("Salem", "Wut.");
                     // Ignore.
                 }
                 usbDriver = null;
