@@ -5,7 +5,16 @@ import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javaEventing.EventManager;
+import javaEventing.interfaces.Condition;
+import javaEventing.interfaces.Event;
+import javaEventing.interfaces.GenericEventListener;
+
 import org.techbridgeworld.bwt.MainActivity;
+import org.techbridgeworld.bwtApi.events.AltBtnEvent;
+import org.techbridgeworld.bwtApi.events.BoardEvent;
+import org.techbridgeworld.bwtApi.events.CellsEvent;
+import org.techbridgeworld.bwtApi.events.MainBtnEvent;
 
 import android.content.Context;
 import android.hardware.usb.UsbManager;
@@ -22,7 +31,8 @@ public class BWT {
 	private Context context;
 	private MainActivity activity;
 	
-	// 
+	// Tracking Information
+	private boolean isTracking;
 	
 	// Constants
 	private static final int BAUDRATE = 57600;
@@ -70,14 +80,114 @@ public class BWT {
 	// Initialize
 	public void init(){
 		Log.i("Salem", "BWT.init()");
+        isTracking = false;
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
 	
 	// Add listeners
-	public void addListener(){
-		
+	public void addListener() {
 	}
+	
+	//Allows event handlers to go off; updates board's state
+	public void startTracking() {
+		isTracking = true;
+	}
+	
+	//Disregards changing state of board if stopped tracking
+	public void stopTracking() {
+		isTracking = false;
+	}
+	
+	//Returns and empties everything in current 'buffer'
+	public char[] dumpTracking() {
+		if (!isTracking) return null;
+		
+		//TODO:
+		return new char['a'];
+	}
+	
+	
+	/**
+	 * Registers the event handlers; called in bwt.start();
+	 */
+	public void initializeEventListeners() {
+		EventManager.registerEventListener("onBoardEvent",
+				createOnBoardListener(), BoardEvent.class);
+
+		EventManager.registerEventListener("onMainBtnEvent",
+				createOnMainBtnListener(), BoardEvent.class);
+
+		EventManager.registerEventListener("onAltBtnEvent",
+				createOnAltBtnListener(), BoardEvent.class);
+		
+		EventManager.registerEventListener("onCellsEvent",
+				createOnCellsListener(), BoardEvent.class);
+
+		EventManager.registerEventListener("onFinishedLetterEvent",
+				createOnFinishedLetterListener(), BoardEvent.class);
+	}
+	
+	public GenericEventListener createOnBoardListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+	}
+
+	public GenericEventListener createOnMainBtnListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+	}
+
+	public GenericEventListener createOnAltBtnListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+	}
+
+	public GenericEventListener createOnCellsListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+	}
+	
+	public GenericEventListener createOnFinishedLetterListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+	}
+	
+	
+	//TODO: Called by onNewData
+	public void triggerEventsOnNewData() {
+		if(!isTracking) return;
+		EventManager.triggerEvent(this, new BoardEvent(), "onBoardEvent");
+		EventManager.triggerEvent(this, new MainBtnEvent(), "onMainBtnEvent");
+		EventManager.triggerEvent(this, new AltBtnEvent(), "onAltBtnEvent");
+		EventManager.triggerEvent(this, new CellsEvent(), "onCellsEvent");
+	}
+	
 	
 	// Starts USB connection
 	public void start(){
@@ -91,6 +201,7 @@ public class BWT {
 				usbDriver.setBaudRate(BAUDRATE);
 				byte[] bt = "bt".getBytes();
 				usbDriver.write(bt, TIMEOUT);
+				initializeEventListeners();
             } catch (IOException e) {
                 try {
                 	Log.e("Salem", "Error starting USB driver, attempting to close.");

@@ -46,24 +46,26 @@ public class Cell {
 	
 	/**
 	 * Sets a given dot to true.
+	 * Returns the new 6-bit for the cell
 	 * @param dot
 	 */
-	public void setDot(int dot){
-		setDot(dot, true);
+	public int setDot(int dot){
+		return setDot(dot, true);
 	}
 	
 	/**
 	 * Sets a given dot to the given value.
+	 * Returns the new 6-bit for the cell
 	 * @param dot
 	 * @param value
 	 */
-	public void setDot(int dot, boolean value){
+	public int setDot(int dot, boolean value){
 		// Clear the value
-		brailleCode = ((1 << (dot - 1)) ^ brailleCode);
+		brailleCode = (~(1 << (dot - 1)) & brailleCode);
 		
 		// Replace the value with new value.
 		int val = value ? 1 : 0;
-		brailleCode = ((val << (dot - 1)) | brailleCode);
+		return brailleCode = ((val << (dot - 1)) | brailleCode);
 		
 	}
 	
