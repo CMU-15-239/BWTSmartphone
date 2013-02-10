@@ -1,11 +1,6 @@
 package org.techbridgeworld.bwtApi;
 
-import java.util.ArrayList;
-import java.util.EventObject;
-
 import org.techbridgeworld.bwtlibs.Braille;
-
-import android.util.SparseArray;
 
 public class Board {
 //	private final int WRONG = -1;

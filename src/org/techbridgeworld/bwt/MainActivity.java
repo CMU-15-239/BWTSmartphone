@@ -2,10 +2,10 @@
 	
 	import org.techbridgeworld.bwtApi.BWT;
 
-	import android.app.Activity;
-	import android.os.Bundle;
-	import android.widget.ScrollView;
-	import android.widget.TextView;
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.ScrollView;
+import android.widget.TextView;
 	
 	public class MainActivity extends Activity {
 		

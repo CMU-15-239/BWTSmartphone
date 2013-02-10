@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import javaEventing.EventManager;
-import javaEventing.interfaces.Condition;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
