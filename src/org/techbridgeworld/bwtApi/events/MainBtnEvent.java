@@ -2,9 +2,10 @@ package org.techbridgeworld.bwtApi.events;
 
 import java.util.Locale;
 
+import javaEventing.EventObject;
+
 import org.techbridgeworld.bwtApi.Board;
 
-import javaEventing.EventObject;
 import android.util.Log;
 
 
@@ -19,7 +20,6 @@ public class MainBtnEvent extends EventObject{
 	public MainBtnEvent(String message, Board board){
 		this.message = message;
 		this.board = board;
-		//TODO: this.update from this.board.braille
 		
 		// Set the appropriate dot depending on the character.
 		switch (message.toLowerCase(Locale.getDefault()).charAt(0)){
@@ -45,6 +45,8 @@ public class MainBtnEvent extends EventObject{
 				this.dot = -1;
 				Log.e ("Salem", "Received unhandled button event '" + message + "'");
 		}
+		
+		this.update = board.getCharAtCell(0);
 	}
 	
 	// Getters

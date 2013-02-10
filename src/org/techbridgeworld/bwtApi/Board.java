@@ -19,6 +19,13 @@ public class Board {
 		board = new Cell[33];
 		currCellInd = -1;
 	}
+	
+	public char getBraille(int i){
+		return braille.get(i);
+	}
+	public int getBraille(char c){
+		return braille.get(c);
+	}
 
 
 	public void clearBoard() {
