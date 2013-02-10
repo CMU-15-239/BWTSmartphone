@@ -1,13 +1,14 @@
 package org.techbridgeworld.bwtApi.events;
 
+import javaEventing.EventObject;
 import android.util.Log;
 
-public class ChangeCellEvent {
+public class ChangeCellEvent extends EventObject {
 
 	private int oldCell; // Cell before the change 
 	private int newCell; // Cell after the change
 	
-	private class ChangeCellException extends Exception{
+	public class ChangeCellException extends Exception{
 
 		public ChangeCellException(String message, int oldCell, int newCell) {
 			super(message);

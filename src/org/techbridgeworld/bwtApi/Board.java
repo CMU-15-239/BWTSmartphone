@@ -2,7 +2,11 @@ package org.techbridgeworld.bwtApi;
 
 import javaEventing.EventManager;
 
+import org.techbridgeworld.bwtApi.events.ChangeCellEvent;
+import org.techbridgeworld.bwtApi.events.ChangeCellEvent.ChangeCellException;
 import org.techbridgeworld.bwtlibs.Braille;
+
+import android.util.Log;
 
 public class Board {
 	private static Braille braille = new Braille();
@@ -43,9 +47,16 @@ public class Board {
 	 */
 	public int handleNewInput(int cellInd, int buttonNum) {
 		if(currCellInd != cellInd) {
-			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd);
-			currCellInd = cellInd;
+			try {
+				EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd));
+				currCellInd = cellInd;
+			} catch (ChangeCellException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Log.e("Salem", "ChangeCellException - Within Board.handleNewInput");
+			}
 		}
+		
 		return board[cellInd].setDot(buttonNum);
 	}
 }

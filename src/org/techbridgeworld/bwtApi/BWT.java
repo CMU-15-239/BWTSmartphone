@@ -12,6 +12,7 @@ import org.techbridgeworld.bwt.MainActivity;
 import org.techbridgeworld.bwtApi.events.AltBtnEvent;
 import org.techbridgeworld.bwtApi.events.BoardEvent;
 import org.techbridgeworld.bwtApi.events.CellsEvent;
+import org.techbridgeworld.bwtApi.events.ChangeCellEvent;
 import org.techbridgeworld.bwtApi.events.MainBtnEvent;
 
 import android.content.Context;
@@ -170,9 +171,8 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				int cell = 0;
-				int btn = event.getDot();
-				board.handleNewInput(cell, btn);
+				MainBtnEvent e = (MainBtnEvent) event;
+				board.handleNewInput(0, e.getDot());
 			}
 		};
 	}
@@ -191,11 +191,8 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				int cell = event.getCell();
-				int btn = event.getDot();
-				board.handleNewInput(cell, btn);
-					
-				
+				CellsEvent e = (CellsEvent) event;
+				board.handleNewInput(e.getCell(), e.getDot());
 			}
 		};
 	}
