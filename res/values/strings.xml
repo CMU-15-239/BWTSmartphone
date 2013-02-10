@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">BWT for Smartphone</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
+    <string name="teacher_welcome">Welcome to BWT for Teachers! At any time, shake the phone for help. To begin, swipe up with two fingers. </string>
 
 </resources>
