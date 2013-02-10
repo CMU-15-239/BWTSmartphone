@@ -89,13 +89,13 @@ public class BWT {
 	}
 
 /**
- * Lets developers add their own event listeners
+ * Lets developers add their own event listeners; replaces current listeners
  * Returns false if didn't recognize context; returns true otherwise
  * @param context
  * @param customizedListener
  * @return
  */
-	public boolean addListener(String context, GenericEventListener customizedListener) {
+	public boolean replaceListener(String context, GenericEventListener customizedListener) {
 		Class<? extends Event> c = null;
 		if(context == "onBoardEvent") c = BoardEvent.class;
 		else if(context == "onAltBtnEvent") c = AltBtnEvent.class;
@@ -109,6 +109,27 @@ public class BWT {
 		return true;
 		
 	}
+	
+	/**
+	 * Lets developers add their own event listeners on top of current listeners
+	 * Returns false if didn't recognize context; returns true otherwise
+	 * @param context
+	 * @param customizedListener
+	 * @return
+	 */
+		public boolean addListener(String context, GenericEventListener customizedListener) {
+			Class<? extends Event> c = null;
+			if(context == "onBoardEvent") c = BoardEvent.class;
+			else if(context == "onAltBtnEvent") c = AltBtnEvent.class;
+			else if(context == "onMainBtnEvent") c = MainBtnEvent.class;
+			else if(context == "onCellsEvent") c = CellsEvent.class;
+			else if(context == "onChangeCellEvent") c = ChangeCellEvent.class;
+			else return false;
+			
+			EventManager.registerEventListener(context, customizedListener, c);
+			return true;
+			
+		}
 	
 	//Allows event handlers to go off; updates board's state
 	public void startTracking() {
