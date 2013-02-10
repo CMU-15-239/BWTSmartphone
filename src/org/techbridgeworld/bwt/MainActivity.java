@@ -1,11 +1,11 @@
-	package org.techbridgeworld.bwt;
-	
-	import org.techbridgeworld.bwtApi.BWT;
+package org.techbridgeworld.bwt;
 
-	import android.app.Activity;
-	import android.os.Bundle;
-	import android.widget.ScrollView;
-	import android.widget.TextView;
+import org.techbridgeworld.bwtApi.BWT;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.ScrollView;
+import android.widget.TextView;
 	
 	public class MainActivity extends Activity {
 		
