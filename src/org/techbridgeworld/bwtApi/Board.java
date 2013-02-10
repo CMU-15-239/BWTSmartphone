@@ -39,6 +39,14 @@ public class Board {
 		return board[cellInd].getBrailleCode();
 	}
 	
+	public int getGlyphAtCell(int cellInd) {
+		return board[cellInd].getGlyph();
+	}
+	
+	public void setBitsAsCell(int cellInd, int value) {
+		board[cellInd].setValue(value);
+	}
+	
 	/**Returns the 6-bits of what's raised in cellInd
 	 * 
 	 * @param cellInd - index of cell that was pushed on

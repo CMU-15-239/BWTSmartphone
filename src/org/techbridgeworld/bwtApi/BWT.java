@@ -33,6 +33,7 @@ public class BWT {
 	// BWT information/state
 	private Board board;
 	private boolean isTracking;
+	private StringBuffer stringBuffer;
 	
 	// Constants
 	private static final int BAUDRATE = 57600;
@@ -76,6 +77,7 @@ public class BWT {
 		this.context = context;
 		this.activity = activity;
 		this.board = new Board();
+		this.stringBuffer = new StringBuffer();
 	}	
 
 	// Initialize
@@ -113,19 +115,37 @@ public class BWT {
 		isTracking = true;
 	}
 	
-	//Disregards changing state of board if stopped tracking
-	public void stopTracking() {
+	/**
+	 * Disregards changing state of board if stopped tracking
+	 * @return stringBuffer's remaining letters
+	 */
+	public String stopTracking() {
 		isTracking = false;
-	}
-	
-	//Returns and empties everything in current 'buffer'
-	public char[] dumpTracking() {
-		if (!isTracking) return null;
+		return emptyBuffer();
 		
-		//TODO:
-		return new char['a'];
 	}
 	
+	/**
+	 * Returns and empties everything in current 'buffer'
+	 * @return what was left in the buffer
+	 * If not tracking, returns null
+	 */
+	public String dumpTracking() {
+		if (!isTracking) return null;
+		return emptyBuffer();
+	}
+	
+	/**
+	 * Empties the stringBuffer and returns what was in the buffer
+	 * @return
+	 */
+	public String emptyBuffer() {
+		if(stringBuffer.length() <= 0) return null;
+		
+		String str = stringBuffer.toString();
+		stringBuffer.delete(0, stringBuffer.length());
+		return str;
+	}
 	
 	/**
 	 * Registers the event handlers; called in bwt.start();
@@ -201,7 +221,13 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
+				ChangeCellEvent e = (ChangeCellEvent) event;
 				
+				//pushes the char at this cell into the stringbuffer
+				//then resets old cell value, and 
+				int oldCellInd = e.getOldCell();
+				stringBuffer.append(board.getGlyphAtCell(oldCellInd));
+				board.setBitsAsCell(oldCellInd, 0);
 			}
 		};
 	}
