@@ -78,12 +78,12 @@ public class BWT {
 		this.activity = activity;
 		this.board = new Board();
 		this.stringBuffer = new StringBuffer();
+        isTracking = false;
 	}	
 
 	// Initialize
 	public void init(){
 		Log.i("Salem", "BWT.init()");
-        isTracking = false;
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
@@ -164,6 +164,7 @@ public class BWT {
 		if(stringBuffer.length() <= 0) return null;
 		
 		String str = stringBuffer.toString();
+		Log.d("Jessica",str);
 		stringBuffer.delete(0, stringBuffer.length());
 		return str;
 	}
@@ -203,7 +204,8 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				//API doesn't have a default function. Here for developers				
+				//API doesn't have a default function. Here for developers	
+	    		Log.i("Jessica", "Triggered default onBoard event");			
 			}
 		};
 	}
@@ -211,7 +213,8 @@ public class BWT {
 	private GenericEventListener createOnMainBtnListener() {
 		return new GenericEventListener() {
 			@Override
-			public void eventTriggered(Object sender, Event event) {
+			public void eventTriggered(Object sender, Event event) {	
+	    		Log.i("Jessica", "Triggered default onMainBtn event");	
 				MainBtnEvent e = (MainBtnEvent) event;
 				board.handleNewInput(0, e.getDot());
 			}
@@ -222,6 +225,7 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
+	    		Log.i("Jessica", "Triggered default onAltBtn event");	
 				//Doesn't do anything. Let developers decide functionality
 				
 			}
@@ -232,6 +236,7 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
+	    		Log.i("Jessica", "Triggered default onCells event");	
 				CellsEvent e = (CellsEvent) event;
 				board.handleNewInput(e.getCell(), e.getDot());
 			}
@@ -247,6 +252,11 @@ public class BWT {
 				//pushes the char at this cell into the stringbuffer
 				//then resets old cell value, and 
 				int oldCellInd = e.getOldCell();
+				
+				//first time ChangeCell is called, oldCellInd = -1
+				if(oldCellInd < 0) return;	
+
+	    		Log.i("Jessica", "Triggered default onCellChange event");	
 				stringBuffer.append(board.getGlyphAtCell(oldCellInd));
 				board.setBitsAsCell(oldCellInd, 0);
 			}
@@ -405,12 +415,15 @@ public class BWT {
     	if(!isTracking) return;
     	
     	message = message.toLowerCase().trim();
+    	if(message.equals("bt")) return;
+    	
     	String referenceStr = "abcdefg";
     	
     	//Trigger board event regardless
 		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
     	
     	// See if it's a, b-g, or two numbers
+		
     	if(referenceStr.indexOf(message) == 0) {
     		EventManager.triggerEvent(this, new AltBtnEvent(message), "onAltBtnEvent");    		
     	}

@@ -16,7 +16,12 @@ public class Board {
 	private int							currCellInd;
 	
 	public Board() {
-		board = new Cell[33];
+		Cell[] temp = new Cell[33];
+		
+		for(int i = 0; i < 33; i++){
+			temp[i] = new Cell();
+		}
+		this.board = temp;
 		currCellInd = -1;
 	}
 	
@@ -46,7 +51,7 @@ public class Board {
 		return board[cellInd].getBrailleCode();
 	}
 	
-	public int getGlyphAtCell(int cellInd) {
+	public char getGlyphAtCell(int cellInd) {
 		return board[cellInd].getGlyph();
 	}
 	
