@@ -67,14 +67,8 @@ public class Board {
 	 */
 	public int handleNewInput(int cellInd, int buttonNum) {
 		if(currCellInd != cellInd) {
-			try {
-				EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd));
-				currCellInd = cellInd;
-			} catch (ChangeCellException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				Log.e("Salem", "ChangeCellException - Within Board.handleNewInput");
-			}
+			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd));
+			currCellInd = cellInd;
 		}
 		
 		return board[cellInd].setDot(buttonNum);

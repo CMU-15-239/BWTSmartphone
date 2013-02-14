@@ -19,9 +19,14 @@ public class ChangeCellEvent extends EventObject {
 
 	
 	// In case you're nice and give us integers.
-	public ChangeCellEvent(int oldCell, int newCell) throws ChangeCellException{
+	public ChangeCellEvent(int oldCell, int newCell) {
 		if(oldCell == newCell){
-			throw new ChangeCellException("ChangeCellEvent changes to same cell", oldCell, newCell);
+			try {
+				throw new ChangeCellException("ChangeCellEvent changes to same cell", oldCell, newCell);
+			} catch (ChangeCellException e) {
+				Log.e("Salem", "ChangeCellEvent changes to same cell: " + oldCell + " to " + newCell);
+				e.printStackTrace();
+			}
 		}
 		this.oldCell = oldCell;
 		this.newCell = newCell;

@@ -13,9 +13,11 @@ import org.techbridgeworld.bwtApi.events.AltBtnEvent;
 import org.techbridgeworld.bwtApi.events.BoardEvent;
 import org.techbridgeworld.bwtApi.events.CellsEvent;
 import org.techbridgeworld.bwtApi.events.ChangeCellEvent;
+import org.techbridgeworld.bwtApi.events.ChangeCellEvent.ChangeCellException;
 import org.techbridgeworld.bwtApi.events.MainBtnEvent;
 
 import android.content.Context;
+import android.hardware.Camera.PreviewCallback;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
 import android.util.Log;
@@ -34,6 +36,7 @@ public class BWT {
 	private Board board;
 	private boolean isTracking;
 	private StringBuffer stringBuffer;
+	private int lastCell = -1;
 	
 	// Constants
 	private static final int BAUDRATE = 57600;
@@ -88,13 +91,13 @@ public class BWT {
         startIoManager();
 	}
 
-/**
- * Lets developers add their own event listeners; replaces current listeners
- * Returns false if didn't recognize context; returns true otherwise
- * @param context
- * @param customizedListener
- * @return
- */
+	/**
+	 * Lets developers add their own event listeners; replaces current listeners
+	 * Returns false if didn't recognize context; returns true otherwise
+	 * @param context
+	 * @param customizedListener
+	 * @return
+	 */
 	public boolean replaceListener(String context, GenericEventListener customizedListener) {
 		Class<? extends Event> c = null;
 		if(context == "onBoardEvent") c = BoardEvent.class;
@@ -411,7 +414,7 @@ public class BWT {
     	}    				    	
     }
 
-    private void triggerNewDataEvent(String message){
+    private void triggerNewDataEvent(String message) {
     	if(!isTracking) return;
     	
     	message = message.toLowerCase().trim();
@@ -419,7 +422,7 @@ public class BWT {
     	
     	String referenceStr = "abcdefg";
     	
-    	//Trigger board event regardless
+    	// Trigger board event regardless
 		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
     	
     	// See if it's a, b-g, or two numbers
@@ -429,9 +432,20 @@ public class BWT {
     	}
     	else if (referenceStr.indexOf(message) > 0) {
     		EventManager.triggerEvent(this, new MainBtnEvent(message, board), "onMainBtnEvent");
+    		
+    		// Determine if there has been a cell change.
+    		if(lastCell > 0){
+    			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, 0), "onChangeCellEvent");
+    		}
     	}
     	else {
     		EventManager.triggerEvent(this, new CellsEvent(message, board), "onCellsEvent");
+    		
+    		// Determine if there has been a cell change.
+    		int currCell = Integer.parseInt(message.split(" ")[0]);
+    		if(currCell != lastCell){
+    			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
+    		}
     	}
     	
     }
