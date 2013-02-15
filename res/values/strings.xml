@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">BWT for Smartphone</string>
-    <string name="teacher_welcome">Welcome to BWT for Teachers! At any time, shake the phone for help. To begin, swipe up with two fingers. </string>
-
+    <string name="app_name">BWT for Students</string>
+	
 </resources>

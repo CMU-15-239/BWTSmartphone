@@ -1,4 +1,4 @@
-package org.techbridgeworld.bwtApi.events;
+package org.techbridgeworld.bwt.api.events;
 
 import javaEventing.EventObject;
 

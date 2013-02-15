@@ -1,4 +1,4 @@
-package org.techbridgeworld.bwtlibs;
+package org.techbridgeworld.bwt.libs;
 
 import java.util.Hashtable;
 

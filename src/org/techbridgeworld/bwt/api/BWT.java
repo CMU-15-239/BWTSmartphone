@@ -1,4 +1,4 @@
-package org.techbridgeworld.bwtApi;
+package org.techbridgeworld.bwt.api;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -8,11 +8,11 @@ import javaEventing.EventManager;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
-import org.techbridgeworld.bwt.MainActivity;
-import org.techbridgeworld.bwtApi.events.AltBtnEvent;
-import org.techbridgeworld.bwtApi.events.BoardEvent;
-import org.techbridgeworld.bwtApi.events.CellsEvent;
-import org.techbridgeworld.bwtApi.events.MainBtnEvent;
+import org.techbridgeworld.bwt.api.events.AltBtnEvent;
+import org.techbridgeworld.bwt.api.events.BoardEvent;
+import org.techbridgeworld.bwt.api.events.CellsEvent;
+import org.techbridgeworld.bwt.api.events.MainBtnEvent;
+import org.techbridgeworld.bwt.student.MainActivity;
 
 import android.content.Context;
 import android.hardware.usb.UsbManager;
@@ -267,7 +267,8 @@ public class BWT {
     	//Start a runnable to un-block the key after a set time.
     	Handler handler=new Handler();
     	Runnable r=new Runnable() {
-    	    public void run() {
+    	    @Override
+			public void run() {
     	    	debounceHash.put(newKey, false);
     	    }
     	};
