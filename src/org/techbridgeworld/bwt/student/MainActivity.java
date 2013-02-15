@@ -1,4 +1,4 @@
-package org.techbridgeworld.bwt;
+package org.techbridgeworld.bwt.student;
 
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
@@ -21,7 +21,6 @@ public class MainActivity extends Activity {
 	
 	// BWT object
 	private final BWT bwt = new BWT(this, MainActivity.this);
-	
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {

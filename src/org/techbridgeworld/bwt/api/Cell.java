@@ -1,6 +1,6 @@
 package org.techbridgeworld.bwt.api;
 
-import org.techbridgeworld.bwtlibs.Braille;
+import org.techbridgeworld.bwt.libs.Braille;
 
 public class Cell {
 /**

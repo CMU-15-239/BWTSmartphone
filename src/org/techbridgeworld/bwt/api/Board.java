@@ -3,7 +3,7 @@ package org.techbridgeworld.bwt.api;
 import javaEventing.EventManager;
 
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
-import org.techbridgeworld.bwtlibs.Braille;
+import org.techbridgeworld.bwt.libs.Braille;
 
 
 public class Board {
