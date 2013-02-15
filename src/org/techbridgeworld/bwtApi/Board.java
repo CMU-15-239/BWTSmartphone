@@ -3,10 +3,8 @@ package org.techbridgeworld.bwtApi;
 import javaEventing.EventManager;
 
 import org.techbridgeworld.bwtApi.events.ChangeCellEvent;
-import org.techbridgeworld.bwtApi.events.ChangeCellEvent.ChangeCellException;
 import org.techbridgeworld.bwtlibs.Braille;
 
-import android.util.Log;
 
 public class Board {
 	private static Braille braille = new Braille();

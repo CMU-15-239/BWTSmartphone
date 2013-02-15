@@ -13,11 +13,9 @@ import org.techbridgeworld.bwtApi.events.AltBtnEvent;
 import org.techbridgeworld.bwtApi.events.BoardEvent;
 import org.techbridgeworld.bwtApi.events.CellsEvent;
 import org.techbridgeworld.bwtApi.events.ChangeCellEvent;
-import org.techbridgeworld.bwtApi.events.ChangeCellEvent.ChangeCellException;
 import org.techbridgeworld.bwtApi.events.MainBtnEvent;
 
 import android.content.Context;
-import android.hardware.Camera.PreviewCallback;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
 import android.util.Log;
