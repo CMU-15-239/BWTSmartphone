@@ -5,6 +5,7 @@ import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.BoardEvent;
+import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -21,7 +22,6 @@ public class MainActivity extends Activity {
 	// BWT object
 	private final BWT bwt = new BWT(this, MainActivity.this);
 	
-	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,29 +33,29 @@ public class MainActivity extends Activity {
     }
     
     private void createListeners() {
-//    	bwt.addListener("onBoardEvent", new GenericEventListener() {
-//    			@Override
-//    			public void eventTriggered(Object sender, Event event) {
-//    				BoardEvent e = (BoardEvent)event;
-//		    		Log.i("Jessica", "Triggered own ONBOARD event, message: " + e.getMessage());
-//		    		
-//		    		//RESULT: Warning of CalledFromWrongThreadException: only the
-//		    		//original thread that created a view hierarchy
-//		    		//displayln("Got onBoard event");
-//		    		
-//		    		
-//		    					
-//    			}
-//    	});
-//    	
-//    	bwt.addListener("onChangeCellEvent", new GenericEventListener() {
-//			@Override
-//			public void eventTriggered(Object sender, Event event) {
-//				ChangeCellEvent e = (ChangeCellEvent)event;
-//	    		Log.i("Jessica", "Triggered own CHANGECELL event, message: " + e.getNewCell());
-//	    		Log.i("Jessica", bwt.dumpTracking());			
-//			}
-//    	});
+    	bwt.addListener("onBoardEvent", new GenericEventListener() {
+    			@Override
+    			public void eventTriggered(Object sender, Event event) {
+    				BoardEvent e = (BoardEvent)event;
+		    		Log.i("Jessica", "Triggered own ONBOARD event, message: " + e.getMessage());
+		    		
+		    		//RESULT: Warning of CalledFromWrongThreadException: only the
+		    		//original thread that created a view hierarchy
+		    		//displayln("Got onBoard event");
+		    		
+		    		
+		    					
+    			}
+    	});
+    	
+    	bwt.addListener("onChangeCellEvent", new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				ChangeCellEvent e = (ChangeCellEvent)event;
+	    		Log.i("Jessica", "Triggered own CHANGECELL event, message: " + e.getNewCell());
+	    		Log.i("Jessica", bwt.dumpTracking());			
+			}
+    	});
     }
 
     @Override

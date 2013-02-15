@@ -11,6 +11,7 @@ import javaEventing.interfaces.GenericEventListener;
 import org.techbridgeworld.bwt.api.events.AltBtnEvent;
 import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.api.events.CellsEvent;
+import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 import org.techbridgeworld.bwt.api.events.MainBtnEvent;
 import org.techbridgeworld.bwt.student.MainActivity;
 
@@ -29,8 +30,11 @@ public class BWT {
 	private Context context;
 	private MainActivity activity;
 	
-	// Tracking Information
+	// BWT information/state
+	private Board board;
 	private boolean isTracking;
+	private StringBuffer stringBuffer;
+	private int lastCell = -1;
 	
 	// Constants
 	private static final int BAUDRATE = 57600;
@@ -70,41 +74,101 @@ public class BWT {
 	
 	
 	// Constructor
-	public BWT(Context context, MainActivity activity){
+	public BWT(Context context, MainActivity mainActivity){
 		this.context = context;
-		this.activity = activity;
+		this.activity = mainActivity;
+		this.board = new Board();
+		this.stringBuffer = new StringBuffer();
+        isTracking = false;
 	}	
 
 	// Initialize
 	public void init(){
 		Log.i("Salem", "BWT.init()");
-        isTracking = false;
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
-	
-	// Add listeners
-	public void addListener() {
+
+	/**
+	 * Lets developers add their own event listeners; replaces current listeners
+	 * Returns false if didn't recognize context; returns true otherwise
+	 * @param context
+	 * @param customizedListener
+	 * @return
+	 */
+	public boolean replaceListener(String context, GenericEventListener customizedListener) {
+		Class<? extends Event> c = null;
+		if(context == "onBoardEvent") c = BoardEvent.class;
+		else if(context == "onAltBtnEvent") c = AltBtnEvent.class;
+		else if(context == "onMainBtnEvent") c = MainBtnEvent.class;
+		else if(context == "onCellsEvent") c = CellsEvent.class;
+		else if(context == "onChangeCellEvent") c = ChangeCellEvent.class;
+		else return false;
+		
+		EventManager.unregisterAllEventListenersForContext(context);
+		EventManager.registerEventListener(context, customizedListener, c);
+		return true;
+		
 	}
+	
+	/**
+	 * Lets developers add their own event listeners on top of current listeners
+	 * Returns false if didn't recognize context; returns true otherwise
+	 * @param context
+	 * @param customizedListener
+	 * @return
+	 */
+		public boolean addListener(String context, GenericEventListener customizedListener) {
+			Class<? extends Event> c = null;
+			if(context == "onBoardEvent") c = BoardEvent.class;
+			else if(context == "onAltBtnEvent") c = AltBtnEvent.class;
+			else if(context == "onMainBtnEvent") c = MainBtnEvent.class;
+			else if(context == "onCellsEvent") c = CellsEvent.class;
+			else if(context == "onChangeCellEvent") c = ChangeCellEvent.class;
+			else return false;
+			
+			EventManager.registerEventListener(context, customizedListener, c);
+			return true;
+			
+		}
 	
 	//Allows event handlers to go off; updates board's state
 	public void startTracking() {
 		isTracking = true;
 	}
 	
-	//Disregards changing state of board if stopped tracking
-	public void stopTracking() {
+	/**
+	 * Disregards changing state of board if stopped tracking
+	 * @return stringBuffer's remaining letters
+	 */
+	public String stopTracking() {
 		isTracking = false;
-	}
-	
-	//Returns and empties everything in current 'buffer'
-	public char[] dumpTracking() {
-		if (!isTracking) return null;
+		return emptyBuffer();
 		
-		//TODO:
-		return new char['a'];
 	}
 	
+	/**
+	 * Returns and empties everything in current 'buffer'
+	 * @return what was left in the buffer
+	 * If not tracking, returns null
+	 */
+	public String dumpTracking() {
+		if (!isTracking) return null;
+		return emptyBuffer();
+	}
+	
+	/**
+	 * Empties the stringBuffer and returns what was in the buffer
+	 * @return
+	 */
+	public String emptyBuffer() {
+		if(stringBuffer.length() <= 0) return null;
+		
+		String str = stringBuffer.toString();
+		Log.d("Jessica",str);
+		stringBuffer.delete(0, stringBuffer.length());
+		return str;
+	}
 	
 	/**
 	 * Registers the event handlers; called in bwt.start();
@@ -114,77 +178,92 @@ public class BWT {
 				createOnBoardListener(), BoardEvent.class);
 
 		EventManager.registerEventListener("onMainBtnEvent",
-				createOnMainBtnListener(), BoardEvent.class);
+				createOnMainBtnListener(), MainBtnEvent.class);
 
 		EventManager.registerEventListener("onAltBtnEvent",
-				createOnAltBtnListener(), BoardEvent.class);
+				createOnAltBtnListener(), AltBtnEvent.class);
 		
 		EventManager.registerEventListener("onCellsEvent",
-				createOnCellsListener(), BoardEvent.class);
-
-		EventManager.registerEventListener("onFinishedLetterEvent",
-				createOnFinishedLetterListener(), BoardEvent.class);
+				createOnCellsListener(), CellsEvent.class);
+		
+		EventManager.registerEventListener("onChangeCellEvent",
+				createOnChangeCellListener(), ChangeCellEvent.class);
 	}
 	
-	public GenericEventListener createOnBoardListener() {
-		return new GenericEventListener() {
-			@Override
-			public void eventTriggered(Object sender, Event event) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
+	/**
+	 * Unregisters event listeners; called in bwt.stop();
+	 */
+	public void removeEventListeners() {
+		EventManager.unregisterAllEventListenersForContext("onBoardEvent");
+		EventManager.unregisterAllEventListenersForContext("onMainBtnEvent");
+		EventManager.unregisterAllEventListenersForContext("onAltBtnEvent");
+		EventManager.unregisterAllEventListenersForContext("onCellsEvent");
+		EventManager.unregisterAllEventListenersForContext("onChangeCellEvent");
 	}
-
-	public GenericEventListener createOnMainBtnListener() {
+	
+	private GenericEventListener createOnBoardListener() {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
-	}
-
-	public GenericEventListener createOnAltBtnListener() {
-		return new GenericEventListener() {
-			@Override
-			public void eventTriggered(Object sender, Event event) {
-				// TODO Auto-generated method stub
-				
+				//API doesn't have a default function. Here for developers	
+	    		Log.i("Jessica", "Triggered default onBoard event");			
 			}
 		};
 	}
 
-	public GenericEventListener createOnCellsListener() {
+	private GenericEventListener createOnMainBtnListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {	
+	    		Log.i("Jessica", "Triggered default onMainBtn event");	
+				MainBtnEvent e = (MainBtnEvent) event;
+				board.handleNewInput(0, e.getDot());
+			}
+		};
+	}
+
+	private GenericEventListener createOnAltBtnListener() {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				// TODO Auto-generated method stub
+	    		Log.i("Jessica", "Triggered default onAltBtn event");	
+				//Doesn't do anything. Let developers decide functionality
 				
 			}
 		};
 	}
-	
-	public GenericEventListener createOnFinishedLetterListener() {
+
+	private GenericEventListener createOnCellsListener() {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				// TODO Auto-generated method stub
-				
+	    		Log.i("Jessica", "Triggered default onCells event");	
+				CellsEvent e = (CellsEvent) event;
+				board.handleNewInput(e.getCell(), e.getDot());
 			}
 		};
 	}
 	
-	
-	//TODO: Called by onNewData
-	public void triggerEventsOnNewData() {
-		if(!isTracking) return;
-		EventManager.triggerEvent(this, new BoardEvent(), "onBoardEvent");
-		EventManager.triggerEvent(this, new MainBtnEvent(), "onMainBtnEvent");
-		EventManager.triggerEvent(this, new AltBtnEvent(), "onAltBtnEvent");
-		EventManager.triggerEvent(this, new CellsEvent(), "onCellsEvent");
+	private GenericEventListener createOnChangeCellListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				ChangeCellEvent e = (ChangeCellEvent) event;
+				
+				//pushes the char at this cell into the stringbuffer
+				//then resets old cell value, and 
+				int oldCellInd = e.getOldCell();
+				
+				//first time ChangeCell is called, oldCellInd = -1
+				if(oldCellInd < 0) return;	
+
+	    		Log.i("Jessica", "Triggered default onCellChange event");	
+				stringBuffer.append(board.getGlyphAtCell(oldCellInd));
+				board.setBitsAsCell(oldCellInd, 0);
+			}
+		};
 	}
+
 	
 	
 	// Starts USB connection
@@ -222,6 +301,7 @@ public class BWT {
 		Log.i("Salem", "BWT.pause()");
 		if (usbDriver != null) {
             try {
+            	removeEventListeners();
 				usbDriver.setBaudRate(BAUDRATE);
 				byte[] bt = "bt".getBytes();
 				usbDriver.write(bt, TIMEOUT);
@@ -309,6 +389,7 @@ public class BWT {
     			
     			if(!isDebounced(message)){ //Fire a trigger!
 		    		Log.i("Salem", "Fired trigger '" + message + "'");
+		    		triggerNewDataEvent(message);
 	    			debounceKey(message);
 
     			}
@@ -332,5 +413,40 @@ public class BWT {
     	}    				    	
     }
 
+    private void triggerNewDataEvent(String message) {
+    	if(!isTracking) return;
+    	
+    	message = message.toLowerCase().trim();
+    	if(message.equals("bt")) return;
+    	
+    	String referenceStr = "abcdefg";
+    	
+    	// Trigger board event regardless
+		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
+    	
+    	// See if it's a, b-g, or two numbers
+		
+    	if(referenceStr.indexOf(message) == 0) {
+    		EventManager.triggerEvent(this, new AltBtnEvent(message), "onAltBtnEvent");    		
+    	}
+    	else if (referenceStr.indexOf(message) > 0) {
+    		EventManager.triggerEvent(this, new MainBtnEvent(message, board), "onMainBtnEvent");
+    		
+    		// Determine if there has been a cell change.
+    		if(lastCell > 0){
+    			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, 0), "onChangeCellEvent");
+    		}
+    	}
+    	else {
+    		EventManager.triggerEvent(this, new CellsEvent(message, board), "onCellsEvent");
+    		
+    		// Determine if there has been a cell change.
+    		int currCell = Integer.parseInt(message.split(" ")[0]);
+    		if(currCell != lastCell){
+    			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
+    		}
+    	}
+    	
+    }
 
 }
