@@ -3,9 +3,9 @@ package org.techbridgeworld.bwt;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
-import org.techbridgeworld.bwtApi.BWT;
-import org.techbridgeworld.bwtApi.events.BoardEvent;
-import org.techbridgeworld.bwtApi.events.ChangeCellEvent;
+import org.techbridgeworld.bwt.api.BWT;
+import org.techbridgeworld.bwt.api.events.BoardEvent;
+import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 
 import android.app.Activity;
 import android.os.Bundle;
