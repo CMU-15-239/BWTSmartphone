@@ -46,7 +46,7 @@ public class MainBtnEvent extends EventObject{
 				Log.e ("Salem", "Received unhandled button event '" + message + "'");
 		}
 		
-		this.update = board.getCharAtCell(0);
+		this.update = board.getGlyphAtCell(0);
 	}
 	
 	// Getters

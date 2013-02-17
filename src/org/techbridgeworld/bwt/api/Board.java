@@ -41,10 +41,6 @@ public class Board {
 		return currCellInd;
 	}
 	
-	public char getCharAtCell(int cellInd) {
-		return board[cellInd].getGlyph();
-	}
-	
 	public int getBitsAtCell(int cellInd) {
 		return board[cellInd].getBrailleCode();
 	}

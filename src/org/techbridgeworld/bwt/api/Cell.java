@@ -2,6 +2,8 @@ package org.techbridgeworld.bwt.api;
 
 import org.techbridgeworld.bwt.libs.Braille;
 
+import android.util.Log;
+
 public class Cell {
 /**
  * Valid braille codes (dots one through six)
