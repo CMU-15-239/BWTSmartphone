@@ -14,7 +14,9 @@ import org.techbridgeworld.bwt.api.events.CellsEvent;
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 import org.techbridgeworld.bwt.api.events.MainBtnEvent;
 import org.techbridgeworld.bwt.student.MainActivity;
+import org.techbridgeworld.bwt.student.WelcomeActivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
@@ -28,7 +30,7 @@ public class BWT {
 
 	// App Context
 	private Context context;
-	private MainActivity activity;
+	private Activity activity;
 	
 	// BWT information/state
 	private Board board;
@@ -79,7 +81,7 @@ public class BWT {
 	 * @param context
 	 * @param mainActivity
 	 */
-	public BWT(Context context, MainActivity mainActivity){
+	public BWT(Context context, Activity mainActivity){
 		this.context = context;
 		this.activity = mainActivity;
 		this.board = new Board();
@@ -245,6 +247,12 @@ public class BWT {
     }
 
 	
+    //Board getter.
+    public Board getBoard(){
+    	return this.board;
+    }
+    
+    
 	/**Allows event handlers to go off; updates board's state
 	 */
 	public void startTracking() {
@@ -318,6 +326,9 @@ public class BWT {
 		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
     	
     	
+    	// Trigger board event regardless
+		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
+	
     }
     
 	/**Registers default event handlers; called in bwt.start();
