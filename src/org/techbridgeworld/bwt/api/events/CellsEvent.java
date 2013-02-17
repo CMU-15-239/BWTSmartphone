@@ -16,7 +16,9 @@ public class CellsEvent extends EventObject {
 		String[] details = message.split(" ");
 		
 		this.cell = Integer.parseInt(details[0].trim());
-		this.dot =  Integer.parseInt(details[1].trim());
+		int msgDot =  Integer.parseInt(details[1].trim());
+		this.dot = ((msgDot + 2) % 6) + 1;
+		
 	}
 	
 	// Getters

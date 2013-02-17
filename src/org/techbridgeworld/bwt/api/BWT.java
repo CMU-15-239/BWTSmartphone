@@ -111,27 +111,6 @@ public class BWT {
 		
 	}
 	
-	/**
-	 * Lets developers add their own event listeners on top of current listeners
-	 * Returns false if didn't recognize context; returns true otherwise
-	 * @param context
-	 * @param customizedListener
-	 * @return
-	 */
-		public boolean addListener(String context, GenericEventListener customizedListener) {
-			Class<? extends Event> c = null;
-			if(context == "onBoardEvent") c = BoardEvent.class;
-			else if(context == "onAltBtnEvent") c = AltBtnEvent.class;
-			else if(context == "onMainBtnEvent") c = MainBtnEvent.class;
-			else if(context == "onCellsEvent") c = CellsEvent.class;
-			else if(context == "onChangeCellEvent") c = ChangeCellEvent.class;
-			else return false;
-			
-			EventManager.registerEventListener(context, customizedListener, c);
-			return true;
-			
-		}
-	
 	//Allows event handlers to go off; updates board's state
 	public void startTracking() {
 		isTracking = true;
@@ -165,7 +144,6 @@ public class BWT {
 
 		String str = new String(stringBuffer);
 		stringBuffer.delete(0, stringBuffer.length());
-		Log.d("Jessica", "EmptyingBuffer: '" + str + "'");
 		return str;
 	}
 	
@@ -201,23 +179,19 @@ public class BWT {
 	}
 	
 	public void defaultBoardHandler(Object sender, Event event) {
-		//API doesn't have a default function. Here for developers	
-		Log.i("Jessica", "Triggered default onBoard event");
+		//API doesn't have a default function. Here for developers
 	}
 
-	public void defaultMainBtnHandler(Object sender, Event event) {	
-		Log.i("Jessica", "Triggered default onMainBtn event");	
+	public void defaultMainBtnHandler(Object sender, Event event) {
 		MainBtnEvent e = (MainBtnEvent) event;
 		board.handleNewInput(0, e.getDot());
 	}
 	
-	public void defaultAltBtnHandler(Object sender, Event event) {	
-		Log.i("Jessica", "Triggered default onAltBtn event");	
+	public void defaultAltBtnHandler(Object sender, Event event) {
 		//Doesn't do anything. Let developers decide functionality
 	}
 	
-	public void defaultCellsHandler(Object sender, Event event) {
-		Log.i("Jessica", "Triggered default onCells event");	
+	public void defaultCellsHandler(Object sender, Event event) {	
 		CellsEvent e = (CellsEvent) event;
 		board.handleNewInput(e.getCell(), e.getDot());
 	}
