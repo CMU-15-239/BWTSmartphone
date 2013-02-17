@@ -87,7 +87,7 @@ public class Braille {
 	 */
 	public Character get(int i){
 		Character query = BrailleToChar.get(i);
-		return (query == null? '\u0000' : query);
+		return (query == null? /*'\u0000'*/ '-' : query);
 	}
 	
 	/**	

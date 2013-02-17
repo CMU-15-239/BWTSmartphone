@@ -144,7 +144,6 @@ public class BWT {
 	public String stopTracking() {
 		isTracking = false;
 		return emptyBuffer();
-		
 	}
 	
 	/**
@@ -153,7 +152,7 @@ public class BWT {
 	 * If not tracking, returns null
 	 */
 	public String dumpTracking() {
-		if (!isTracking) return null;
+		if (!isTracking) return "";
 		return emptyBuffer();
 	}
 	
@@ -162,7 +161,7 @@ public class BWT {
 	 * @return
 	 */
 	public String emptyBuffer() {
-		if(stringBuffer.length() <= 0) return null;
+		if(stringBuffer.length() <= 0) return "";
 		
 		String str = stringBuffer.toString();
 		Log.d("Jessica",str);
@@ -416,7 +415,8 @@ public class BWT {
     private void triggerNewDataEvent(String message) {
     	if(!isTracking) return;
     	
-    	message = message.toLowerCase().trim();
+    	message = message.toLowerCase().replaceAll("n","").trim();
+    	Log.i("Salem", "Cleaned message: '" + message + "'");
     	if(message.equals("bt")) return;
     	
     	String referenceStr = "abcdefg";
