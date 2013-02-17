@@ -33,10 +33,11 @@ public class MainActivity extends Activity {
     }
     
     private void createListeners() {
-    	bwt.addListener("onBoardEvent", new GenericEventListener() {
+    	bwt.replaceListener("onBoardEvent", new GenericEventListener() {
     			@Override
     			public void eventTriggered(Object sender, Event event) {
     				BoardEvent e = (BoardEvent)event;
+    				bwt.defaultBoardHandler(sender, event);
 		    		Log.i("Jessica", "Triggered own ONBOARD event, message: " + e.getMessage());
 		    		
 		    		//RESULT: Warning of CalledFromWrongThreadException: only the
@@ -48,12 +49,12 @@ public class MainActivity extends Activity {
     			}
     	});
     	
-    	bwt.addListener("onChangeCellEvent", new GenericEventListener() {
+    	bwt.replaceListener("onChangeCellEvent", new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
 				ChangeCellEvent e = (ChangeCellEvent)event;
-	    		Log.i("Jessica", "Triggered own CHANGECELL event, message: " + e.getNewCell());
-	    		Log.i("Jessica", bwt.dumpTracking());			
+				if(e.getOldCell() == -1) return;
+				bwt.defaultChangeCellHandler(sender, event);
 			}
     	});
     }
@@ -63,7 +64,7 @@ public class MainActivity extends Activity {
         super.onPause();
         textView.append("NOTE onPause, about to stopIoManager()\n");
         
-        //bwt.stopTracking();
+        bwt.stopTracking();
         bwt.stop();
     }
     

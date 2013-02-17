@@ -153,7 +153,7 @@ public class BWT {
 	 * If not tracking, returns null
 	 */
 	public String dumpTracking() {
-		if (!isTracking) return null;
+		if (!isTracking) return "EMPTY_STRING";
 		return emptyBuffer();
 	}
 	
@@ -164,8 +164,7 @@ public class BWT {
 	public String emptyBuffer() {
 		if(stringBuffer.length() <= 0) return null;
 		
-		String str = stringBuffer.toString();
-		Log.d("Jessica",str);
+		String str = new String(stringBuffer);
 		stringBuffer.delete(0, stringBuffer.length());
 		return str;
 	}
@@ -201,12 +200,49 @@ public class BWT {
 		EventManager.unregisterAllEventListenersForContext("onChangeCellEvent");
 	}
 	
+	public void defaultBoardHandler(Object sender, Event event) {
+		//API doesn't have a default function. Here for developers	
+		Log.i("Jessica", "Triggered default onBoard event");
+	}
+
+	public void defaultMainBtnHandler(Object sender, Event event) {	
+		Log.i("Jessica", "Triggered default onMainBtn event");	
+		MainBtnEvent e = (MainBtnEvent) event;
+		board.handleNewInput(0, e.getDot());
+	}
+	
+	public void defaultAltBtnHandler(Object sender, Event event) {	
+		Log.i("Jessica", "Triggered default onAltBtn event");	
+		//Doesn't do anything. Let developers decide functionality
+	}
+	
+	public void defaultCellsHandler(Object sender, Event event) {
+		Log.i("Jessica", "Triggered default onCells event");	
+		CellsEvent e = (CellsEvent) event;
+		board.handleNewInput(e.getCell(), e.getDot());
+	}
+	
+	public void defaultChangeCellHandler(Object sender, Event event) {
+		ChangeCellEvent e = (ChangeCellEvent) event;
+		
+		/*pushes the char at this cell into the stringbuffer
+		 *then resets old cell value*/ 
+		int oldCellInd = e.getOldCell();
+		
+		//first time ChangeCell is called, oldCellInd = -1
+		if(oldCellInd < 0) return;	
+
+		Log.i("Jessica", "Triggered default onCellChange event");
+		stringBuffer.append(board.getGlyphAtCell(oldCellInd));
+		board.setBitsAsCell(oldCellInd, 0);
+		lastCell = e.getNewCell();
+	}
+	
 	private GenericEventListener createOnBoardListener() {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				//API doesn't have a default function. Here for developers	
-	    		Log.i("Jessica", "Triggered default onBoard event");			
+				defaultBoardHandler(sender, event);
 			}
 		};
 	}
@@ -214,10 +250,8 @@ public class BWT {
 	private GenericEventListener createOnMainBtnListener() {
 		return new GenericEventListener() {
 			@Override
-			public void eventTriggered(Object sender, Event event) {	
-	    		Log.i("Jessica", "Triggered default onMainBtn event");	
-				MainBtnEvent e = (MainBtnEvent) event;
-				board.handleNewInput(0, e.getDot());
+			public void eventTriggered(Object sender, Event event) {
+				defaultMainBtnHandler(sender, event);
 			}
 		};
 	}
@@ -226,9 +260,7 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-	    		Log.i("Jessica", "Triggered default onAltBtn event");	
-				//Doesn't do anything. Let developers decide functionality
-				
+				defaultAltBtnHandler(sender, event);
 			}
 		};
 	}
@@ -237,9 +269,7 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-	    		Log.i("Jessica", "Triggered default onCells event");	
-				CellsEvent e = (CellsEvent) event;
-				board.handleNewInput(e.getCell(), e.getDot());
+				defaultCellsHandler(sender, event);
 			}
 		};
 	}
@@ -248,18 +278,7 @@ public class BWT {
 		return new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				ChangeCellEvent e = (ChangeCellEvent) event;
-				
-				//pushes the char at this cell into the stringbuffer
-				//then resets old cell value, and 
-				int oldCellInd = e.getOldCell();
-				
-				//first time ChangeCell is called, oldCellInd = -1
-				if(oldCellInd < 0) return;	
-
-	    		Log.i("Jessica", "Triggered default onCellChange event");	
-				stringBuffer.append(board.getGlyphAtCell(oldCellInd));
-				board.setBitsAsCell(oldCellInd, 0);
+				defaultChangeCellHandler(sender, event);
 			}
 		};
 	}
