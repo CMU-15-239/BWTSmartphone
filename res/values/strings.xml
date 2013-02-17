@@ -3,4 +3,13 @@
 
     <string name="app_name">BWT for Students</string>
 	
+    <string name="welcome_prompt">Welcome! Swipe down to continue.</string>
+	<string name="game_prompt">Please select a game.</string>
+
+	<string name="learn_dots">Learn Dots</string>
+	<string name="learn_letters">Learn Letters</string>
+	<string name="animal_game">Animal Game</string>
+	
+	<string name="replay">Replay</string>
+	<string name="delete">Delete</string>
 </resources>
