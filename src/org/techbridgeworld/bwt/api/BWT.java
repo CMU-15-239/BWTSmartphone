@@ -292,11 +292,7 @@ public class BWT {
     	
     	String referenceStr = "abcdefg";
     	
-    	// Trigger board event regardless
-		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
-    	
     	// See if it's a, b-g, or two numbers
-		
     	if(referenceStr.indexOf(message) == 0) {
     		EventManager.triggerEvent(this, new AltBtnEvent(message), "onAltBtnEvent");    		
     	}
@@ -317,6 +313,10 @@ public class BWT {
     			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
     		}
     	}
+
+    	// Trigger board event regardless
+		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
+    	
     	
     }
     
