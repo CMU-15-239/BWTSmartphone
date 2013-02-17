@@ -162,9 +162,10 @@ public class BWT {
 	 */
 	public String emptyBuffer() {
 		if(stringBuffer.length() <= 0) return "";
-		
+
 		String str = new String(stringBuffer);
 		stringBuffer.delete(0, stringBuffer.length());
+		Log.d("Jessica", "EmptyingBuffer: '" + str + "'");
 		return str;
 	}
 	

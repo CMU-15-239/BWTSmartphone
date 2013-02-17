@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
     	bwt.replaceListener("onBoardEvent", new GenericEventListener() {
     			@Override
     			public void eventTriggered(Object sender, Event event) {
+    				bwt.defaultBoardHandler(sender, event);
     				BoardEvent e = (BoardEvent)event;
 		    		Log.i("Jessica", "	 ONBOARD event, message: " + e.getMessage());
 		    		
@@ -64,6 +65,7 @@ public class MainActivity extends Activity {
 				ChangeCellEvent e = (ChangeCellEvent)event;
 				if(e.getOldCell() == -1) return;
 				bwt.defaultChangeCellHandler(sender, event);
+				bwt.dumpTracking();
 			}
     	});
     }
