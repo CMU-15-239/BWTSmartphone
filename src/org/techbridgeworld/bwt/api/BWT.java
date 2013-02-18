@@ -30,7 +30,7 @@ public class BWT {
 
 	// App Context
 	private Context context;
-	private Activity activity;
+	private Activity currActivity;
 	
 	// BWT information/state
 	private Board board;
@@ -61,18 +61,19 @@ public class BWT {
 			@Override
 			public void onRunError(Exception e) {
 				//Ignore
+				Log.e("DataTransfer", "In the onRunError function: " + e.getMessage());
 			}
 	
 			@Override
-			public void onNewData(final byte[] data) {
-				activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-			            //textView.append("NOTE onNewData, about to run()\n");
-						Log.i("DataTransfer", "Getting to onNewData function");
-						BWT.this.updateReceivedData(data);
-					}
-				});
+			public void onNewData(final byte[] data) {				
+				updateReceivedData(data);
+				
+//				currActivity.runOnUiThread(new Runnable() {
+//					@Override
+//					public void run() {
+//						BWT.this.updateReceivedData(data);
+//					}
+//				});
 			}
 		};
 	
@@ -81,11 +82,11 @@ public class BWT {
 	 * the board/cell classes.
 	 * 
 	 * @param context
-	 * @param mainActivity
+	 * @param activity
 	 */
-	public BWT(Context context, Activity mainActivity){
+	public BWT(Context context, Activity activity){
 		this.context = context;
-		this.activity = mainActivity;
+		this.currActivity = activity;
 		this.board = new Board();
 		this.inputBuffer = new ArrayList<Integer>();
         this.isTracking = false;
@@ -180,14 +181,20 @@ public class BWT {
     	debounceHash.put(newKey, true);
     	
     	//Start a runnable to un-block the key after a set time.
-    	Handler handler=new Handler();
-    	Runnable r=new Runnable() {
+    	Thread r=new Thread() {
     	    @Override
 			public void run() {
+    	    	try {
+					Thread.sleep(DEBOUNCE);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
     	    	debounceHash.put(newKey, false);
     	    }
     	};
-    	handler.postDelayed(r, DEBOUNCE);
+    	
+    	executor.submit(r);
     }
     
     // Returns true if a key is currently being ignored.

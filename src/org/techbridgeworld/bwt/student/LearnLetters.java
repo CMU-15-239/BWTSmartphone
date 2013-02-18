@@ -28,14 +28,13 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector; 
 
-	private final BWT bwt = new BWT(this, LearnLetters.this);
 	private static final Braille braille = new Braille();
 	private static final int IS_WRONG = -1;
 	private static final int IS_RIGHT = 1;
 	private static final int IS_IN_PROGRESS = 0;
-	private static final int TIME_LIMIT = 20000;
+	private static final int LEARN_LETTERS_TIME_LIMIT = 10000;
 
-	private static final String strStart = "Let's learn letters";
+	private static final String strStart = "Let's learn letters!";
 	private static final String instruction1 = "To write letter ";
 	private static final String instruction2 = ", press ";
 	private static final String strTest = "Write letter ";
@@ -55,6 +54,8 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 	private int expectedBrailleCode;
 	private int userStatus;
 
+
+	private final BWT bwt = new BWT(this, LearnLetters.this);
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,7 +83,7 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			int result = tts.setLanguage(Locale.US);
 			if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
-			else {		        
+			else {
 		        bwt.start();
 				Log.i("Learn letters", "BWT Started...");
 		        bwt.startTracking();
@@ -96,15 +97,20 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 
    
     
-	private void speakOut(String text) {
+	private void speakOutReplace(String text) {
 		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
+	private void speakOutQueue(String text) {
+		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+	}
+	
 	
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
 		public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
 			// Swipe up
+			Log.d("Learn letters", "Swipe up occurred");
 			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
 		        bwt.stopTracking();
 		        bwt.stop();
@@ -120,13 +126,13 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
     	bwt.replaceListener("onBoardEvent", new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				Log.i("Learn letters", "Event triggered for board...");
+				Log.i("Learn letters", "Own event triggered for board...");
 				bwt.defaultBoardHandler(sender, event);
 				BoardEvent e = (BoardEvent)event;
 				currentBrailleCode |= (1 << (e.getDot() - 1));
 				
 				//((c & e) ^ c) > 0 if extra bits set in c that's not in e 
-				boolean isWrong = (((currentBrailleCode & expectedBrailleCode) ^ currentBrailleCode) > 0) ;
+				boolean isWrong = (((currentBrailleCode & expectedBrailleCode) ^ currentBrailleCode) > 0);
 				if(currentBrailleCode == expectedBrailleCode) {
 					userStatus = IS_RIGHT;
 				}
@@ -141,14 +147,14 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
     }
     
 	private void runProgram() {
-        speakOut(strStart);
-		Log.i("Learn letters", "under runProgram()...");
+        speakOutQueue(strStart);
+		Log.i("Learn letters", "Under runProgram()");
 		while (groupInd < letters.length) {
 			introduceLetters();
 			testLetters();
 			groupInd++;			
 		}
-		speakOut(strEnd);
+		speakOutQueue(strEnd);
 	}
 	
 	private void introduceLetters() {
@@ -159,25 +165,30 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			 *Keeps track of the current attempt number
 			 */
 			int attemptNum = 1;
-
 			instructionSpellLetter(groupInd, currLetterInd);
+
 			while (attemptNum > 0) {
 				userStatus = IS_WRONG;		//default -- ie: run out of time
-				boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, TIME_LIMIT);
+				Log.d("Learn letters", "about to call waitUntilTriggered; [groupInd, currLetterInd] = [" + 
+										groupInd + "," + currLetterInd + "]");
+				boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, LEARN_LETTERS_TIME_LIMIT);
+				Log.d("Learn letters", "just called waitUntilTriggered");
 				
 				
 				if(triggered) {
 					//if correct
 					if(userStatus == IS_RIGHT) {
+						Log.d("Learn letters", "Correct on attempt num " + attemptNum);
 						attemptNum = 0;
 						currentBrailleCode = 0;
-						speakOut(strPass);
+						speakOutReplace(strPass);
 					}
 					//if wrong
 					else if(userStatus == IS_WRONG) {
+						Log.d("Learn letters", "Incorrect; attempt num " + attemptNum);
 						attemptNum++;
 						currentBrailleCode = 0;
-						speakOut(strFail);
+						speakOutReplace(strFail);
 						instructionSpellLetter(groupInd, currLetterInd);
 					}
 				}
@@ -205,19 +216,19 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			instructionTestLetter(groupInd, currLetterInd);
 			while(attemptNum > 0) {
 				userStatus = IS_WRONG;		//default -- ie: run out of time
-				boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, TIME_LIMIT);
+				boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, LEARN_LETTERS_TIME_LIMIT);
 				if(triggered) {
 					//if correct
 					if(userStatus == IS_RIGHT) {
 						attemptNum = 0;
 						currentBrailleCode = 0;
-						speakOut(strPass);
+						speakOutReplace(strPass);
 					}
 					//incorrect
 					else if (userStatus == IS_WRONG) {
 						attemptNum++;
 						currentBrailleCode = 0;
-						speakOut(strFail);
+						speakOutReplace(strFail);
 						if(attemptNum > 2) {
 							//After 2nd attempt, show how to spell
 							instructionSpellLetter(groupInd, currLetterInd);
@@ -232,12 +243,12 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 	private void instructionSpellLetter(int groupInd, int letterInd) {
 		char let = letters[groupInd][letterInd];
 		int btns = braille.get(let);
-		speakOut(instruction1 + let + instruction2 + btns);
+		speakOutQueue(instruction1 + let + instruction2 + btns);
 		
 	}
 	private void instructionTestLetter(int groupInd, int letterInd) {
 		char let = letters[groupInd][letterInd];
-		speakOut(strTest + let);
+		speakOutQueue(strTest + let);
 		
 	}
 	

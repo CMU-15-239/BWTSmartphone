@@ -25,7 +25,6 @@ public class WelcomeActivity extends Activity implements TextToSpeech.OnInitList
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.student_welcome);
-
 		welcome_prompt = getResources().getString(R.string.welcome_prompt);
 		
 		tts = new TextToSpeech(this, this);
