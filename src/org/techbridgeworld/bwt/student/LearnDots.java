@@ -60,7 +60,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 					Log.i("Dots game", "Waiting...");
 					boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, 10000); 
 					if(triggered){
-						String dump = bwt.dumpTracking();
+						String dump = bwt.dumpTrackingAsString();
 						Log.i("Dots game", "Dumped '" + dump + "'.");
 					}
 					

@@ -1,6 +1,7 @@
 package org.techbridgeworld.bwt.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,8 +14,7 @@ import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.api.events.CellsEvent;
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 import org.techbridgeworld.bwt.api.events.MainBtnEvent;
-import org.techbridgeworld.bwt.student.MainActivity;
-import org.techbridgeworld.bwt.student.WelcomeActivity;
+import org.techbridgeworld.bwt.libs.Braille;
 
 import android.app.Activity;
 import android.content.Context;
@@ -34,8 +34,9 @@ public class BWT {
 	
 	// BWT information/state
 	private Board board;
+	private static final Braille braille = new Braille();
 	private boolean isTracking;
-	private StringBuffer stringBuffer;
+	private ArrayList<Integer> inputBuffer;
 	private int lastCell = -1;
 	
 	// Constants
@@ -68,6 +69,7 @@ public class BWT {
 					@Override
 					public void run() {
 			            //textView.append("NOTE onNewData, about to run()\n");
+						Log.i("DataTransfer", "Getting to onNewData function");
 						BWT.this.updateReceivedData(data);
 					}
 				});
@@ -85,14 +87,14 @@ public class BWT {
 		this.context = context;
 		this.activity = mainActivity;
 		this.board = new Board();
-		this.stringBuffer = new StringBuffer();
-        isTracking = false;
+		this.inputBuffer = new ArrayList<Integer>();
+        this.isTracking = false;
 	}	
 
 	/**Init function should be called onCreate of the BWT.
 	 */
 	public void init(){
-		Log.i("Salem", "BWT.init()");
+		Log.i("Connecting", "BWT.init()");
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
@@ -101,12 +103,12 @@ public class BWT {
 	
 	// Starts USB connection
 	public void start(){
-		Log.i("Salem", "BWT.start()");
+		Log.i("Connecting", "BWT.start()");
 		
 		usbDriver = UsbSerialProber.acquire(usbManager);
         if (usbDriver != null) {
             try {
-            	Log.d("Salem", "About to open usbDriver()");
+            	Log.d("Connecting", "About to open usbDriver()");
             	usbDriver.open();
 				usbDriver.setBaudRate(BAUDRATE);
 				byte[] bt = "bt".getBytes();
@@ -114,10 +116,10 @@ public class BWT {
 				initializeEventListeners();
             } catch (IOException e) {
                 try {
-                	Log.e("Salem", "Error starting USB driver, attempting to close.");
+                	Log.e("Connecting", "Error starting USB driver, attempting to close.");
                 	usbDriver.close();
                 } catch (IOException e2) {
-                	Log.e("Salem", "Wut.");
+                	Log.e("Connecting", "Wut.");
                     // Ignore.
                 }
                 usbDriver = null;
@@ -131,7 +133,7 @@ public class BWT {
 	// Closes USB connection
 	public void stop(){
 		stopIoManager();
-		Log.i("Salem", "BWT.pause()");
+		Log.i("Connecting", "BWT.pause()");
 		if (usbDriver != null) {
             try {
             	removeEventListeners();
@@ -163,12 +165,12 @@ public class BWT {
     // Start IO
     private void startIoManager() {
         if (usbDriver != null) {
-        	Log.i("Salem", "Starting usb listener");
+        	Log.i("Connecting", "Starting usb listener");
             serialManager = new SerialInputOutputManager(usbDriver, listener);
             executor.submit(serialManager);
         }
         else{
-        	Log.e("Salem", "usbDriver == null");
+        	Log.e("Connecting", "usbDriver == null");
         }
     }
     
@@ -198,12 +200,12 @@ public class BWT {
     // Takes the received data, checks to see if it should be ignored/debounced,
     // and print the results to device screen (triggers events later).
     private void updateReceivedData(byte[] data) {	
-    	Log.d("Salem", "updateReceivedData()");
+    	Log.d("DataTransfer", "updateReceivedData()");
     	
     	//For every byte in the incoming data...
     	for (int i = 0; i < data.length; i++){
     		
-    		Log.d("Salem", "currently parsing " + (char)data[i] + " (" + (int)data[i] + ")");
+    		Log.d("DataTransfer", "currently parsing " + (char)data[i] + " (" + (int)data[i] + ")");
     		
     		// If we are done, and if the buffer represents a non-blocked key, then
     		// log the buffer, clear it, and set its index to 0.    		    	
@@ -221,13 +223,13 @@ public class BWT {
     			}
     			
     			if(!isDebounced(message)){ //Fire a trigger!
-		    		Log.i("Salem", "Fired trigger '" + message + "'");
+		    		Log.i("DataTransfer", "Fired trigger '" + message + "'");
 		    		triggerNewDataEvent(message);
 	    			debounceKey(message);
 
     			}
     			else{
-    				Log.d("Salem", "Button press blocked!");
+    				Log.d("DataTransfer", "Button press blocked!");
     			}
     			
     			bufferIdx = 0;
@@ -236,7 +238,7 @@ public class BWT {
     		}
     		else{
     			if(bufferIdx >= 6){
-    				Log.e("Salem", "bufferIdx out of range: " + bufferIdx);
+    				Log.e("DataTransfer", "bufferIdx out of range: " + bufferIdx);
     			}
     			else{
     				dataBuffer[bufferIdx] = data[i];	
@@ -260,32 +262,36 @@ public class BWT {
 	}
 	
 	/**Disregards changing state of board if stopped tracking
-	 * @return stringBuffer's remaining letters
+	 * @return inputBuffer's remaining content
 	 */
-	public String stopTracking() {
+	public ArrayList<Integer> stopTracking() {
 		isTracking = false;
-		return emptyBuffer();
+		ArrayList<Integer> result = inputBuffer;
+		inputBuffer.clear();
+		return result;
 	}
 	
 	/**Returns and empties everything in current 'buffer'
 	 * @return what was left in the buffer
 	 * If not tracking, returns empty string
 	 */
-	public String dumpTracking() {
-		if (!isTracking) return "";
-		return emptyBuffer();
+	public String dumpTrackingAsString() {
+		if (!isTracking) return null;
+		StringBuffer s = new StringBuffer();
+		for (Integer i : inputBuffer) {
+			s.append(braille.get(i));
+		}
+		inputBuffer.clear();
+		return s.toString();
 	}
 	
-	/**Empties the stringBuffer and returns its content
-	 * @return stringBuffer's data
-	 */
-	public String emptyBuffer() {
-		if(stringBuffer.length() <= 0) return "";
-
-		String str = new String(stringBuffer);
-		stringBuffer.delete(0, stringBuffer.length());
-		return str;
+	public ArrayList<Integer> dumpTrackingAsBits() {
+		if (!isTracking) return null;
+		ArrayList<Integer> result = inputBuffer;
+		inputBuffer.clear();
+		return result;
 	}
+	
 	
 	/**Called by updateReceivedData to trigger necessary events
 	 * 
@@ -295,39 +301,42 @@ public class BWT {
     	if(!isTracking) return;
     	
     	message = message.toLowerCase().replaceAll("n","").trim();
-    	Log.i("Salem", "Cleaned message: '" + message + "'");
+    	Log.i("DataTransfer", "Cleaned message: '" + message + "'");
     	if(message.equals("bt")) return;
     	
     	String referenceStr = "abcdefg";
+    	
+    	int currCell = -1;
+    	int currCellBits = 0;	//The current set bits of currCell
+    	int currDot = -1;		//The button just hit
     	
     	// See if it's a, b-g, or two numbers
     	if(referenceStr.indexOf(message) == 0) {
     		EventManager.triggerEvent(this, new AltBtnEvent(message), "onAltBtnEvent");    		
     	}
     	else if (referenceStr.indexOf(message) > 0) {
-    		EventManager.triggerEvent(this, new MainBtnEvent(message, board), "onMainBtnEvent");
-    		
-    		// Determine if there has been a cell change.
-    		if(lastCell > 0){
-    			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, 0), "onChangeCellEvent");
-    		}
+    		MainBtnEvent mainBtnEvent = new MainBtnEvent(message, board);
+    		EventManager.triggerEvent(this, mainBtnEvent, "onMainBtnEvent");
+    		currCell = 0;
+    		currDot = mainBtnEvent.getDot();
     	}
     	else {
-    		EventManager.triggerEvent(this, new CellsEvent(message, board), "onCellsEvent");
+    		CellsEvent cellsEvent = new CellsEvent(message, board);
+    		EventManager.triggerEvent(this, cellsEvent, "onCellsEvent");
     		
     		// Determine if there has been a cell change.
-    		int currCell = Integer.parseInt(message.split(" ")[0]);
-    		if(currCell != lastCell){
-    			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
-    		}
+    		currCell = cellsEvent.getCell();
+    		currDot = cellsEvent.getDot();
     	}
+    	
+    	//Determine if there has been a cell change (Event Handler updates lastCell)
+    	if(currCell != lastCell)
+    		EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
 
-    	// Trigger board event regardless
-		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
-    	
+    	if(currCell >= 0) currCellBits = board.getBitsAtCell(currCell);
     	
     	// Trigger board event regardless
-		EventManager.triggerEvent(this, new BoardEvent(message), "onBoardEvent");
+		EventManager.triggerEvent(this, new BoardEvent(message, currCell, currCellBits, currDot), "onBoardEvent");
 	
     }
     
@@ -388,6 +397,7 @@ public class BWT {
 	 */
 	public void defaultBoardHandler(Object sender, Event event) {
 		//API doesn't have a default function. Here for developers
+		Log.i("EventTriggering", "Calling default onBoard event handler");
 	}
 
 	public void defaultMainBtnHandler(Object sender, Event event) {
@@ -407,15 +417,15 @@ public class BWT {
 	public void defaultChangeCellHandler(Object sender, Event event) {
 		ChangeCellEvent e = (ChangeCellEvent) event;
 		
-		/*pushes the char at this cell into the stringbuffer
+		/*pushes the glyph at this cell into the inputBuffer
 		 *then resets old cell value*/ 
 		int oldCellInd = e.getOldCell();
 		
 		//first time ChangeCell is called, oldCellInd = -1
 		if(oldCellInd < 0) return;	
 
-		Log.i("Jessica", "Triggered default onCellChange event");
-		stringBuffer.append(board.getGlyphAtCell(oldCellInd));
+		Log.i("EventTriggering", "Calling default onChangeCell event handler");
+		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 		board.setBitsAsCell(oldCellInd, 0);
 		lastCell = e.getNewCell();
 	}

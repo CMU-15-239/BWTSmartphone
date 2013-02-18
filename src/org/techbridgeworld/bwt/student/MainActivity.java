@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
         bwt.init();
     }
     
+    
     private void createListeners() {
     	bwt.replaceListener("onBoardEvent", new GenericEventListener() {
     			@Override
@@ -64,8 +65,8 @@ public class MainActivity extends Activity {
 				ChangeCellEvent e = (ChangeCellEvent)event;
 				if(e.getOldCell() == -1) return;
 				bwt.defaultChangeCellHandler(sender, event);
-				String str = bwt.dumpTracking();
-				Log.d("Jessica", "EmptyingBuffer: '" + str + "'");
+				String str = bwt.dumpTrackingAsString();
+				Log.d("DataTransfer", "EmptyingBuffer: '" + str + "'");
 			}
     	});
     }
