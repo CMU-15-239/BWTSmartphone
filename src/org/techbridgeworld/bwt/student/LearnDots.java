@@ -29,6 +29,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	private Random generator = new Random(15239);
 	
 	private final BWT bwt = new BWT(this, LearnDots.this);
+	private GenericEventListener DotListener;
 	
 	private int currDot = -1;
 
@@ -72,7 +73,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 				regenerate();
 				speakOut("Press dot " + getCurr() + ".");
 				
-				EventManager.registerEventListener(new GenericEventListener(){
+				DotListener = new GenericEventListener(){
 
 					@Override
 					public void eventTriggered(Object arg0, Event arg1) {
@@ -80,6 +81,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 						int trial = e.getDot();
 						int goal = getCurr();
 						Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
+						speakOut("" + trial);
 						if(trial == goal){
 							regenerate();
 						}
@@ -87,7 +89,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 							speakOut("No. Press dot " + goal);
 						}
 					}
-				}, BoardEvent.class);
+				};
+				EventManager.registerEventListener(DotListener, BoardEvent.class);
 				
 			}
 		}
@@ -106,6 +109,11 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			// Swipe up
 			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
 				Intent intent = new Intent(LearnDots.this, GameActivity.class);
+				
+				// If we've started the dot listener, remove it since we're done with it.
+				if(DotListener != null){
+					EventManager.unregisterEventListener(DotListener, BoardEvent.class);
+				}
 				bwt.stop();
 				startActivity(intent);
 			}

@@ -54,6 +54,7 @@ public class BWT {
 	private UsbSerialDriver usbDriver;
 	private SerialInputOutputManager serialManager; 
 	
+	private Handler handler = new Handler();
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private final SerialInputOutputManager.Listener listener =
 		new SerialInputOutputManager.Listener() {	
@@ -181,20 +182,23 @@ public class BWT {
     	debounceHash.put(newKey, true);
     	
     	//Start a runnable to un-block the key after a set time.
-    	Thread r=new Thread() {
+    	Runnable r=new Runnable() {
     	    @Override
 			public void run() {
+    	    	Log.i("Debounce","Running debounce thread");
     	    	try {
 					Thread.sleep(DEBOUNCE);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
+					Log.e("Debounce","Failed to sleep thread.");
 					e.printStackTrace();
 				}
+    	    	Log.i("Debounce","Freeing key");
     	    	debounceHash.put(newKey, false);
     	    }
     	};
     	
-    	executor.submit(r);
+    	Log.i("Debounce","Submitting thread to executor.");
+    	handler.post(r);
     }
     
     // Returns true if a key is currently being ignored.
