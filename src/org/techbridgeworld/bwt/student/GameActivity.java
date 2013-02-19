@@ -1,15 +1,25 @@
 package org.techbridgeworld.bwt.student;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnHoverListener;
 import android.widget.TextView;
 
 public class GameActivity extends Activity implements TextToSpeech.OnInitListener {
@@ -20,7 +30,11 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector; 
 	
-	private String home_prompt;
+	private Context context;
+	private String dir;
+	private MediaPlayer player;
+	
+	private String game_prompt;
 	private TextView student_game;
 	
 	private String[] options;
@@ -37,12 +51,79 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		options[1] = getResources().getString(R.string.learn_letters);
 		options[2] = getResources().getString(R.string.animal_game);
 		
-		home_prompt = getResources().getString(R.string.game_prompt);
+		game_prompt = getResources().getString(R.string.game_prompt);
 		student_game = (TextView) findViewById(R.id.student_game);
 		
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
+		
+		try {
+			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		SharedPreferences prefs = context.getSharedPreferences("BWT", 0);
+		if(prefs.getBoolean("firstRunWelcome", true)) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(GameActivity.this);
+			builder.setMessage(R.string.open_message)
+			.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					Intent intent = new Intent(Intent.ACTION_MAIN);
+					intent.addCategory(Intent.CATEGORY_HOME);
+					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					startActivity(intent);
+				}
+			});
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}
+		
+		player = new MediaPlayer();
+		dir = context.getFilesDir().getPath().toString();
+		
+		student_game.setOnHoverListener(new OnHoverListener() {
+			@Override
+			public boolean onHover(View v, MotionEvent event) {
+				if(!player.isPlaying()) {
+					FileInputStream fis;
+					try {
+						String filename = options[currentOption].replaceAll(" ", "_");
+						fis = new FileInputStream(dir + "/" + filename + ".m4a");
+						player.reset();
+						player.setDataSource(fis.getFD());
+						fis.close();
+						player.prepare();
+						player.start();
+					} catch (IllegalArgumentException e) {
+						e.printStackTrace();
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace(); 
+					}
+				}
+				
+				return true;
+			}	
+		});
 	}
+	
+	@Override
+	protected void onStop() {
+		if(player != null)
+			player.release();
+	    super.onStop();
+	}
+	
+    @Override
+    public void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
 	
 	@Override 
 	public boolean onTouchEvent(MotionEvent event){ 
@@ -57,7 +138,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 			if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
 			else
-				speakOut(home_prompt);
+				speakOut(game_prompt);
 		}
 		else
 			Log.e("TTS", "Initilization Failed!");

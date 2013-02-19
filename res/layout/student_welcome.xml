@@ -9,9 +9,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="@string/welcome_prompt"
+        android:text="@string/start"
         android:textColor="#FFFFFF"
         android:textSize="36sp"
-        android:contentDescription="@string/welcome_prompt" />
+        android:contentDescription="@string/start" />
     
 </LinearLayout>
