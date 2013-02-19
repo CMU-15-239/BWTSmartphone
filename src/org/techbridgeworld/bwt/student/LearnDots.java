@@ -49,29 +49,37 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	private int currentDot = -1;
 
 	@Override
+	/**
+	 * Runs on creation of the new activity.
+	 */
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.learn_dots);
+		super.onCreate(savedInstanceState);  
+		setContentView(R.layout.learn_dots); // Initialize view
 
+		// Initialize text to speech and gesture detector.
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
 
+		// Attempt to get context of teacher app.
 		try {
 			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		} 
 
+		// Initialize the media player, get the directory of the media files.
 		player = new MediaPlayer();
 		dir = context.getFilesDir().getPath().toString();
 		currentFile = 0;
 		filenames = new ArrayList<String>(); 
 
+		// Initialize the BWT connection.
 		bwt.init();
 	}
 
 	@Override
 	protected void onStop() {
+		// Stop media player.
 		if(player != null)
 			player.release();
 	    super.onStop();
@@ -79,6 +87,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	
     @Override
     public void onDestroy() {
+    	// Stop text-to-speech
         if (tts != null) {
             tts.stop();
             tts.shutdown();
@@ -88,52 +97,77 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	
 	@Override 
 	public boolean onTouchEvent(MotionEvent event){ 
+		// Pass any touch events to the detector. 
 		this.detector.onTouchEvent(event);
 		return super.onTouchEvent(event);
 	}
 
+	/**
+	 * Get a new random dot, and trigger the associated audio.
+	 */
 	private void regenerate(){
 		currentDot = generator.nextInt(6) + 1;
 		if(player.isPlaying()) {
 			filenames.clear();
 			currentFile = 0;
 		}
+		// "Good."
 		filenames.add(getResources().getString(R.string.good));
+		// "Find dot"
 		filenames.add(getResources().getString(R.string.find_dot));
+		// "[Dot Number]."
 		filenames.add(numbers[currentDot-1]);
 		playAudio(filenames.get(0));
 	}
 
+	 /**
+	  * A private getter for currentDot, so the listener can access it.
+	  * @return curentDot.
+	  */
 	private int getCurrent(){
 		return currentDot;
 	}
 
 	@Override
 	public void onInit(int status) {
+		// Start the BWT
 		bwt.start();
+		
+
 		if (status == TextToSpeech.SUCCESS) {
 			int result = tts.setLanguage(Locale.US);
 			if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
-			else {
+
+			// If text-to-speech started successfully, and it has a supported language, start the game.
+			else { 
+				// Start tracking the state of the BWT
 				bwt.startTracking();
 
+				// Generate the first dot.
 				currentDot = generator.nextInt(6) + 1;
 				filenames.add(getResources().getString(R.string.find_dot));
 				filenames.add(numbers[getCurrent()-1]);
 				playAudio(filenames.get(0));
 
+				// Listener to detect board input.
 				DotListener = new GenericEventListener(){
 
 					@Override
 					public void eventTriggered(Object arg0, Event arg1) {
+
+						// Cast the given event as a BoardEvent, and get the relevant dot information.
 						BoardEvent e = (BoardEvent) arg1;
 						int trial = e.getDot();
 						int goal = getCurrent();
 						Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
+						
+						// If they pressed the dot, then pick another dot.
 						if(trial == goal){
 							regenerate();
 						}
+						
+						// Otherwise, tell the user that they are incorrect and repeat the prompt. 
 						else{
 							if(player.isPlaying()) {
 								filenames.clear();
@@ -146,6 +180,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 						}
 					}
 				};
+				
+				// Start the listener. 
 				EventManager.registerEventListener(DotListener, BoardEvent.class);
 
 			}
@@ -154,6 +190,10 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			Log.e("TTS", "Initilization Failed!");
 	}
 
+	/**
+	 * Plays audio from a given file
+	 * @param filename = file to play audio from. 
+	 */
 	public void playAudio(String filename) {
 		try {
 			player.reset();
@@ -185,6 +225,9 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 		player.start();
 	}
 
+	/**
+	 * Listens for a swipe up to exit the activity.
+	 */
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
