@@ -69,13 +69,6 @@ public class BWT {
 			@Override
 			public void onNewData(final byte[] data) {				
 				updateReceivedData(data);
-				
-//				currActivity.runOnUiThread(new Runnable() {
-//					@Override
-//					public void run() {
-//						BWT.this.updateReceivedData(data);
-//					}
-//				});
 			}
 		};
 	
@@ -100,10 +93,11 @@ public class BWT {
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
-
-	
-	
-	// Starts USB connection
+    
+	/**
+	 * BWT.start() should be called after BWT.init().
+	 * Will open the serial connection and create default event listeners
+	 */
 	public void start(){		
 		usbDriver = UsbSerialProber.acquire(usbManager);
         if (usbDriver != null) {
@@ -128,8 +122,12 @@ public class BWT {
         
         stateChange();
 	}
-	
-	// Closes USB connection
+
+	/**
+	 * BWT.stop() should be called each time you leave the app or no
+	 * longer need to read input from BWT.
+	 * Also removes all event listeners, including developer's
+	 */
 	public void stop(){
 		stopIoManager();
 		if (usbDriver != null) {
@@ -145,22 +143,10 @@ public class BWT {
             usbDriver = null;
         }
 	}
-	
-	// Restarts the IO manager.
-	public void stateChange(){
-		stopIoManager();
-		startIoManager();
-	}
-	
-	// Stop IO
-    private void stopIoManager() {
-        if (serialManager != null) {
-            serialManager.stop();
-            serialManager = null;
-        }
-    }
     
-    // Start IO
+    /**
+     * Start IO
+     */
     private void startIoManager() {
         if (usbDriver != null) {
             serialManager = new SerialInputOutputManager(usbDriver, listener);
@@ -170,8 +156,30 @@ public class BWT {
         	Log.e("Connecting", "usbDriver == null");
         }
     }
-    
-    // Passes a byte array to the debounce hashtable.
+
+    /**
+     * Stop IO
+     */
+    private void stopIoManager() {
+        if (serialManager != null) {
+            serialManager.stop();
+            serialManager = null;
+        }
+    }
+
+	/**
+	 * Restarts IO 
+	 */
+	public void stateChange(){
+		stopIoManager();
+		startIoManager();
+	}
+	
+	/**
+	 * Manages the debounce hashtable for seeing whether it is
+	 * a new press or different
+	 * @param key is a byte array
+	 */
     private void debounceKey(String key){
     	final String newKey = key;
     	debounceHash.put(newKey, true);
@@ -193,15 +201,22 @@ public class BWT {
     	handler.post(r);
     }
     
-    // Returns true if a key is currently being ignored.
+    /**
+     * Returns true if a key is currently being ignored.
+     * @param key to check
+     * @return
+     */
     private boolean isDebounced(String key){
     	boolean query = (debounceHash.get(key) == null? false : debounceHash.get(key));
     	return query;
     }
     
 	
-    // Takes the received data, checks to see if it should be ignored/debounced,
-    // and print the results to device screen (triggers events later).
+    /**
+     * Takes the received data, checks to see if it should be ignored/debounced,
+     *  and triggers the corresponding events
+     * @param data
+     */
     private void updateReceivedData(byte[] data) {	
     	
     	//For every byte in the incoming data...
@@ -251,7 +266,7 @@ public class BWT {
     }
 
 	
-    //Board getter.
+    /** Board getter*/
     public Board getBoard(){
     	return this.board;
     }
@@ -278,15 +293,15 @@ public class BWT {
 	 * If not tracking, returns empty string
 	 */
 	public String dumpTrackingAsString() {
-		if (!isTracking) return null;
-		StringBuffer s = new StringBuffer();
-		for (Integer i : inputBuffer) {
-			s.append(braille.get(i));
-		}
-		inputBuffer.clear();
-		return s.toString();
+		String s = viewTrackingAsString();
+		clearTracking();
+		return s;
 	}
-	
+
+	/**Returns everything in current 'buffer' (Does NOT empty)
+	 * @return what was left in the buffer
+	 * If not tracking, returns empty string
+	 */
 	public String viewTrackingAsString(){
 		if (!isTracking) return null;
 		StringBuffer s = new StringBuffer();
@@ -296,19 +311,124 @@ public class BWT {
 		return s.toString();
 	}
 	
+	/**
+	 * Dumps as an Array of Integers
+	 * @return
+	 */
 	public ArrayList<Integer> dumpTrackingAsBits() {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
-		inputBuffer.clear();
+		clearTracking();
 		return result;
 	}
-	
+
+	/**
+	 * Views as an Array of Integers
+	 * @return
+	 */
 	public ArrayList<Integer> viewTrackingAsBits() {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
 		return result;
 	}
 	
+	/**
+	 * Resets the inputBuffer; keeps lastInputtedCell info
+	 */
+	public void clearTracking() {
+		inputBuffer.clear();
+	}
+	
+	/**
+	 * Resets lastCell to initial state
+	 */
+	public void clearLastInputtedCell() {
+		if(lastCell > 0) {
+			board.setBitsAsCell(lastCell, 0);
+			lastCell = -1;
+		}
+	}
+	
+	/**
+	 * Clears both inputBuffer and current cell info
+	 */
+	public void clearAllTracking() {
+		clearTracking();
+		clearLastInputtedCell();
+	}
+	
+	/**
+	 * Clears and resets state of the board
+	 */
+	public void resetBoard() {
+		clearAllTracking();
+		board.clearBoard();
+	}
+	
+	/**
+	 * Gets the bits pressed for 'lastCell'
+	 * @return
+	 */
+	public int getCurrentCellBits() {
+		if(lastCell < 0) return 0;
+		return board.getBitsAtCell(lastCell);
+	}
+	/**
+	 * Gets the current char for 'lastCell'
+	 * @return
+	 */
+	public char getCurrentCellGlyph() {
+		if(lastCell < 0) return '-';
+		return board.getGlyphAtCell(lastCell);
+	}
+
+	/**Compares current input with given char
+	 * Takes into account bits of lastCell
+	 * @param c : the glyph you're aiming to match
+	 * @return true : if off track of matching c
+	 */
+	public boolean offTrackFromChar(char c) {
+		if(lastCell < 0) return false;
+		int currBits = board.getBitsAtCell(lastCell);
+		int expBits = braille.get(c);
+		return ((( currBits & expBits) ^ currBits) > 0);
+	}
+	
+	/**
+	 * Takes into account everything in inputBuffer AND lastCell
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public boolean offTrackFromString(String s) {
+		
+		//Check what's in trackingBuffer
+		String currDump = viewTrackingAsString();
+		int indexFound = s.indexOf(currDump);
+		if(indexFound != 0 && currDump.length() > 0) return true;
+
+		//Check the most recent cell
+		return offTrackFromChar(s.charAt(currDump.length()));
+	}
+	
+	public boolean currentMatchesChar(char c) {
+		if(lastCell < 0) return false;
+		int currBits = board.getBitsAtCell(lastCell);
+		int expBits = braille.get(c);
+		return (currBits == expBits);
+				
+	}
+	public boolean currentMatchesString(String s) {
+		//Check what's in trackingBuffer
+		String currDump = viewTrackingAsString();
+		int indexFound = s.indexOf(currDump);
+		if(currDump.equals(s)) return true;
+		if(indexFound != 0 || currDump.length() != s.length()-1) return false;
+		
+		//Check the most recent cell
+		return currentMatchesChar(s.charAt(currDump.length()));
+		
+	}
 	
 	/**Called by updateReceivedData to trigger necessary events
 	 * 
@@ -347,7 +467,7 @@ public class BWT {
     	
     	//Determine if there has been a cell change (Event Handler updates lastCell)
     	if(currCell != lastCell)
-    		EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
+    		EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell, board), "onChangeCellEvent");
 
     	if(currCell >= 0) currCellBits = board.getBitsAtCell(currCell);
     	
@@ -431,25 +551,55 @@ public class BWT {
 		board.handleNewInput(e.getCell(), e.getDot());
 		Log.i("EventTriggering", "Calling default onCells event handler");
 	}
-	
-	public void defaultChangeCellHandler(Object sender, Event event) {
+
+	/**
+	 * Returns bits of old cell
+	 * @param sender
+	 * @param event
+	 * @return
+	 */
+	public int defaultChangeCellHandler(Object sender, Event event) {
 		ChangeCellEvent e = (ChangeCellEvent) event;
 		
 		/*pushes the glyph at this cell into the inputBuffer
 		 *then resets old cell value*/ 
 		int oldCellInd = e.getOldCell();
-		
 		//first time ChangeCell is called, oldCellInd = -1
-		if(oldCellInd < 0) return;	
+		if(oldCellInd < 0) return 0;	
 
+		int oldCellBits = e.getOldCellBits();
 		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 		board.setBitsAsCell(oldCellInd, 0);
 		lastCell = e.getNewCell();
 
 		Log.i("EventTriggering", "Calling default onChangeCell event handler");
+		return oldCellBits;
 	}
 	
-	/* Event Listeners originally set up for BWT
+	/**
+	 * Instead of updating lastCell, leave as is. Simply appends bits to buffer
+	 * @param sender
+	 * @param event
+	 * @return
+	 */
+	public int keepLastCellChangeCellHandler(Object sender, Event event) {
+		ChangeCellEvent e = (ChangeCellEvent) event;
+		
+		/*pushes the glyph at this cell into the inputBuffer
+		 *then resets old cell value*/ 
+		int oldCellInd = e.getOldCell();
+		//first time ChangeCell is called, oldCellInd = -1
+		if(oldCellInd < 0) return 0;	
+
+		int oldCellBits = e.getOldCellBits();
+		inputBuffer.add(board.getBitsAtCell(oldCellInd));
+
+		Log.i("EventTriggering", "Calling default onChangeCell event handler");
+		return oldCellBits;
+	}
+	
+	/**
+	 *  Creates the default event Listeners set up for BWT
 	 */
 	private GenericEventListener createOnBoardListener() {
 		return new GenericEventListener() {

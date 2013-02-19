@@ -1,9 +1,9 @@
 package org.techbridgeworld.bwt.student;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 
-import javaEventing.EventManager;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
@@ -28,7 +28,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector; 
-	private Random generator = new Random(15239);
+	private Random generator = new Random(new Date().getTime());
 
 	
 	private TextView animal_game;
@@ -72,7 +72,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	}
 	
 	private void regenerate(){
-		currAnimal = animals[generator.nextInt(10)];
+		currAnimal = animals[generator.nextInt(animals.length)];
 	}
 
 	@Override
@@ -83,52 +83,75 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
 			else{
-				speakOut("Animal Game!");
 				bwt.startTracking();
 				
 				regenerate();
-				speakOut("Spell the word " + getCurr() + ".");
-
+				speakOutQueue("Spell the word " + getCurr() + ".");
 				
-				AnimalListener = new GenericEventListener(){
-					@Override
-					public void eventTriggered(Object arg0, Event arg1) {
-						BoardEvent e = (BoardEvent) arg1;
-						String trial = bwt.viewTrackingAsString();
-						String goal = getCurr();
-						if(trial == goal){
-							regenerate();
-							speakOut("Good. Spell the word " + getCurr() + ".");
-						}
-						else{
-							if(bwt.viewTrackingAsString().length() > goal.length()){
-								bwt.dumpTrackingAsString();
-								speakOut("No. Try again.");
-							}
-						}
-					}
-				};
-				
-				ChangeListener = new GenericEventListener(){
-					
-					public void eventTriggered(Object arg0, Event arg1){
-						ChangeCellEvent e = (ChangeCellEvent) arg1;
-						
-						char last = bwt.getBoard().getGlyphAtCell(e.getOldCell());
-						Log.i("Animal Game","Just typed character " + last + ".");
-						speakOut(last + ".");
-						
-					}
-				};
-				EventManager.registerEventListener(AnimalListener, BoardEvent.class);
-				EventManager.registerEventListener(ChangeListener, ChangeCellEvent.class);
+				createListeners();
 			}
 		}
 		else
 			Log.e("TTS", "Initilization Failed!");
 	}
 	
-	private void speakOut(String text) {
+	private void createListeners() {
+
+		//Say last typed character if available
+		ChangeListener = new GenericEventListener(){
+			public void eventTriggered(Object arg0, Event arg1){
+				bwt.defaultChangeCellHandler(arg0, arg1);
+				ChangeCellEvent e = (ChangeCellEvent) arg1;
+				if(e.getOldCell() == -1) return;
+				
+				char last = e.getOldCellGlyph();
+				int cellState = e.getOldCellBits();
+				Log.i("Animal Game","Just typed character " + last +
+						" (" + Integer.toBinaryString(cellState) + ") to cellInd " + e.getOldCell());
+				speakOutQueue(last + ".");
+			}
+		};
+		
+		//Handles the checking and comparing of the expected word vs user input
+		AnimalListener = new GenericEventListener(){
+			@Override
+			public void eventTriggered(Object arg0, Event arg1) {
+				bwt.defaultBoardHandler(arg0, arg1);
+				BoardEvent e = (BoardEvent) arg1;
+				
+				/**FOR DEBUGGING**/
+				String trial = bwt.viewTrackingAsString();
+				String goal = getCurr();
+				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: " + goal);
+				
+				int cellstate = e.getCellState();
+				Log.i("Animal Game", "Current cell (" + e.getCellInd() + ") bits: " + Integer.toBinaryString(cellstate));
+						
+				/******************/
+				
+				//Matches
+				if(bwt.currentMatchesString(goal)){
+					bwt.clearAllTracking();
+					regenerate();
+					speakOutReplace("Good. Spell the word " + getCurr() + ".");
+				}
+				//Goes off track of goal
+				else if(bwt.offTrackFromString(goal)){
+					bwt.clearAllTracking();
+					speakOutReplace("No. Try again.");
+				}
+			}
+		};
+		
+		
+		bwt.replaceListener("onBoardEvent", AnimalListener);
+		bwt.replaceListener("onChangeCellEvent", ChangeListener);
+	}
+	
+	private void speakOutQueue(String text) {
+		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+	}
+	private void speakOutReplace(String text) {
 		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 	
