@@ -81,6 +81,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 						int trial = e.getDot();
 						int goal = getCurr();
 						Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
+						speakOut("" + trial);
 						if(trial == goal){
 							regenerate();
 						}
