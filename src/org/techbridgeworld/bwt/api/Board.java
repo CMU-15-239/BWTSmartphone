@@ -61,7 +61,7 @@ public class Board {
 	 */
 	public int handleNewInput(int cellInd, int buttonNum) {
 		if(currCellInd != cellInd) {
-			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd));
+			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd, this));
 			currCellInd = cellInd;
 		}
 		

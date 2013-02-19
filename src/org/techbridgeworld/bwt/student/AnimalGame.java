@@ -72,7 +72,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	}
 	
 	private void regenerate(){
-		currAnimal = animals[generator.nextInt(10)];
+		currAnimal = animals[generator.nextInt(animals.length)];
 	}
 
 	@Override
@@ -88,44 +88,57 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 				
 				regenerate();
 				speakOut("Spell the word " + getCurr() + ".");
-
 				
-				AnimalListener = new GenericEventListener(){
-					@Override
-					public void eventTriggered(Object arg0, Event arg1) {
-						BoardEvent e = (BoardEvent) arg1;
-						String trial = bwt.viewTrackingAsString();
-						String goal = getCurr();
-						if(trial == goal){
-							regenerate();
-							speakOut("Good. Spell the word " + getCurr() + ".");
-						}
-						else{
-							if(bwt.viewTrackingAsString().length() > goal.length()){
-								bwt.dumpTrackingAsString();
-								speakOut("No. Try again.");
-							}
-						}
-					}
-				};
-				
-				ChangeListener = new GenericEventListener(){
-					
-					public void eventTriggered(Object arg0, Event arg1){
-						ChangeCellEvent e = (ChangeCellEvent) arg1;
-						
-						char last = bwt.getBoard().getGlyphAtCell(e.getOldCell());
-						Log.i("Animal Game","Just typed character " + last + ".");
-						speakOut(last + ".");
-						
-					}
-				};
-				EventManager.registerEventListener(AnimalListener, BoardEvent.class);
-				EventManager.registerEventListener(ChangeListener, ChangeCellEvent.class);
+				createListeners();
 			}
 		}
 		else
 			Log.e("TTS", "Initilization Failed!");
+	}
+	
+	private void createListeners() {
+		AnimalListener = new GenericEventListener(){
+			@Override
+			public void eventTriggered(Object arg0, Event arg1) {
+				bwt.defaultBoardHandler(arg0, arg1);
+				BoardEvent e = (BoardEvent) arg1;
+				String trial = bwt.viewTrackingAsString();
+				String goal = getCurr();
+				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: " + goal);
+				
+				int cellstate = e.getCellState();
+				Log.i("Animal Game", "Current cell's state: " + Integer.toBinaryString(cellstate));
+				if(trial == goal){
+					regenerate();
+					speakOut("Good. Spell the word " + getCurr() + ".");
+				}
+				else{
+					if(bwt.viewTrackingAsString().length() > goal.length()){
+						bwt.dumpTrackingAsString();
+						speakOut("No. Try again.");
+					}
+				}
+			}
+		};
+		
+		ChangeListener = new GenericEventListener(){
+			
+			public void eventTriggered(Object arg0, Event arg1){
+				bwt.defaultChangeCellHandler(arg0, arg1);
+				ChangeCellEvent e = (ChangeCellEvent) arg1;
+				if(e.getOldCell() == -1) return;
+				
+				char last = e.getOldCellGlyph();
+				int cellState = e.getOldCellBits();
+				Log.i("Animal Game","Just typed character " + last +
+						" (" + Integer.toBinaryString(cellState) + ")");
+				speakOut(last + ".");
+				
+			}
+		};
+		
+		bwt.replaceListener("onBoardEvent", AnimalListener);
+		bwt.replaceListener("onChangeCellEvent", ChangeListener);
 	}
 	
 	private void speakOut(String text) {

@@ -347,7 +347,7 @@ public class BWT {
     	
     	//Determine if there has been a cell change (Event Handler updates lastCell)
     	if(currCell != lastCell)
-    		EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell), "onChangeCellEvent");
+    		EventManager.triggerEvent(this, new ChangeCellEvent(lastCell, currCell, board), "onChangeCellEvent");
 
     	if(currCell >= 0) currCellBits = board.getBitsAtCell(currCell);
     	
@@ -431,22 +431,24 @@ public class BWT {
 		board.handleNewInput(e.getCell(), e.getDot());
 		Log.i("EventTriggering", "Calling default onCells event handler");
 	}
-	
-	public void defaultChangeCellHandler(Object sender, Event event) {
+
+	//Returns bits of old cell
+	public int defaultChangeCellHandler(Object sender, Event event) {
 		ChangeCellEvent e = (ChangeCellEvent) event;
 		
 		/*pushes the glyph at this cell into the inputBuffer
 		 *then resets old cell value*/ 
 		int oldCellInd = e.getOldCell();
-		
 		//first time ChangeCell is called, oldCellInd = -1
-		if(oldCellInd < 0) return;	
+		if(oldCellInd < 0) return 0;	
 
+		int oldCellBits = e.getOldCellBits();
 		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 		board.setBitsAsCell(oldCellInd, 0);
 		lastCell = e.getNewCell();
 
 		Log.i("EventTriggering", "Calling default onChangeCell event handler");
+		return oldCellBits;
 	}
 	
 	/* Event Listeners originally set up for BWT
