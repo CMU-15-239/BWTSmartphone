@@ -3,6 +3,8 @@ package org.techbridgeworld.bwt.student;
 import java.util.Locale;
 import java.util.Random;
 import javaEventing.EventManager;
+import javaEventing.interfaces.Event;
+import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.BoardEvent;
@@ -10,6 +12,7 @@ import org.techbridgeworld.bwt.api.events.BoardEvent;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
@@ -26,6 +29,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	private Random generator = new Random(15239);
 	
 	private final BWT bwt = new BWT(this, LearnDots.this);
+	
+	private int currDot = -1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,15 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 		return super.onTouchEvent(event);
 	}
 
+	private void regenerate(){
+		currDot = generator.nextInt(6) + 1;
+		speakOut("Good. Press dot " + currDot);
+	}
+	
+	private int getCurr(){
+		return currDot;
+	}
+	
 	@Override
 	public void onInit(int status) {
 		bwt.start();
@@ -54,17 +68,27 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			else{
 				speakOut("Dots Game!");
 				bwt.startTracking();
-				while(true){
-					int i = generator.nextInt(6) + 1;
-					speakOut("Press dot " + i + ".");
-					Log.i("Dots game", "Waiting...");
-					boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, 10000); 
-					if(triggered){
-						String dump = bwt.dumpTrackingAsString();
-						Log.i("Dots game", "Dumped '" + dump + "'.");
+				
+				regenerate();
+				speakOut("Press dot " + getCurr() + ".");
+				
+				EventManager.registerEventListener(new GenericEventListener(){
+
+					@Override
+					public void eventTriggered(Object arg0, Event arg1) {
+						BoardEvent e = (BoardEvent) arg1;
+						int trial = e.getDot();
+						int goal = getCurr();
+						Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
+						if(trial == goal){
+							regenerate();
+						}
+						else{
+							speakOut("No. Press dot " + goal);
+						}
 					}
-					
-				}
+				}, BoardEvent.class);
+				
 			}
 		}
 		else
