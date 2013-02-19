@@ -231,6 +231,7 @@ public class BWT {
     			
     			if(!isDebounced(message)){ //Fire a trigger!
 		    		Log.i("DataTransfer", "Fired trigger '" + message + "'");
+		    		
 		    		triggerNewDataEvent(message);
 	    			debounceKey(message);
 
@@ -410,15 +411,18 @@ public class BWT {
 	public void defaultMainBtnHandler(Object sender, Event event) {
 		MainBtnEvent e = (MainBtnEvent) event;
 		board.handleNewInput(0, e.getDot());
+		Log.i("EventTriggering", "Calling default onMainBtn event handler");
 	}
 	
 	public void defaultAltBtnHandler(Object sender, Event event) {
 		//Doesn't do anything. Let developers decide functionality
+		Log.i("EventTriggering", "Calling default onAltBtn event handler");
 	}
 	
 	public void defaultCellsHandler(Object sender, Event event) {	
 		CellsEvent e = (CellsEvent) event;
 		board.handleNewInput(e.getCell(), e.getDot());
+		Log.i("EventTriggering", "Calling default onCells event handler");
 	}
 	
 	public void defaultChangeCellHandler(Object sender, Event event) {
@@ -431,10 +435,11 @@ public class BWT {
 		//first time ChangeCell is called, oldCellInd = -1
 		if(oldCellInd < 0) return;	
 
-		Log.i("EventTriggering", "Calling default onChangeCell event handler");
 		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 		board.setBitsAsCell(oldCellInd, 0);
 		lastCell = e.getNewCell();
+
+		Log.i("EventTriggering", "Calling default onChangeCell event handler");
 	}
 	
 	/* Event Listeners originally set up for BWT
