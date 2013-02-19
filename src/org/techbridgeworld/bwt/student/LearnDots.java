@@ -52,7 +52,6 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 
 	private void regenerate(){
 		currDot = generator.nextInt(6) + 1;
-		speakOut("Good. Press dot " + currDot);
 	}
 	
 	private int getCurr(){
@@ -61,6 +60,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	
 	@Override
 	public void onInit(int status) {
+		currDot = -1;
 		bwt.start();
 		if (status == TextToSpeech.SUCCESS) {
 			int result = tts.setLanguage(Locale.US);
@@ -83,6 +83,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 						Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
 						if(trial == goal){
 							regenerate();
+							speakOut("Good. Press dot " + getCurr());
+
 						}
 						else{
 							speakOut("Dot " + trial + ". No. Press dot " + goal);
