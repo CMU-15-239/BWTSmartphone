@@ -1,9 +1,10 @@
 package org.techbridgeworld.bwt.student;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
-
-import javaEventing.EventManager;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
@@ -12,7 +13,11 @@ import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.libs.Braille;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
@@ -29,19 +34,15 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 	private GestureDetectorCompat detector; 
 
 	private static final Braille braille = new Braille();
-	private static final int IS_WRONG = -1;
-	private static final int IS_RIGHT = 1;
-	private static final int IS_IN_PROGRESS = 0;
-	private static final int LEARN_LETTERS_TIME_LIMIT = 10000;
 
-	private static final String strStart = "Let's learn letters!";
-	private static final String instruction1 = "To write letter ";
-	private static final String instruction2 = ", press dot ";
-	private static final String strTest = "Write letter ";
-	private static final String strPass = "Good.";
-	private static final String strFail = "No.";
-	private static final String strEnd = "Great! You've now learned all the letters! Slide up to go back to menu.";
+	private Context context; 
+	private MediaPlayer player;
+	private String dir; 
+	private int currentFile; 
+	private ArrayList<String> filenames;
 
+	private String[] numbers = {"one", "two", "three", "four", "five", "six"};
+	
 	private static final char[][] letters = {
 		{'a','b','c','d','e'},
 		{'f','g','h','i','j'},
@@ -55,7 +56,6 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 	private int countLetterInd;
 	private int currentBrailleCode;
 	private int expectedBrailleCode;
-	private int userStatus;
 	private int attemptNum;
 	private boolean introducing;	//introduce letters if true; test letters if false
 
@@ -68,14 +68,24 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
+		
+		try {
+			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		} 
+
+		player = new MediaPlayer();
+		dir = context.getFilesDir().getPath().toString();
+		currentFile = 0;
+		filenames = new ArrayList<String>(); 
+		
 		bwt.init();
 		Log.i("Learn letters", "BWT Inited...");
 		
 		groupInd = 0;
 		currLetterInd = 0;
 		
-		
-		userStatus = IS_IN_PROGRESS;
 		attemptNum = 0;
 		
 		//Shuffle order of indices for testing phase
@@ -94,6 +104,13 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		for(int i = 0; i < letters.length; i++){
 			shuffledIndices[i] = shuffleIndicesArr(shuffledIndices[i]);
 		}
+	}
+	
+	@Override
+	protected void onStop() {
+		if(player != null)
+			player.release();
+	    super.onStop();
 	}
 	
 	@Override 
@@ -121,13 +138,40 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 
    
     
-	private void speakOutReplace(String text) {
+	private void speakOut(String text) {
 		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
-	private void speakOutQueue(String text) {
-		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-	}
 	
+	public void playAudio(String filename) {
+		try {
+			player.reset();
+			FileInputStream fis = new FileInputStream(dir + "/" + filename + ".m4a");
+			player.setDataSource(fis.getFD());
+			fis.close();
+			player.prepare();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		player.setOnCompletionListener(new OnCompletionListener() {
+			@Override
+			public void onCompletion(MediaPlayer mp) {
+				player.stop(); 
+				if(currentFile < filenames.size() - 1) {
+					currentFile++;
+					playAudio(filenames.get(currentFile));
+				}
+				else {
+					filenames.clear();
+					currentFile = 0;
+				}
+			}
+		});
+
+		player.start();
+	}
 	
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
@@ -136,9 +180,9 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			// Swipe up
 			Log.d("Learn letters", "Swipe up occurred");
 			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
-		        bwt.stopTracking();
-		        bwt.stop();
 				Intent intent = new Intent(LearnLetters.this, GameActivity.class);
+				bwt.stopTracking();
+		        bwt.stop();
 				startActivity(intent);
 			}
 			return true;
@@ -167,19 +211,31 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 				//((c & e) ^ c) > 0 if extra bits set in c that's not in e 
 				boolean isWrong = (((currentBrailleCode & expectedBrailleCode) ^ currentBrailleCode) > 0);
 				if(currentBrailleCode == expectedBrailleCode) {
-					userStatus = IS_RIGHT;
-					speakOutReplace(strPass);
+					// User is right
+					if(player.isPlaying()) {
+						filenames.clear();
+						currentFile = 0;
+					}
+					filenames.add(getResources().getString(R.string.good));
+					playAudio(filenames.get(0));
+					
 					prepNextLetter();
 					Log.d("Learn letters", "user is correct");
 				}
 				else if(isWrong) {
-					userStatus = IS_WRONG;
-					speakOutReplace(strFail);
+					// User is wrong
+					if(player.isPlaying()) {
+						filenames.clear();
+						currentFile = 0;
+					}
+					filenames.add(getResources().getString(R.string.no));
+					playAudio(filenames.get(0));
+					
 					redoCurrLetter();
 					Log.d("Learn letters", "user is wrong");
 				}
 				else {
-					userStatus = IS_IN_PROGRESS;
+					// User is still in progress
 					Log.d("Learn letters", "user is still writing");
 				}
 			}
@@ -190,7 +246,14 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			@Override
 			public void eventTriggered(Object sender, Event event) {
 				bwt.defaultAltBtnHandler(sender, event);
-				speakOutReplace(strPass);
+				
+				if(player.isPlaying()) {
+					filenames.clear();
+					currentFile = 0;
+				}
+				filenames.add(getResources().getString(R.string.good));
+				playAudio(filenames.get(0));
+				
 				prepNextLetter();
 			}
     	});
@@ -198,7 +261,6 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
     }
     
 	private void runProgram() {
-        speakOutQueue(strStart);
 		groupInd = 0;
 		currLetterInd = 0;
 		countLetterInd = 0;
@@ -219,7 +281,8 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 				//Go to next group if done with testing mode
 				groupInd++;
 				if(groupInd >= letters.length){
-					speakOutReplace(strEnd);
+					// The real game doesn't end... what should we do? 
+					speakOut("The end! Swipe up to go back.");
 					return;
 				}
 			}
@@ -264,13 +327,21 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 				btnStrBuf.append(i+1 + " ");
 			}
 		}
-		speakOutQueue(instruction1 + let + instruction2 + btnStrBuf.toString());
 		
+		filenames.add(getResources().getString(R.string.to_write_the_letter));
+		filenames.add(((Character)let).toString());
+		filenames.add(getResources().getString(R.string.please_press));
+		String[] buttons = btnStrBuf.toString().split(" ");
+		for(int i = 0; i < buttons.length; i++)
+			filenames.add(numbers[Integer.parseInt(buttons[i]) - 1]);
+		playAudio(filenames.get(0));
 	}
 	private void instructionTestLetter(int groupInd, int letterInd) {
 		char let = letters[groupInd][letterInd];
-		speakOutQueue(strTest + let);
 		
+		filenames.add(getResources().getString(R.string.please_write));
+		filenames.add(((Character)let).toString());
+		playAudio(filenames.get(0));
 	}
 	
 	private int[] shuffleIndicesArr(int[] givenArr) {
@@ -284,89 +355,4 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		}
 		return givenArr;
 	}
-	
-	
-	
-//	private void introduceLetters() {
-//		while(currLetterInd < letters[groupInd].length) {
-//			currentBrailleCode = 0;
-//			expectedBrailleCode = braille.get(letters[groupInd][currLetterInd]);
-//			/*Once numAttempts turns 0, indicates can move on
-//			 *Keeps track of the current attempt number
-//			 */
-//			int attemptNum = 1;
-//			instructionSpellLetter(groupInd, currLetterInd);
-//
-//			while (attemptNum > 0) {
-//				userStatus = IS_WRONG;		//default -- ie: run out of time
-//				Log.d("Learn letters", "about to call waitUntilTriggered; [groupInd, currLetterInd] = [" + 
-//										groupInd + "," + currLetterInd + "]");
-//				boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, LEARN_LETTERS_TIME_LIMIT);
-//				Log.d("Learn letters", "just called waitUntilTriggered");
-//				
-//				
-//				if(triggered) {
-//					//if correct
-//					if(userStatus == IS_RIGHT) {
-//						Log.d("Learn letters", "Correct on attempt num " + attemptNum);
-//						attemptNum = 0;
-//						currentBrailleCode = 0;
-//						speakOutReplace(strPass);
-//					}
-//					//if wrong
-//					else if(userStatus == IS_WRONG) {
-//						Log.d("Learn letters", "Incorrect; attempt num " + attemptNum);
-//						attemptNum++;
-//						currentBrailleCode = 0;
-//						speakOutReplace(strFail);
-//						instructionSpellLetter(groupInd, currLetterInd);
-//					}
-//				}
-//			}
-//			currLetterInd += 1;
-//		}
-//	}
-//	
-//	private void testLetters() {
-//		int n = letters[groupInd].length;
-//		int[] indices = new int[n];
-//		//Initialize indices
-//		for (int i = 0; i < n; i++) {
-//			indices[i] = i;
-//		}
-//		indices = shuffleIndicesArr(indices);
-//		int ind = 0;
-//		while(ind < indices.length) {
-//			currLetterInd = indices[ind];
-//			currentBrailleCode = 0;
-//			expectedBrailleCode = braille.get(letters[groupInd][currLetterInd]);
-//			int attemptNum = 1;
-//			
-//
-//			instructionTestLetter(groupInd, currLetterInd);
-//			while(attemptNum > 0) {
-//				userStatus = IS_WRONG;		//default -- ie: run out of time
-//				boolean triggered = EventManager.waitUntilTriggered(BoardEvent.class, LEARN_LETTERS_TIME_LIMIT);
-//				if(triggered) {
-//					//if correct
-//					if(userStatus == IS_RIGHT) {
-//						attemptNum = 0;
-//						currentBrailleCode = 0;
-//						speakOutReplace(strPass);
-//					}
-//					//incorrect
-//					else if (userStatus == IS_WRONG) {
-//						attemptNum++;
-//						currentBrailleCode = 0;
-//						speakOutReplace(strFail);
-//						if(attemptNum > 2) {
-//							//After 2nd attempt, show how to spell
-//							instructionSpellLetter(groupInd, currLetterInd);
-//						}
-//					}
-//				}
-//			}
-//			ind++;
-//		}
-//	}
 }

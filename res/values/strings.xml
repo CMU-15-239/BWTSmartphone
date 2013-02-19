@@ -17,6 +17,10 @@
 	<string name="no">no</string>
 	
 	<string name="learn_letters">learn letters</string>
+	<string name="please_press">please_press</string>
+	<string name="please_write">please_write</string>
+	<string name="to_write_the_letter">to_write_the_letter</string>
+	
 	<string name="animal_game">animal game</string>
 
 	<string name="replay">Replay</string>

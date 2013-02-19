@@ -176,8 +176,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 					playAudio(filenames.get(currentFile));
 				}
 				else {
-					currentFile = 0; 
 					filenames.clear();
+					currentFile = 0;
 				}
 			}
 		});
