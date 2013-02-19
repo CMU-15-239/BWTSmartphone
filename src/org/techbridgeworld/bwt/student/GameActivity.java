@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
@@ -56,7 +58,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
-		
+
 		try {
 			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
 		} catch (NameNotFoundException e) {
