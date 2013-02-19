@@ -118,7 +118,6 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			else {
 				bwt.startTracking();
 
-				//regenerate();
 				currentDot = generator.nextInt(6) + 1;
 				filenames.add(getResources().getString(R.string.find_dot));
 				filenames.add(numbers[getCurrent()-1]);
