@@ -278,15 +278,15 @@ public class BWT {
 	 * If not tracking, returns empty string
 	 */
 	public String dumpTrackingAsString() {
-		if (!isTracking) return null;
-		StringBuffer s = new StringBuffer();
-		for (Integer i : inputBuffer) {
-			s.append(braille.get(i));
-		}
-		inputBuffer.clear();
-		return s.toString();
+		String s = viewTrackingAsString();
+		clearTracking();
+		return s;
 	}
-	
+
+	/**Returns everything in current 'buffer' (Does NOT empty)
+	 * @return what was left in the buffer
+	 * If not tracking, returns empty string
+	 */
 	public String viewTrackingAsString(){
 		if (!isTracking) return null;
 		StringBuffer s = new StringBuffer();
@@ -299,7 +299,7 @@ public class BWT {
 	public ArrayList<Integer> dumpTrackingAsBits() {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
-		inputBuffer.clear();
+		clearTracking();
 		return result;
 	}
 	
@@ -307,6 +307,98 @@ public class BWT {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
 		return result;
+	}
+	
+	/**
+	 * Resets the inputBuffer; keeps lastInputtedCell info
+	 */
+	public void clearTracking() {
+		inputBuffer.clear();
+	}
+	
+	/**
+	 * Resets lastCell to initial state
+	 */
+	public void clearLastInputtedCell() {
+		if(lastCell > 0) {
+			board.setBitsAsCell(lastCell, 0);
+			lastCell = -1;
+		}
+	}
+	
+	/**
+	 * Clears both inputBuffer and current cell info
+	 */
+	public void clearAllTracking() {
+		clearTracking();
+		clearLastInputtedCell();
+	}
+	
+	public void resetBoard() {
+		clearTracking();
+		lastCell = -1;
+		board.clearBoard();
+	}
+	
+	public int getCurrentCellBits() {
+		if(lastCell < 0) return 0;
+		return board.getBitsAtCell(lastCell);
+	}
+	public char getCurrentCellGlyph() {
+		if(lastCell < 0) return '-';
+		return board.getGlyphAtCell(lastCell);
+	}
+
+	/**Compares current input with given char
+	 * Takes into account bits of lastCell
+	 * @param c : the glyph you're aiming to match
+	 * @return true : if off track of matching c
+	 */
+	public boolean offTrackFromChar(char c) {
+		if(lastCell < 0) return false;
+		int currBits = board.getBitsAtCell(lastCell);
+		int expBits = braille.get(c);
+		return ((( currBits & expBits) ^ currBits) > 0);
+	}
+	
+	/**
+	 * Takes into account everything in inputBuffer AND lastCell
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public boolean offTrackFromString(String s) {
+		
+		//Check what's in trackingBuffer
+		String currDump = viewTrackingAsString();
+		int indexFound = s.indexOf(currDump);
+		if(indexFound != 0 && currDump.length() > 0) return true;
+
+		//Check the most recent cell
+		return offTrackFromChar(s.charAt(currDump.length()));
+	}
+	
+	public boolean currentMatchesChar(char c) {
+		if(lastCell < 0) return false;
+		int currBits = board.getBitsAtCell(lastCell);
+		int expBits = braille.get(c);
+		return (currBits == expBits);
+				
+	}
+	public boolean currentMatchesString(String s) {
+		//Check what's in trackingBuffer
+		String currDump = viewTrackingAsString();
+		int indexFound = s.indexOf(currDump);
+		if(currDump.equals(s)) return true;
+		if(indexFound != 0 || currDump.length() != s.length()-1) return false;
+		
+		//Check the most recent cell
+		return currentMatchesChar(s.charAt(currDump.length()));
+		
+	}
+	
+	public void clearBoard() {
+		
 	}
 	
 	
@@ -446,6 +538,28 @@ public class BWT {
 		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 		board.setBitsAsCell(oldCellInd, 0);
 		lastCell = e.getNewCell();
+
+		Log.i("EventTriggering", "Calling default onChangeCell event handler");
+		return oldCellBits;
+	}
+	
+	/**
+	 * Instead of updating lastCell, leave as is. Simply appends bits to buffer
+	 * @param sender
+	 * @param event
+	 * @return
+	 */
+	public int keepLastCellChangeCellHandler(Object sender, Event event) {
+		ChangeCellEvent e = (ChangeCellEvent) event;
+		
+		/*pushes the glyph at this cell into the inputBuffer
+		 *then resets old cell value*/ 
+		int oldCellInd = e.getOldCell();
+		//first time ChangeCell is called, oldCellInd = -1
+		if(oldCellInd < 0) return 0;	
+
+		int oldCellBits = e.getOldCellBits();
+		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 
 		Log.i("EventTriggering", "Calling default onChangeCell event handler");
 		return oldCellBits;
