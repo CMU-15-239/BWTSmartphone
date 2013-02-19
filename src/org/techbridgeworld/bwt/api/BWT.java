@@ -69,13 +69,6 @@ public class BWT {
 			@Override
 			public void onNewData(final byte[] data) {				
 				updateReceivedData(data);
-				
-//				currActivity.runOnUiThread(new Runnable() {
-//					@Override
-//					public void run() {
-//						BWT.this.updateReceivedData(data);
-//					}
-//				});
 			}
 		};
 	
@@ -100,10 +93,11 @@ public class BWT {
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
-
-	
-	
-	// Starts USB connection
+    
+	/**
+	 * BWT.start() should be called after BWT.init().
+	 * Will open the serial connection and create default event listeners
+	 */
 	public void start(){		
 		usbDriver = UsbSerialProber.acquire(usbManager);
         if (usbDriver != null) {
@@ -128,8 +122,12 @@ public class BWT {
         
         stateChange();
 	}
-	
-	// Closes USB connection
+
+	/**
+	 * BWT.stop() should be called each time you leave the app or no
+	 * longer need to read input from BWT.
+	 * Also removes all event listeners, including developer's
+	 */
 	public void stop(){
 		stopIoManager();
 		if (usbDriver != null) {
@@ -145,22 +143,10 @@ public class BWT {
             usbDriver = null;
         }
 	}
-	
-	// Restarts the IO manager.
-	public void stateChange(){
-		stopIoManager();
-		startIoManager();
-	}
-	
-	// Stop IO
-    private void stopIoManager() {
-        if (serialManager != null) {
-            serialManager.stop();
-            serialManager = null;
-        }
-    }
     
-    // Start IO
+    /**
+     * Start IO
+     */
     private void startIoManager() {
         if (usbDriver != null) {
             serialManager = new SerialInputOutputManager(usbDriver, listener);
@@ -170,8 +156,30 @@ public class BWT {
         	Log.e("Connecting", "usbDriver == null");
         }
     }
-    
-    // Passes a byte array to the debounce hashtable.
+
+    /**
+     * Stop IO
+     */
+    private void stopIoManager() {
+        if (serialManager != null) {
+            serialManager.stop();
+            serialManager = null;
+        }
+    }
+
+	/**
+	 * Restarts IO 
+	 */
+	public void stateChange(){
+		stopIoManager();
+		startIoManager();
+	}
+	
+	/**
+	 * Manages the debounce hashtable for seeing whether it is
+	 * a new press or different
+	 * @param key is a byte array
+	 */
     private void debounceKey(String key){
     	final String newKey = key;
     	debounceHash.put(newKey, true);
@@ -193,15 +201,22 @@ public class BWT {
     	handler.post(r);
     }
     
-    // Returns true if a key is currently being ignored.
+    /**
+     * Returns true if a key is currently being ignored.
+     * @param key to check
+     * @return
+     */
     private boolean isDebounced(String key){
     	boolean query = (debounceHash.get(key) == null? false : debounceHash.get(key));
     	return query;
     }
     
 	
-    // Takes the received data, checks to see if it should be ignored/debounced,
-    // and print the results to device screen (triggers events later).
+    /**
+     * Takes the received data, checks to see if it should be ignored/debounced,
+     *  and triggers the corresponding events
+     * @param data
+     */
     private void updateReceivedData(byte[] data) {	
     	
     	//For every byte in the incoming data...
@@ -251,7 +266,7 @@ public class BWT {
     }
 
 	
-    //Board getter.
+    /** Board getter*/
     public Board getBoard(){
     	return this.board;
     }
@@ -296,13 +311,21 @@ public class BWT {
 		return s.toString();
 	}
 	
+	/**
+	 * Dumps as an Array of Integers
+	 * @return
+	 */
 	public ArrayList<Integer> dumpTrackingAsBits() {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
 		clearTracking();
 		return result;
 	}
-	
+
+	/**
+	 * Views as an Array of Integers
+	 * @return
+	 */
 	public ArrayList<Integer> viewTrackingAsBits() {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
@@ -334,16 +357,26 @@ public class BWT {
 		clearLastInputtedCell();
 	}
 	
+	/**
+	 * Clears and resets state of the board
+	 */
 	public void resetBoard() {
-		clearTracking();
-		lastCell = -1;
+		clearAllTracking();
 		board.clearBoard();
 	}
 	
+	/**
+	 * Gets the bits pressed for 'lastCell'
+	 * @return
+	 */
 	public int getCurrentCellBits() {
 		if(lastCell < 0) return 0;
 		return board.getBitsAtCell(lastCell);
 	}
+	/**
+	 * Gets the current char for 'lastCell'
+	 * @return
+	 */
 	public char getCurrentCellGlyph() {
 		if(lastCell < 0) return '-';
 		return board.getGlyphAtCell(lastCell);
@@ -396,11 +429,6 @@ public class BWT {
 		return currentMatchesChar(s.charAt(currDump.length()));
 		
 	}
-	
-	public void clearBoard() {
-		
-	}
-	
 	
 	/**Called by updateReceivedData to trigger necessary events
 	 * 
@@ -524,7 +552,12 @@ public class BWT {
 		Log.i("EventTriggering", "Calling default onCells event handler");
 	}
 
-	//Returns bits of old cell
+	/**
+	 * Returns bits of old cell
+	 * @param sender
+	 * @param event
+	 * @return
+	 */
 	public int defaultChangeCellHandler(Object sender, Event event) {
 		ChangeCellEvent e = (ChangeCellEvent) event;
 		
@@ -565,7 +598,8 @@ public class BWT {
 		return oldCellBits;
 	}
 	
-	/* Event Listeners originally set up for BWT
+	/**
+	 *  Creates the default event Listeners set up for BWT
 	 */
 	private GenericEventListener createOnBoardListener() {
 		return new GenericEventListener() {
