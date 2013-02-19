@@ -46,6 +46,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.student_game);
 		
+		// Load game names/strings.
 		options = new String[numOptions]; 
 		options[0] = getResources().getString(R.string.learn_dots);
 		options[1] = getResources().getString(R.string.learn_letters);
@@ -54,6 +55,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		game_prompt = getResources().getString(R.string.game_prompt);
 		student_game = (TextView) findViewById(R.id.student_game);
 		
+		// Load text-to-speech and gesture listener. 
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
 		
@@ -79,9 +81,11 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 			dialog.show();
 		}
 		
+		// Initialize player and audio directory.
 		player = new MediaPlayer();
 		dir = context.getFilesDir().getPath().toString();
 		
+		// Trigger audio files to play on hover. 
 		student_game.setOnHoverListener(new OnHoverListener() {
 			@Override
 			public boolean onHover(View v, MotionEvent event) {
@@ -148,6 +152,8 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 	
+	
+	// Gesture listener that changes the activity based on the current option. 
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
