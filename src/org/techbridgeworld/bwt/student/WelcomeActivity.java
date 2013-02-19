@@ -30,6 +30,15 @@ public class WelcomeActivity extends Activity implements TextToSpeech.OnInitList
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
 	}
+	
+    @Override
+    public void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
 
 	@Override 
 	public boolean onTouchEvent(MotionEvent event){ 

@@ -2,14 +2,23 @@
 <resources>
 
     <string name="app_name">BWT for Students</string>
-	
-    <string name="welcome_prompt">Welcome! Swipe down to continue.</string>
+    
+    <string name="welcome_prompt">Welcome!</string>
 	<string name="game_prompt">Please select a game.</string>
-
-	<string name="learn_dots">Learn Dots</string>
-	<string name="learn_letters">Learn Letters</string>
-	<string name="animal_game">Animal Game</string>
 	
+	<string name="start">Start</string>
+	
+	<string name="open_message">BWT for Teachers must be opened before BWT for Students.</string>
+	<string name="ok">OK</string>
+
+	<string name="learn_dots">learn dots</string>
+	<string name="good">good</string>
+	<string name="find_dot">find_dot</string>
+	<string name="no">no</string>
+	
+	<string name="learn_letters">learn letters</string>
+	<string name="animal_game">animal game</string>
+
 	<string name="replay">Replay</string>
 	<string name="delete">Delete</string>
 </resources>
