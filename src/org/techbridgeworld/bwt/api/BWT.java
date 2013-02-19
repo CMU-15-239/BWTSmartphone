@@ -96,7 +96,6 @@ public class BWT {
 	/**Init function should be called onCreate of the BWT.
 	 */
 	public void init(){
-		Log.i("Connecting", "BWT.init()");
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         startIoManager();
 	}
@@ -104,13 +103,10 @@ public class BWT {
 	
 	
 	// Starts USB connection
-	public void start(){
-		Log.i("Connecting", "BWT.start()");
-		
+	public void start(){		
 		usbDriver = UsbSerialProber.acquire(usbManager);
         if (usbDriver != null) {
             try {
-            	Log.d("Connecting", "About to open usbDriver()");
             	usbDriver.open();
 				usbDriver.setBaudRate(BAUDRATE);
 				byte[] bt = "bt".getBytes();
@@ -135,7 +131,6 @@ public class BWT {
 	// Closes USB connection
 	public void stop(){
 		stopIoManager();
-		Log.i("Connecting", "BWT.pause()");
 		if (usbDriver != null) {
             try {
             	removeEventListeners();
@@ -167,7 +162,6 @@ public class BWT {
     // Start IO
     private void startIoManager() {
         if (usbDriver != null) {
-        	Log.i("Connecting", "Starting usb listener");
             serialManager = new SerialInputOutputManager(usbDriver, listener);
             executor.submit(serialManager);
         }
@@ -185,19 +179,16 @@ public class BWT {
     	Runnable r=new Runnable() {
     	    @Override
 			public void run() {
-    	    	Log.i("Debounce","Running debounce thread");
     	    	try {
 					Thread.sleep(DEBOUNCE);
 				} catch (InterruptedException e) {
 					Log.e("Debounce","Failed to sleep thread.");
 					e.printStackTrace();
 				}
-    	    	Log.i("Debounce","Freeing key");
     	    	debounceHash.put(newKey, false);
     	    }
     	};
     	
-    	Log.i("Debounce","Submitting thread to executor.");
     	handler.post(r);
     }
     
@@ -211,12 +202,10 @@ public class BWT {
     // Takes the received data, checks to see if it should be ignored/debounced,
     // and print the results to device screen (triggers events later).
     private void updateReceivedData(byte[] data) {	
-    	Log.d("DataTransfer", "updateReceivedData()");
     	
     	//For every byte in the incoming data...
     	for (int i = 0; i < data.length; i++){
     		
-    		Log.d("DataTransfer", "currently parsing " + (char)data[i] + " (" + (int)data[i] + ")");
     		
     		// If we are done, and if the buffer represents a non-blocked key, then
     		// log the buffer, clear it, and set its index to 0.    		    	
@@ -240,7 +229,7 @@ public class BWT {
 
     			}
     			else{
-    				Log.d("DataTransfer", "Button press blocked!");
+    				//Log.d("DataTransfer", "Button press blocked!");
     			}
     			
     			bufferIdx = 0;
@@ -296,10 +285,25 @@ public class BWT {
 		return s.toString();
 	}
 	
+	public String viewTrackingAsString(){
+		if (!isTracking) return null;
+		StringBuffer s = new StringBuffer();
+		for (Integer i : inputBuffer) {
+			s.append(braille.get(i));
+		}
+		return s.toString();
+	}
+	
 	public ArrayList<Integer> dumpTrackingAsBits() {
 		if (!isTracking) return null;
 		ArrayList<Integer> result = inputBuffer;
 		inputBuffer.clear();
+		return result;
+	}
+	
+	public ArrayList<Integer> viewTrackingAsBits() {
+		if (!isTracking) return null;
+		ArrayList<Integer> result = inputBuffer;
 		return result;
 	}
 	
@@ -312,7 +316,6 @@ public class BWT {
     	if(!isTracking) return;
     	
     	message = message.toLowerCase().replaceAll("n","").trim();
-    	Log.i("DataTransfer", "Cleaned message: '" + message + "'");
     	if(message.equals("bt")) return;
     	
     	String referenceStr = "abcdefg";
@@ -408,7 +411,6 @@ public class BWT {
 	 */
 	public void defaultBoardHandler(Object sender, Event event) {
 		//API doesn't have a default function. Here for developers
-		Log.i("EventTriggering", "Calling default onBoard event handler");
 	}
 
 	public void defaultMainBtnHandler(Object sender, Event event) {
@@ -435,7 +437,6 @@ public class BWT {
 		//first time ChangeCell is called, oldCellInd = -1
 		if(oldCellInd < 0) return;	
 
-		Log.i("EventTriggering", "Calling default onChangeCell event handler");
 		inputBuffer.add(board.getBitsAtCell(oldCellInd));
 		board.setBitsAsCell(oldCellInd, 0);
 		lastCell = e.getNewCell();
