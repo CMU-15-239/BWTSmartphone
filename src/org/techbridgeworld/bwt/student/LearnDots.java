@@ -69,8 +69,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			else{
 				speakOut("Dots Game!");
 				bwt.startTracking();
-				
-				regenerate();
+
+				currDot = generator.nextInt(6) + 1;
 				speakOut("Press dot " + getCurr() + ".");
 				
 				DotListener = new GenericEventListener(){
