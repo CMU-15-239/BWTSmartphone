@@ -168,6 +168,7 @@ public class Board {
 			int cell = Integer.parseInt(details[0].trim());
 			int dot =  Integer.parseInt(details[1].trim());
 			
+			this.currCellInd = cell;
 			this.board[cell].setDot(dot, true);
 		}
 		
