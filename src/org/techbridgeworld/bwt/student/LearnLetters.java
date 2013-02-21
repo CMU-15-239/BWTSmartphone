@@ -130,6 +130,7 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 				Log.e("TTS", "This language is not supported");
 			else {
 		        bwt.start();
+				bwt.initializeEventListeners();
 				Log.i("Learn letters", "BWT Started...");
 		        bwt.startTracking();
 				runProgram();
@@ -183,6 +184,7 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
 				Intent intent = new Intent(LearnLetters.this, GameActivity.class);
 				bwt.stopTracking();
+				bwt.removeEventListeners();
 		        bwt.stop();
 				startActivity(intent);
 			}

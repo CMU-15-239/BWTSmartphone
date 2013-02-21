@@ -106,7 +106,6 @@ public class BWT {
 				usbDriver.setBaudRate(BAUDRATE);
 				byte[] bt = "bt".getBytes();
 				usbDriver.write(bt, TIMEOUT);
-				initializeEventListeners();
             } catch (IOException e) {
                 try {
                 	Log.e("Connecting", "Error starting USB driver, attempting to close.");
@@ -265,7 +264,8 @@ public class BWT {
     	}    				    	
     }
 
-	
+	/***************These functions deal with access to the board*************/
+    
     /** Board getter*/
     public Board getBoard(){
     	return this.board;
@@ -429,15 +429,18 @@ public class BWT {
 		return currentMatchesChar(s.charAt(currDump.length()));
 		
 	}
+	/*************************************************************************/
+	
+	
+	/*******NOTE: These functions deal with Events and handlers and listeners*******/
 	
 	/**Called by updateReceivedData to trigger necessary events
-	 * 
 	 * @param String sent from BWT firmware through USB
 	 */
     private void triggerNewDataEvent(String message) {
     	if(!isTracking) return;
     	
-    	message = message.toLowerCase().replaceAll("n","").trim();
+    	message = message.toLowerCase(Locale.US).replaceAll("n","").trim();
     	if(message.equals("bt")) return;
     	
     	String referenceStr = "abcdefg";
@@ -445,6 +448,8 @@ public class BWT {
     	int currCell = -1;
     	int currCellBits = 0;	//The current set bits of currCell
     	int currDot = -1;		//The button just hit
+    	
+    	board.update(message);
     	
     	// See if it's a, b-g, or two numbers
     	if(referenceStr.indexOf(message) == 0) {
@@ -536,8 +541,8 @@ public class BWT {
 	}
 
 	public void defaultMainBtnHandler(Object sender, Event event) {
-		MainBtnEvent e = (MainBtnEvent) event;
-		board.handleNewInput(0, e.getDot());
+		//MainBtnEvent e = (MainBtnEvent) event;
+		//board.handleNewInput(0, e.getDot());
 		Log.i("EventTriggering", "Calling default onMainBtn event handler");
 	}
 	
@@ -547,55 +552,27 @@ public class BWT {
 	}
 	
 	public void defaultCellsHandler(Object sender, Event event) {	
-		CellsEvent e = (CellsEvent) event;
-		board.handleNewInput(e.getCell(), e.getDot());
+		//CellsEvent e = (CellsEvent) event;
+		//board.handleNewInput(e.getCell(), e.getDot());
 		Log.i("EventTriggering", "Calling default onCells event handler");
 	}
 
-	/**
-	 * Returns bits of old cell
-	 * @param sender
-	 * @param event
-	 * @return
-	 */
-	public int defaultChangeCellHandler(Object sender, Event event) {
+	public void defaultChangeCellHandler(Object sender, Event event) {
 		ChangeCellEvent e = (ChangeCellEvent) event;
 		
 		/*pushes the glyph at this cell into the inputBuffer
 		 *then resets old cell value*/ 
-		int oldCellInd = e.getOldCell();
-		//first time ChangeCell is called, oldCellInd = -1
-		if(oldCellInd < 0) return 0;	
-
-		int oldCellBits = e.getOldCellBits();
-		inputBuffer.add(board.getBitsAtCell(oldCellInd));
-		board.setBitsAsCell(oldCellInd, 0);
-		lastCell = e.getNewCell();
-
-		Log.i("EventTriggering", "Calling default onChangeCell event handler");
-		return oldCellBits;
-	}
-	
-	/**
-	 * Instead of updating lastCell, leave as is. Simply appends bits to buffer
-	 * @param sender
-	 * @param event
-	 * @return
-	 */
-	public int keepLastCellChangeCellHandler(Object sender, Event event) {
-		ChangeCellEvent e = (ChangeCellEvent) event;
-		
-		/*pushes the glyph at this cell into the inputBuffer
-		 *then resets old cell value*/ 
-		int oldCellInd = e.getOldCell();
-		//first time ChangeCell is called, oldCellInd = -1
-		if(oldCellInd < 0) return 0;	
-
-		int oldCellBits = e.getOldCellBits();
-		inputBuffer.add(board.getBitsAtCell(oldCellInd));
+//		int oldCellInd = e.getOldCell();
+//		first time ChangeCell is called, oldCellInd = -1
+//		(oldCellInd < 0) return 0;	
+//		
+//		int oldCellBits = e.getOldCellBits();
+//		inputBuffer.add(board.getBitsAtCell(oldCellInd));
+//		board.setBitsAsCell(oldCellInd, 0);
+//		lastCell = e.getNewCell();
 
 		Log.i("EventTriggering", "Calling default onChangeCell event handler");
-		return oldCellBits;
+		//return oldCellBits;
 	}
 	
 	/**
@@ -645,6 +622,6 @@ public class BWT {
 			}
 		};
 	}
-
+	/****************************************************************/
 
 }

@@ -83,6 +83,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
 			else{
+				bwt.initializeEventListeners();
 				bwt.startTracking();
 				
 				regenerate();
@@ -93,6 +94,10 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 		}
 		else
 			Log.e("TTS", "Initilization Failed!");
+	}
+	
+	private void deleteLastCharacter() {
+		
 	}
 	
 	private void createListeners() {
@@ -162,6 +167,9 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			// Swipe up
 			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
 				Intent intent = new Intent(AnimalGame.this, GameActivity.class);
+				bwt.stopTracking();
+				bwt.removeEventListeners();
+		        bwt.stop();
 				startActivity(intent);
 			}
 			

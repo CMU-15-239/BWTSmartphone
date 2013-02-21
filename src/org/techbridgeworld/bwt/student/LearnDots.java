@@ -142,6 +142,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			// If text-to-speech started successfully, and it has a supported language, start the game.
 			else { 
 				// Start tracking the state of the BWT
+				bwt.initializeEventListeners();
 				bwt.startTracking();
 
 				// Generate the first dot.
@@ -240,6 +241,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 				if(DotListener != null){
 					EventManager.unregisterEventListener(DotListener, BoardEvent.class);
 				}
+				bwt.stopTracking();
+				bwt.removeEventListeners();
 				bwt.stop();
 				startActivity(intent);
 			}
