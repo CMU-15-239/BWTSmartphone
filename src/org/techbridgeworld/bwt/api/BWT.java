@@ -477,6 +477,7 @@ public class BWT {
     	if(currCell >= 0) currCellBits = board.getBitsAtCell(currCell);
     	
     	// Trigger board event regardless
+    	board.update(message);
 		EventManager.triggerEvent(this, new BoardEvent(message, currCell, currCellBits, currDot), "onBoardEvent");
 	
     }
