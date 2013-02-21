@@ -8,6 +8,7 @@
 	
 	<string name="start">Start</string>
 	
+	<string name="install_message">BWT for Teachers must be installed and opened before BWT for Students.</string>	
 	<string name="open_message">BWT for Teachers must be opened before BWT for Students.</string>
 	<string name="ok">OK</string>
 

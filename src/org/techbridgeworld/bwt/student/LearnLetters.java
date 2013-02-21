@@ -24,6 +24,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.widget.TextView;
 
 public class LearnLetters extends Activity implements TextToSpeech.OnInitListener {
 
@@ -59,7 +60,6 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 	private int attemptNum;
 	private boolean introducing;	//introduce letters if true; test letters if false
 
-
 	private final BWT bwt = new BWT(this, LearnLetters.this);
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +92,9 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		shuffleIndices();
 	}
 	
+	/**
+	 * Shuffle the indices for testing mode
+	 */
 	private void shuffleIndices() {
 		shuffledIndices = new int[letters.length][];
 		for(int i = 0; i < letters.length; i++){
@@ -136,12 +139,10 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			Log.e("TTS", "Initilization Failed!");
 	}
 
-   
-    
-	private void speakOut(String text) {
-		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-	}
-	
+	/**
+	 * Plays the audio files
+	 * @param filename
+	 */
 	public void playAudio(String filename) {
 		try {
 			player.reset();
@@ -272,6 +273,9 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		instructionSpellLetter(groupInd, currLetterInd);
 	}
 	
+	/**
+	 * Called when input is correct. Moves on.
+	 */
 	private void prepNextLetter() {
 		currentBrailleCode = 0;
 		attemptNum = 1;
@@ -281,8 +285,14 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 				//Go to next group if done with testing mode
 				groupInd++;
 				if(groupInd >= letters.length){
-					// The real game doesn't end... what should we do? 
-					speakOut("The end! Swipe up to go back.");
+					// The real game doesn't end... what should we do?
+					groupInd = 0;
+					introducing = true;
+					countLetterInd = 0;
+					currLetterInd = 0;
+					attemptNum = 0;
+					expectedBrailleCode = braille.get(letters[groupInd][currLetterInd]);
+					instructionSpellLetter(groupInd, currLetterInd);
 					return;
 				}
 			}
@@ -306,6 +316,9 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		expectedBrailleCode = braille.get(letters[groupInd][currLetterInd]);
 	}
 	
+	/**
+	 * Called when incorrect. updates attemptNums
+	 */
 	private void redoCurrLetter() {
 		currentBrailleCode = 0;
 		attemptNum++;
@@ -318,6 +331,11 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 		//Note: In test mode, don't spell out until 3rd attempt
 	}
 	
+	/**
+	 * Provides instruction "To write letter __ press dots _,_,_,..."
+	 * @param groupInd
+	 * @param letterInd
+	 */
 	private void instructionSpellLetter(int groupInd, int letterInd) {
 		char let = letters[groupInd][letterInd];
 		int btns = braille.get(let);
@@ -336,6 +354,12 @@ public class LearnLetters extends Activity implements TextToSpeech.OnInitListene
 			filenames.add(numbers[Integer.parseInt(buttons[i]) - 1]);
 		playAudio(filenames.get(0));
 	}
+
+	/**
+	 * Provides instruction "Write letter _"
+	 * @param groupInd
+	 * @param letterInd
+	 */
 	private void instructionTestLetter(int groupInd, int letterInd) {
 		char let = letters[groupInd][letterInd];
 		
