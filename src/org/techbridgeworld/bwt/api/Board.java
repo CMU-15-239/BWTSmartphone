@@ -1,5 +1,6 @@
 package org.techbridgeworld.bwt.api;
 
+import java.util.LinkedList;
 import java.util.Locale;
 
 import javaEventing.EventManager;
@@ -13,9 +14,9 @@ import android.util.Log;
 public class Board {
 	private static Braille braille = new Braille();
 	
-	private final Cell board[];	
-	private int currCellInd;
+	private final Cell board[];
 	private boolean altFlag = false;
+	private LinkedList<Integer> inputInfo;
 	
 	/**
 	 * Constructor. Initializes all the cells to 0, 
@@ -28,7 +29,7 @@ public class Board {
 			temp[i] = new Cell();
 		}
 		this.board = temp;
-		currCellInd = -1;
+		this.inputInfo = new LinkedList<Integer>();
 	}
 	
 	/**
@@ -79,7 +80,7 @@ public class Board {
 	 * @return currently active cell index.
 	 */
 	public int getCurrentCellInd() {
-		return currCellInd;
+		return inputInfo.peekLast();
 	}
 	
 	/**
@@ -99,23 +100,102 @@ public class Board {
 	public char getGlyphAtCell(int cellInd) {
 		return board[cellInd].getGlyph();
 	}
-	
+
 	/** 
 	 * Sets a cell to a given value
 	 * @param cellInd = cell index.
 	 * @param value = value to store in cell.
 	 */
-	public void setBitsAsCell(int cellInd, int value) {
+	public void setBitsAtCell(int cellInd, int value) {
 		board[cellInd].setValue(value);
 	}
 	
-	/**Returns the 6-bits of what's raised in cellInd
+	/**
+	 * Gets the first cellInd accessed in inputInfo, and
+	 * returns the trimmed String that includes glyphs from every
+	 * cell ind that follows. 
+	 * @return
+	 */
+	public String viewAsIndexed() {
+		int index = inputInfo.getFirst();
+		int end = inputInfo.getLast();
+		StringBuffer buf = new StringBuffer();
+		while(index <= end) {
+			buf.append(getGlyphAtCell(index));
+			index++;
+		}
+		return buf.toString();
+	}
+	
+	public String viewAndEmptyAsIndexed() {
+		int index = inputInfo.getFirst();
+		int end = inputInfo.getLast();
+		StringBuffer buf = new StringBuffer();
+		while(index <= end) {
+			buf.append(getGlyphAtCell(index));
+			setBitsAtCell(index, 0);
+			index++;
+		}
+		//clear buffer and board's cells within range
+		inputInfo.clear();
+		return buf.toString();
+	}
+	
+	/**
+	 * Inputted refers to just the cells the user has touched
+	 * ie: Won't include spaces in returned String
+	 * @return
+	 */
+	public String viewAsInputted() {
+		int tmpInd = 0;
+		StringBuffer buf = new StringBuffer();
+		while(tmpInd != inputInfo.size()) {
+			int cellInd = inputInfo.get(tmpInd);
+			buf.append(this.getGlyphAtCell(cellInd));
+			tmpInd++;
+		}
+		return buf.toString();
+		
+	}
+	
+	/**
+	 * Empties the inputInfo AND clears the cells touched
+	 * @return
+	 */
+	public String viewAndEmptyAsInputted() {
+		StringBuffer buf = new StringBuffer();
+		while(!inputInfo.isEmpty()) {
+			int cellInd = inputInfo.remove();
+			buf.append(this.getGlyphAtCell(cellInd));
+			
+			//clear cells touched
+			setBitsAtCell(cellInd, 0);
+		}
+		return buf.toString();
+	}
+	
+	/**
+	 * Allows user to delete the last cell they've touched
+	 */
+	public void backspaceByInput() {
+		int lastCell = inputInfo.pop();
+		setBitsAtCell(lastCell, 0);
+	}
+	
+	/**
+	 * Update board based on given cellInd and buttonInd
+	 * Triggers changeCellEvent if necessary
 	 * 
 	 * @param cellInd - index of cell that was pushed on
 	 * @param buttonNum - ranges from 1 to 6
-	 * @return
+	 * @return the 6-bits of what's raised in cellInd
 	 */
-	public int handleNewInput(int cellInd, int buttonNum) {
+	public int update(int cellInd, int buttonNum) {
+		if(cellInd == -1) {
+			altFlag = true;
+		}
+		
+		int currCellInd = inputInfo.peekLast();
 		if(currCellInd != cellInd) {
 			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd, this));
 			currCellInd = cellInd;
@@ -125,10 +205,10 @@ public class Board {
 	}
 
 	/**
-	 * Updates the 0th cell, i.e. the button cell.
+	 * Updates the board based on String from BWT hardware
 	 * @param 
 	 */
-	public void update(String message) {
+	public void update(String message) {		
 		
 		// If an alt button has been pressed, set the altFlag to true.
 		if(message == "a"){
@@ -137,6 +217,7 @@ public class Board {
 		
 		// If it's a button, update the appropriate dot in cell 0 (i.e. the button cell).
 		else if("bcdefg".indexOf(message) != -1){
+			inputInfo.push(0);
 			switch (message.toLowerCase(Locale.getDefault()).charAt(0)){
 			case 'b': 
 				this.board[0].setDot(4, true);
@@ -168,9 +249,8 @@ public class Board {
 			int cell = Integer.parseInt(details[0].trim());
 			int dot =  Integer.parseInt(details[1].trim());
 			
-			this.currCellInd = cell;
+			inputInfo.push(cell);
 			this.board[cell].setDot(dot, true);
 		}
-		
 	}
 }

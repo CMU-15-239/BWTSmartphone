@@ -344,7 +344,7 @@ public class BWT {
 	 */
 	public void clearLastInputtedCell() {
 		if(lastCell > 0) {
-			board.setBitsAsCell(lastCell, 0);
+			board.setBitsAtCell(lastCell, 0);
 			lastCell = -1;
 		}
 	}

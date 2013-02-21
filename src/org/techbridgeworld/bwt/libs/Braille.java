@@ -9,6 +9,7 @@ public class Braille {
 		private static final long serialVersionUID = 1L;
 
 	{
+		put(' ', bin("00000000"));
 	    put('a', bin("00000001"));
 	    put('b', bin("00000011"));
 	    put('c', bin("00001001"));
@@ -42,6 +43,7 @@ public class Braille {
 		private static final long serialVersionUID = 1L;
 
 	{
+		put(bin("00000000"), ' ');
 	    put(bin("00000001"), 'a');
 	    put(bin("00000011"), 'b');
 	    put(bin("00001001"), 'c');
