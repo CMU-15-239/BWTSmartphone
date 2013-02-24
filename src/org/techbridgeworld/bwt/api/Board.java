@@ -1,5 +1,6 @@
 package org.techbridgeworld.bwt.api;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -16,6 +17,7 @@ public class Board {
 	private final Cell board[];
 	private boolean altFlag = false;
 	private LinkedList<Integer> inputInfo;
+	private Cell universalCell;
 
 	/**
 	 * Constructor. Initializes all the cells to 0, and sets the current cell to
@@ -27,6 +29,7 @@ public class Board {
 		for (int i = 0; i < 33; i++) {
 			temp[i] = new Cell();
 		}
+		this.universalCell = new Cell();
 		this.board = temp;
 		this.inputInfo = new LinkedList<Integer>();
 	}
@@ -76,6 +79,7 @@ public class Board {
 		for (final Cell c : board) {
 			c.setValue(0);
 		}
+		this.universalCell.setValue(0);
 		this.altFlag = false;
 		this.inputInfo.clear();
 	}
@@ -101,23 +105,37 @@ public class Board {
 	/**
 	 * Returns the braille code at the given cell index.
 	 * 
-	 * @param cellInd
-	 *            = cell index.
+	 * @param cellInd = cell index.
 	 * @return braille code at board[cellInd].
 	 */
 	public int getBitsAtCell(int cellInd) {
 		return board[cellInd].getBrailleCode();
 	}
-
+	
+	/**
+	 * Return bit representation of any pushed dots, regardless of cell
+	 * @return
+	 */
+	public int getBitsAtUnivCell() {
+		return this.universalCell.getBrailleCode();
+	}
+	
 	/**
 	 * Returns the glyph representation stored at the given cell index.
 	 * 
-	 * @param cellInd
-	 *            = cell index.
+	 * @param cellInd = cell index.
 	 * @return glyph at board[cellInd].
 	 */
 	public char getGlyphAtCell(int cellInd) {
 		return board[cellInd].getGlyph();
+	}
+	
+	/**
+	 * Return glyph representation of any pushed dots, regardless of cell
+	 * @return
+	 */
+	public int getGlyphAtUnivCell() {
+		return this.universalCell.getGlyph();
 	}
 
 	/**
@@ -130,6 +148,14 @@ public class Board {
 	 */
 	public void setBitsAtCell(int cellInd, int value) {
 		board[cellInd].setValue(value);
+	}
+	
+	/**
+	 * Sets the universal cell to a certain Braille Code
+	 * @param value
+	 */
+	public void setBitsAtUnivCell(int value) {
+		this.universalCell.setValue(0);
 	}
 	
 	/**
@@ -197,6 +223,32 @@ public class Board {
 	}
 	
 	/**
+	 * View the inputInfo as an array of 6 bits
+	 * @return
+	 */
+	public ArrayList<Integer> viewBitsAtInputtedCells() {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		for(Integer cellInd : inputInfo) {
+			bits.add(board[cellInd].getBrailleCode());
+		}
+		return bits;
+	}
+
+	/**
+	 * View and empty the input info as array of 6 bits
+	 * @return
+	 */
+	public ArrayList<Integer> viewAndEmptyBitsAtInputtedCells() {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		while(!inputInfo.isEmpty()) {
+			int cellInd = inputInfo.remove();
+			bits.add(board[cellInd].getBrailleCode());
+			board[cellInd].setValue(0);
+		}
+		return bits;
+	}
+	
+	/**
 	 * Allows user to delete the last cell they've touched
 	 */
 	public void backspaceByInput() {
@@ -208,7 +260,7 @@ public class Board {
 	 * Update board based on given cellInd and buttonInd
 	 * Triggers changeCellEvent if necessary
 	 * 
-	 * @param cellInd - index of cell that was pushed on
+	 * @param cellInd - Correlates with cellInd from Firmware
 	 * @param buttonNum - ranges from 1 to 6
 	 * @return the 6-bits of what's raised in cellInd
 	 */
@@ -217,11 +269,17 @@ public class Board {
 			altFlag = true;
 		}
 		
+		if(cellInd != 0) {
+			// Update cell to reference the correct cell.
+			// Cell 1 should be the first one to write in, i.e. the top right
+			// cell. (Writing right to left)
+			cellInd = ((32-cellInd) + 16) %32 + 1;
+		}
+		
 		int currCellInd = inputInfo.peekLast();
 		if(currCellInd != cellInd) {
 			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd, this));
-
-			currCellInd = cellInd;
+			inputInfo.push(cellInd);
 		}
 
 		return board[cellInd].setDot(buttonNum);
@@ -234,7 +292,7 @@ public class Board {
 	 */
 	public void handleNewInput(String message) {
 		// If an alt button has been pressed, set the altFlag to true.
-		if (message == "a") {
+		if (message.equals("a")) {
 			altFlag = true;
 		}
 		
@@ -246,31 +304,36 @@ public class Board {
 			if (this.board[0].getBrailleCode() == 0) {
 				inputInfo.push(0);
 			}
-
+			
+			int dotNum = 0;
+			
 			switch (message.toLowerCase(Locale.getDefault()).charAt(0)) {
 			case 'b':
-				this.board[0].setDot(4, true);
+				dotNum = 4;
 				break;
 			case 'c':
-				this.board[0].setDot(5, true);
+				dotNum = 5;
 				break;
 			case 'd':
-				this.board[0].setDot(6, true);
+				dotNum = 6;
 				break;
 			case 'e':
-				this.board[0].setDot(1, true);
+				dotNum = 1;
 				break;
 			case 'f':
-				this.board[0].setDot(2, true);
+				dotNum = 2;
 				break;
 			case 'g':
-				this.board[0].setDot(3, true);
+				dotNum = 3;
 				break;
 			default:
 				// This should never ever fire.
 				Log.e("Salem", "Received unhandled button event '" + message
 						+ "'");
 			}
+			
+			this.board[0].setDot(dotNum, true);
+			this.universalCell.setDot(dotNum, true);
 		}
 
 		// It's two integers, one for the cell and one for the dot.
@@ -280,16 +343,17 @@ public class Board {
 			int cell = Integer.parseInt(details[0].trim());
 			int dot =  Integer.parseInt(details[1].trim());
 			
-			// If the selected cell had nothing in it, push to inputInfo.
-			if (board[cell].getBrailleCode() == 0) {
-				inputInfo.push(cell);
-			}
-			
 			// Update cell to reference the correct cell.
 			// Cell 1 should be the first one to write in, i.e. the top right
 			// cell. (Writing right to left)
 			cell = ((32-cell) + 16) %32 + 1;
+			
+			// If the selected cell had nothing in it, push to inputInfo.
+			if (board[cell].getBrailleCode() == 0) {
+				inputInfo.push(cell);
+			}
 			this.board[cell].setDot(dot, true);
+			this.universalCell.setDot(dot, true);
 		}
 	}
 }

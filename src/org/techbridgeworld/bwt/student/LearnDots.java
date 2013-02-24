@@ -163,7 +163,12 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 
 			@Override
 			public void eventTriggered(Object arg0, Event event) {
-
+				
+				//Do nothing in regards to AltBtn being pressed
+				if(((BoardEvent)event).getCellInd() == -1) {
+					return;
+				}
+				
 				// Cast the given event as a BoardEvent, and get the relevant dot information.
 				int trial = ((BoardEvent) event).getDot();
 				int goal = getCurrent();

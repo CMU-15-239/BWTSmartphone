@@ -59,6 +59,16 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 
 		bwt.init();
 	}
+	
+    @Override
+    public void onDestroy() {
+    	// Stop text-to-speech
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
@@ -96,7 +106,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	}
 	
 	private void deleteLastCharacter() {
-		
+		BWT.getBoard().backspaceByInput();
 	}
 
 	private void runGame() {
