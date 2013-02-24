@@ -144,53 +144,56 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 				// Start tracking the state of the BWT
 				bwt.initializeEventListeners();
 				bwt.startTracking();
-
-				// Generate the first dot.
-				currentDot = generator.nextInt(6) + 1;
-				filenames.add(getResources().getString(R.string.find_dot));
-				filenames.add(numbers[getCurrent()-1]);
-				playAudio(filenames.get(0));
-
-				// Listener to detect board input.
-				DotListener = new GenericEventListener(){
-
-					@Override
-					public void eventTriggered(Object arg0, Event arg1) {
-
-						// Cast the given event as a BoardEvent, and get the relevant dot information.
-						BoardEvent e = (BoardEvent) arg1;
-						int trial = e.getDot();
-						int goal = getCurrent();
-						Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
-						
-						// If they pressed the dot, then pick another dot.
-						if(trial == goal){
-							regenerate();
-						}
-						
-						// Otherwise, tell the user that they are incorrect and repeat the prompt. 
-						else{
-							if(player.isPlaying()) {
-								filenames.clear();
-								currentFile = 0;
-							}
-							filenames.add(getResources().getString(R.string.no));
-							filenames.add(getResources().getString(R.string.find_dot));
-							filenames.add(numbers[currentDot-1]);
-							playAudio(filenames.get(0));
-						}
-					}
-				};
-				
-				// Start the listener. 
-				EventManager.registerEventListener(DotListener, BoardEvent.class);
-
+				runGame();
 			}
 		}
 		else
 			Log.e("TTS", "Initilization Failed!");
 	}
 
+	private void runGame(){
+		// Generate the first dot.
+		currentDot = generator.nextInt(6) + 1;
+		filenames.add(getResources().getString(R.string.find_dot));
+		filenames.add(numbers[getCurrent()-1]);
+		playAudio(filenames.get(0));
+
+		// Listener to detect board input.
+		DotListener = new GenericEventListener(){
+
+			@Override
+			public void eventTriggered(Object arg0, Event event) {
+
+				// Cast the given event as a BoardEvent, and get the relevant dot information.
+				int trial = ((BoardEvent) event).getDot();
+				int goal = getCurrent();
+				Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
+				
+				// If they pressed the dot, then pick another dot.
+				if(trial == goal){
+					regenerate();
+				}
+				
+				// Otherwise, tell the user that they are incorrect and repeat the prompt. 
+				else{
+					if(player.isPlaying()) {
+						filenames.clear();
+						currentFile = 0;
+					}
+					filenames.add(getResources().getString(R.string.no));
+					filenames.add(getResources().getString(R.string.find_dot));
+					filenames.add(numbers[currentDot-1]);
+					playAudio(filenames.get(0));
+				}
+			}
+		};
+		
+		// Start the listener. 
+		EventManager.registerEventListener(DotListener, BoardEvent.class);
+
+	}
+	
+	
 	/**
 	 * Plays audio from a given file
 	 * @param filename = file to play audio from. 

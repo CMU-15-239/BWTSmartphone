@@ -248,8 +248,11 @@ public class Board {
 			
 			int cell = Integer.parseInt(details[0].trim());
 			int dot =  Integer.parseInt(details[1].trim());
-			
+			// Update dot to reference the correct cell. 
+			// Cell 1 should be the first one to write in, i.e. the top right cell. 
+			dot = ((32-dot) + 16) %32 + 1;
 			inputInfo.push(cell);
+			
 			this.board[cell].setDot(dot, true);
 		}
 	}

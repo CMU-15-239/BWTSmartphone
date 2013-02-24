@@ -195,7 +195,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 			
 			// Swipe right
-			else {
+			else if (event2.getX() - event1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
 				currentOption = (currentOption + 1) % numOptions; 
 				student_game.setText(options[currentOption]);
 				student_game.setContentDescription(options[currentOption]);
