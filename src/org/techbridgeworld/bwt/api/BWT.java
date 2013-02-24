@@ -34,7 +34,7 @@ public class BWT {
 	private Activity currActivity;
 
 	// BWT information/state
-	private Board board;
+	private static Board board;
 	private static final Braille braille = new Braille();
 	private boolean isTracking;
 	private ArrayList<Integer> inputBuffer;
@@ -271,8 +271,8 @@ public class BWT {
 	}
 
 	/** Board getter */
-	public Board getBoard() {
-		return this.board;
+	public static Board getBoard() {
+		return board;
 	}
 
 	/**
@@ -505,7 +505,7 @@ public class BWT {
 			currCellBits = board.getBitsAtCell(currCell);
 
 		// Trigger board event regardless
-		board.update(message);
+		board.handleNewInput(message);
 		EventManager.triggerEvent(this, new BoardEvent(message, currCell,
 				currCellBits, currDot), "onBoardEvent");
 

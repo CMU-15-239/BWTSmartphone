@@ -98,15 +98,17 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	private void deleteLastCharacter() {
 		
 	}
-	
-	private void runGame(){
-		AnimalListener = new GenericEventListener(){
+
+	private void runGame() {
+		AnimalListener = new GenericEventListener() {
 
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
-				
+				if(currAnimal.length() > BWT.getBoard().getUsedCells()){
+					
+				}
 			}
-			
+
 		};
 	}
 
