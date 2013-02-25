@@ -142,6 +142,7 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 			// If text-to-speech started successfully, and it has a supported language, start the game.
 			else { 
 				// Start tracking the state of the BWT
+				bwt.initializeEventListeners();
 				bwt.startTracking();
 				runGame();
 			}
@@ -162,7 +163,12 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 
 			@Override
 			public void eventTriggered(Object arg0, Event event) {
-
+				
+				//Do nothing in regards to AltBtn being pressed
+				if(((BoardEvent)event).getCellInd() == -1) {
+					return;
+				}
+				
 				// Cast the given event as a BoardEvent, and get the relevant dot information.
 				int trial = ((BoardEvent) event).getDot();
 				int goal = getCurrent();
@@ -243,6 +249,8 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 				if(DotListener != null){
 					EventManager.unregisterEventListener(DotListener, BoardEvent.class);
 				}
+				bwt.stopTracking();
+				bwt.removeEventListeners();
 				bwt.stop();
 				startActivity(intent);
 			}

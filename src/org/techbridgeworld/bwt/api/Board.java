@@ -1,5 +1,7 @@
 package org.techbridgeworld.bwt.api;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Locale;
 
 import javaEventing.EventManager;
@@ -11,11 +13,11 @@ import android.util.Log;
 
 public class Board {
 	private static Braille braille = new Braille();
-
+	
 	private final Cell board[];
-	private int currCellInd;
 	private boolean altFlag = false;
-	private int usedCells;
+	private LinkedList<Integer> inputInfo;
+	private Cell universalCell;
 
 	/**
 	 * Constructor. Initializes all the cells to 0, and sets the current cell to
@@ -27,8 +29,9 @@ public class Board {
 		for (int i = 0; i < 33; i++) {
 			temp[i] = new Cell();
 		}
+		this.universalCell = new Cell();
 		this.board = temp;
-		currCellInd = -1;
+		this.inputInfo = new LinkedList<Integer>();
 	}
 
 	/**
@@ -76,8 +79,9 @@ public class Board {
 		for (final Cell c : board) {
 			c.setValue(0);
 		}
+		this.universalCell.setValue(0);
 		this.altFlag = false;
-		this.usedCells = 0;
+		this.inputInfo.clear();
 	}
 
 	/**
@@ -86,7 +90,7 @@ public class Board {
 	 * @return currently active cell index.
 	 */
 	public int getCurrentCellInd() {
-		return this.currCellInd;
+		return inputInfo.peekLast();
 	}
 
 	/**
@@ -95,29 +99,43 @@ public class Board {
 	 * @return the number of used cells in the board at the time.
 	 */
 	public int getUsedCells() {
-		return this.usedCells;
+		return this.inputInfo.size();
 	}
 
 	/**
 	 * Returns the braille code at the given cell index.
 	 * 
-	 * @param cellInd
-	 *            = cell index.
+	 * @param cellInd = cell index.
 	 * @return braille code at board[cellInd].
 	 */
 	public int getBitsAtCell(int cellInd) {
 		return board[cellInd].getBrailleCode();
 	}
-
+	
+	/**
+	 * Return bit representation of any pushed dots, regardless of cell
+	 * @return
+	 */
+	public int getBitsAtUnivCell() {
+		return this.universalCell.getBrailleCode();
+	}
+	
 	/**
 	 * Returns the glyph representation stored at the given cell index.
 	 * 
-	 * @param cellInd
-	 *            = cell index.
+	 * @param cellInd = cell index.
 	 * @return glyph at board[cellInd].
 	 */
 	public char getGlyphAtCell(int cellInd) {
 		return board[cellInd].getGlyph();
+	}
+	
+	/**
+	 * Return glyph representation of any pushed dots, regardless of cell
+	 * @return
+	 */
+	public int getGlyphAtUnivCell() {
+		return this.universalCell.getGlyph();
 	}
 
 	/**
@@ -128,24 +146,140 @@ public class Board {
 	 * @param value
 	 *            = value to store in cell.
 	 */
-	public void setBitsAsCell(int cellInd, int value) {
+	public void setBitsAtCell(int cellInd, int value) {
 		board[cellInd].setValue(value);
+	}
+	
+	/**
+	 * Sets the universal cell to a certain Braille Code
+	 * @param value
+	 */
+	public void setBitsAtUnivCell(int value) {
+		this.universalCell.setValue(0);
+	}
+	
+	/**
+	 * Gets the first cellInd accessed in inputInfo, and
+	 * returns the trimmed String that includes glyphs from every
+	 * cell ind that follows. 
+	 * @return
+	 */
+	public String viewAsIndexed() {
+		int index = inputInfo.getFirst();
+		int end = inputInfo.getLast();
+		StringBuffer buf = new StringBuffer();
+		while(index <= end) {
+			buf.append(getGlyphAtCell(index));
+			index++;
+		}
+		return buf.toString();
+	}
+	
+	public String viewAndEmptyAsIndexed() {
+		int index = inputInfo.getFirst();
+		int end = inputInfo.getLast();
+		StringBuffer buf = new StringBuffer();
+		while(index <= end) {
+			buf.append(getGlyphAtCell(index));
+			setBitsAtCell(index, 0);
+			index++;
+		}
+		//clear buffer and board's cells within range
+		inputInfo.clear();
+		return buf.toString();
+	}
+	
+	/**
+	 * Inputted refers to just the cells the user has touched
+	 * ie: Won't include spaces in returned String
+	 * @return
+	 */
+	public String viewAsInputted() {
+		int tmpInd = 0;
+		StringBuffer buf = new StringBuffer();
+		while(tmpInd != inputInfo.size()) {
+			int cellInd = inputInfo.get(tmpInd);
+			buf.append(this.getGlyphAtCell(cellInd));
+			tmpInd++;
+		}
+		return buf.toString();
+		
+	}
+	
+	/**
+	 * Empties the inputInfo AND clears the cells touched
+	 * @return
+	 */
+	public String viewAndEmptyAsInputted() {
+		StringBuffer buf = new StringBuffer();
+		while(!inputInfo.isEmpty()) {
+			int cellInd = inputInfo.remove();
+			buf.append(this.getGlyphAtCell(cellInd));
+			
+			//clear cells touched
+			setBitsAtCell(cellInd, 0);
+		}
+		return buf.toString();
+	}
+	
+	/**
+	 * View the inputInfo as an array of 6 bits
+	 * @return
+	 */
+	public ArrayList<Integer> viewBitsAtInputtedCells() {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		for(Integer cellInd : inputInfo) {
+			bits.add(board[cellInd].getBrailleCode());
+		}
+		return bits;
 	}
 
 	/**
-	 * Returns the 6-bits of what's raised in cellInd
-	 * 
-	 * @param cellInd
-	 *            - index of cell that was pushed on
-	 * @param buttonNum
-	 *            - ranges from 1 to 6
+	 * View and empty the input info as array of 6 bits
 	 * @return
 	 */
+	public ArrayList<Integer> viewAndEmptyBitsAtInputtedCells() {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		while(!inputInfo.isEmpty()) {
+			int cellInd = inputInfo.remove();
+			bits.add(board[cellInd].getBrailleCode());
+			board[cellInd].setValue(0);
+		}
+		return bits;
+	}
+	
+	/**
+	 * Allows user to delete the last cell they've touched
+	 */
+	public void backspaceByInput() {
+		int lastCell = inputInfo.pop();
+		setBitsAtCell(lastCell, 0);
+	}
+	
+	/**
+	 * Update board based on given cellInd and buttonInd
+	 * Triggers changeCellEvent if necessary
+	 * 
+	 * @param cellInd - Correlates with cellInd from Firmware
+	 * @param buttonNum - ranges from 1 to 6
+	 * @return the 6-bits of what's raised in cellInd
+	 */
 	public int handleNewInput(int cellInd, int buttonNum) {
-		if (currCellInd != cellInd) {
-			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd,
-					cellInd, this));
-			currCellInd = cellInd;
+		if(cellInd == -1) {
+			altFlag = true;
+		}
+		
+		if(cellInd != 0) {
+			// Update cell to reference the correct cell.
+			// Cell 1 should be the first one to write in, i.e. the top right
+			// cell. (Writing right to left)
+			cellInd = ((32-cellInd) + 16) %32 + 1;
+		}
+		
+		int currCellInd = inputInfo.peekLast();
+		if(currCellInd != cellInd) {
+			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd, this));
+			inputInfo.push(cellInd);
 		}
 
 		return board[cellInd].setDot(buttonNum);
@@ -156,46 +290,50 @@ public class Board {
 	 * 
 	 * @param
 	 */
-	public void update(String message) {
-
+	public void handleNewInput(String message) {
 		// If an alt button has been pressed, set the altFlag to true.
-		if (message == "a") {
+		if (message.equals("a")) {
 			altFlag = true;
 		}
-
+		
 		// If it's a button, update the appropriate dot in cell 0 (i.e. the
 		// button cell).
 		else if ("bcdefg".indexOf(message) != -1) {
 
 			// If the button cell is 0, increment usedCells.
 			if (this.board[0].getBrailleCode() == 0) {
-				usedCells++;
+				inputInfo.push(0);
 			}
-
+			
+			int dotNum = 0;
+			
 			switch (message.toLowerCase(Locale.getDefault()).charAt(0)) {
 			case 'b':
-				this.board[0].setDot(4, true);
+				dotNum = 4;
 				break;
 			case 'c':
-				this.board[0].setDot(5, true);
+				dotNum = 5;
 				break;
 			case 'd':
-				this.board[0].setDot(6, true);
+				dotNum = 6;
 				break;
 			case 'e':
-				this.board[0].setDot(1, true);
+				dotNum = 1;
 				break;
 			case 'f':
-				this.board[0].setDot(2, true);
+				dotNum = 2;
 				break;
 			case 'g':
-				this.board[0].setDot(3, true);
+				dotNum = 3;
 				break;
 			default:
 				// This should never ever fire.
 				Log.e("Salem", "Received unhandled button event '" + message
 						+ "'");
 			}
+			
+			this.board[0].setDot(dotNum, true);
+			this.universalCell.setDot(dotNum, true);
 		}
 
 		// It's two integers, one for the cell and one for the dot.
@@ -203,21 +341,19 @@ public class Board {
 			String[] details = message.split(" ");
 
 			int cell = Integer.parseInt(details[0].trim());
-			int dot = Integer.parseInt(details[1].trim());
-
-			// If the selected cell had nothing in it, increment usedCells.
-			if (board[cell].getBrailleCode() == 0) {
-				usedCells++;
-			}
-
-			// Update dot to reference the correct cell.
+			int dot =  Integer.parseInt(details[1].trim());
+			
+			// Update cell to reference the correct cell.
 			// Cell 1 should be the first one to write in, i.e. the top right
-			// cell.
-			dot = ((32 - dot) + 16) % 32 + 1;
-
-			this.currCellInd = cell;
+			// cell. (Writing right to left)
+			cell = ((32-cell) + 16) %32 + 1;
+			
+			// If the selected cell had nothing in it, push to inputInfo.
+			if (board[cell].getBrailleCode() == 0) {
+				inputInfo.push(cell);
+			}
 			this.board[cell].setDot(dot, true);
+			this.universalCell.setDot(dot, true);
 		}
-
 	}
 }
