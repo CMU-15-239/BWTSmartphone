@@ -100,7 +100,8 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
 				if(currAnimal.length() > BWT.getBoard().getUsedCells()){
-					
+					// Check to see if they've changed cells. 
+					// If they have, announce the last thing they did.
 				}
 			}
 
