@@ -17,9 +17,12 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        
         <activity
             android:name="org.techbridgeworld.bwt.student.WelcomeActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name" 
+            android:screenOrientation="landscape"
+			android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
@@ -29,10 +32,19 @@
             <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <activity android:name=".GameActivity" />
-        <activity android:name=".LearnDots" />
-        <activity android:name=".LearnLetters" />
-        <activity android:name=".AnimalGame" />
+        
+        <activity android:name=".GameActivity" 
+            android:screenOrientation="landscape"
+			android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".LearnDots" 
+            android:screenOrientation="landscape"
+			android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".LearnLetters"
+            android:screenOrientation="landscape"
+			android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name=".AnimalGame" 
+            android:screenOrientation="landscape"
+			android:configChanges="keyboardHidden|orientation|screenSize"/>
     </application>
 
 </manifest>
