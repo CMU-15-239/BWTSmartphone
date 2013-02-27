@@ -135,22 +135,23 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 				String goal = getCurr();
 				
 
-				/** FOR DEBUGGING **/
-				bwt.defaultBoardHandler(arg0, arg1);
-				BoardEvent e = (BoardEvent) arg1;
-
-				String trial = bwt.viewTrackingAsString();
-				
-				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: "
-						+ goal);
-
-				int cellstate = e.getCellState();
-				Log.i("Animal Game", "Current cell (" + e.getCellInd()
-						+ ") bits: " + Integer.toBinaryString(cellstate));
-				/*********************/
+//				/** FOR DEBUGGING **/
+//				bwt.defaultBoardHandler(arg0, arg1);
+//				BoardEvent e = (BoardEvent) arg1;
+//
+//				String trial = bwt.viewTrackingAsString();
+//				
+//				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: "
+//						+ goal);
+//
+//				int cellstate = e.getCellState();
+//				Log.i("Animal Game", "Current cell (" + e.getCellInd()
+//						+ ") bits: " + Integer.toBinaryString(cellstate));
+//				/*********************/
 				
 				// Matches
 				if (bwt.currentMatchesString(goal)) {
+					speakOutQueue(bwt.getCurrentCellGlyph() + ".");
 					bwt.clearAllTracking();
 					regenerate();
 					speakOutReplace("Good. Spell the word " + getCurr() + ".");

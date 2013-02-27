@@ -89,7 +89,7 @@ public class Board {
 	 * 
 	 * @return currently active cell index.
 	 */
-	public int getCurrentCellInd() {
+	public Integer getCurrentCellInd() {
 		return inputInfo.peekLast();
 	}
 
@@ -159,6 +159,19 @@ public class Board {
 	}
 	
 	/**
+	 * Print input info for debugging purposes
+	 */
+	public void printInputInfo() {
+		int tmpInd = 0;
+		StringBuffer buf = new StringBuffer();
+		while(tmpInd < inputInfo.size()) {
+			buf.append(inputInfo.get(tmpInd));
+			tmpInd++;
+		}
+		Log.d("Check input", "inputInfo: '" + buf.toString() + "'");
+	}
+	
+	/**
 	 * Gets the first cellInd accessed in inputInfo, and
 	 * returns the trimmed String that includes glyphs from every
 	 * cell ind that follows. 
@@ -213,7 +226,7 @@ public class Board {
 	public String viewAndEmptyAsInputted() {
 		StringBuffer buf = new StringBuffer();
 		while(!inputInfo.isEmpty()) {
-			int cellInd = inputInfo.remove();
+			int cellInd = inputInfo.poll();
 			buf.append(this.getGlyphAtCell(cellInd));
 			
 			//clear cells touched
@@ -234,6 +247,8 @@ public class Board {
 		while(tmpInd < inputInfo.size() - 1) {
 			int cellInd = inputInfo.get(tmpInd);
 			buf.append(this.getGlyphAtCell(cellInd));
+			printInputInfo();
+			Log.i("Check input", "viewAsInputtedExceptCurrent: " + buf.toString());
 			tmpInd++;
 		}
 		return buf.toString();
@@ -248,7 +263,7 @@ public class Board {
 	public String viewAndEmptyAsInputtedExceptCurrent() {
 		StringBuffer buf = new StringBuffer();
 		while(inputInfo.size() > 1) {
-			int cellInd = inputInfo.remove();
+			int cellInd = inputInfo.poll();
 			buf.append(this.getGlyphAtCell(cellInd));
 			
 			//clear cells touched
@@ -366,7 +381,7 @@ public class Board {
 
 			// If the button cell is 0, increment usedCells.
 			if (this.board[0].getBrailleCode() == 0) {
-				inputInfo.push(0);
+				inputInfo.add(0);
 			}
 			
 			int dotNum = 0;
@@ -415,7 +430,7 @@ public class Board {
 			
 			// If the selected cell had nothing in it, push to inputInfo.
 			if (board[cell].getBrailleCode() == 0) {
-				inputInfo.push(cell);
+				inputInfo.add(cell);
 			}
 			this.board[cell].setDot(dot, true);
 			this.universalCell.setDot(dot, true);

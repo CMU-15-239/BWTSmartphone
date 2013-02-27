@@ -421,7 +421,7 @@ public class BWT {
 	public boolean offTrackFromChar(char c) {
 		Integer lastCell = board.getCurrentCellInd();
 		if (lastCell == null || lastCell < 0) {
-			Log.i("Check input", "Char off track; lastCell = " + lastCell);
+			Log.d("Check input", "Char off track; lastCell = " + lastCell);
 			return false;
 		}
 		int currBits = board.getBitsAtCell(lastCell);
@@ -442,7 +442,7 @@ public class BWT {
 		
 		int indexFound = s.indexOf(finishedDump);
 		if (indexFound != 0 && finishedDump.length() > 0) {
-			Log.i("Check input", "Is off track; finishedDump = '" + finishedDump + "'");
+			Log.d("Check input", "Is off track; finishedDump = '" + finishedDump + "'");
 			return true;
 		}
 
@@ -487,6 +487,8 @@ public class BWT {
 		message = message.toLowerCase(Locale.getDefault()).replaceAll("n", "").trim();
 		if (message.equals("bt"))
 			return;
+		
+		Integer lastCell = board.getCurrentCellInd();
 
 		//First, update board
 		board.handleNewInput(message);
@@ -519,8 +521,7 @@ public class BWT {
 
 		// Determine if there has been a cell change (Event Handler updates
 		// lastCell)
-		int lastCell = board.getCurrentCellInd();
-		if (currCell != lastCell)
+		if ( lastCell != null && currCell != lastCell)
 			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell,
 					currCell, board), "onChangeCellEvent");
 
