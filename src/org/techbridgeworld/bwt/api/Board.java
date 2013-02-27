@@ -221,6 +221,41 @@ public class Board {
 		}
 		return buf.toString();
 	}
+
+	/**
+	 * Inputted refers to just the cells the user has touched
+	 * ie: Won't include spaces in returned String
+	 * EXCEPT for the current cell
+	 * @return
+	 */
+	public String viewAsInputtedExceptCurrent() {
+		int tmpInd = 0;
+		StringBuffer buf = new StringBuffer();
+		while(tmpInd < inputInfo.size() - 1) {
+			int cellInd = inputInfo.get(tmpInd);
+			buf.append(this.getGlyphAtCell(cellInd));
+			tmpInd++;
+		}
+		return buf.toString();
+		
+	}
+	
+	/**
+	 * Empties the inputInfo AND clears the cells touched
+	 * EXCEPT for the current cell
+	 * @return
+	 */
+	public String viewAndEmptyAsInputtedExceptCurrent() {
+		StringBuffer buf = new StringBuffer();
+		while(inputInfo.size() > 1) {
+			int cellInd = inputInfo.remove();
+			buf.append(this.getGlyphAtCell(cellInd));
+			
+			//clear cells touched
+			setBitsAtCell(cellInd, 0);
+		}
+		return buf.toString();
+	}
 	
 	/**
 	 * View the inputInfo as an array of 6 bits
@@ -241,6 +276,35 @@ public class Board {
 	public ArrayList<Integer> viewAndEmptyBitsAtInputtedCells() {
 		ArrayList<Integer> bits = new ArrayList<Integer>();
 		while(!inputInfo.isEmpty()) {
+			int cellInd = inputInfo.remove();
+			bits.add(board[cellInd].getBrailleCode());
+			board[cellInd].setValue(0);
+		}
+		return bits;
+	}
+	
+	/**
+	 * View the inputInfo as an array of 6 bits
+	 * EXCEPT for current cell
+	 * @return
+	 */
+	public ArrayList<Integer> viewBitsAtInputtedCellsExceptCurrent() {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		for(Integer cellInd : inputInfo) {
+			if(cellInd >= inputInfo.size() - 1) break;
+			bits.add(board[cellInd].getBrailleCode());
+		}
+		return bits;
+	}
+
+	/**
+	 * View and empty the input info as array of 6 bits
+	 * EXCEPT for current cell
+	 * @return
+	 */
+	public ArrayList<Integer> viewAndEmptyBitsAtInputtedCellsExceptCurrent() {
+		ArrayList<Integer> bits = new ArrayList<Integer>();
+		while(inputInfo.size() > 1) {
 			int cellInd = inputInfo.remove();
 			bits.add(board[cellInd].getBrailleCode());
 			board[cellInd].setValue(0);
@@ -347,6 +411,7 @@ public class Board {
 			// Cell 1 should be the first one to write in, i.e. the top right
 			// cell. (Writing right to left)
 			cell = ((32-cell) + 16) %32 + 1;
+			dot = (dot +2) %6 + 1;
 			
 			// If the selected cell had nothing in it, push to inputInfo.
 			if (board[cell].getBrailleCode() == 0) {

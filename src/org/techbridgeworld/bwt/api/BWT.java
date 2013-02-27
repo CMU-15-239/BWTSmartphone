@@ -36,7 +36,6 @@ public class BWT {
 	private static Board board;
 	private static final Braille braille = new Braille();
 	private boolean isTracking;
-	private int lastCell = -1;
 
 	// Constants
 	private static final int BAUDRATE = 57600;
@@ -297,7 +296,7 @@ public class BWT {
 		if(!isTracking) return null;
 		return board.viewAndEmptyAsInputted();
 	}
-
+	
 	/**
 	 * Returns everything in current 'buffer' (Does NOT empty)
 	 * 
@@ -329,6 +328,48 @@ public class BWT {
 			return null;
 		return board.viewBitsAtInputtedCells();
 	}
+
+	/**
+	 * Returns and empties everything in current 'buffer'
+	 *  EXCEPT for current cell
+	 * @return what was left in the buffer If not tracking, returns null
+	 */
+	public String dumpTrackingAsStringExceptCurrent() {
+		if(!isTracking) return null;
+		return board.viewAndEmptyAsInputtedExceptCurrent();
+	}
+	
+	/**
+	 * Returns everything in current 'buffer' (Does NOT empty)
+	 *  EXCEPT for current cell
+	 * @return what was left in the buffer If not tracking, returns null
+	 */
+	public String viewTrackingAsStringExceptCurrent() {
+		if (!isTracking) return null;
+		return board.viewAsInputtedExceptCurrent();
+	}
+
+	/**
+	 * Dumps as an Array of Integers
+	 * EXCEPT for current cell
+	 * @return
+	 */
+	public ArrayList<Integer> dumpTrackingAsBitsExceptCurrent() {
+		if (!isTracking)
+			return null;
+		return board.viewAndEmptyBitsAtInputtedCellsExceptCurrent();
+	}
+
+	/**
+	 * Views as an Array of Integers
+	 * EXCEPT for current cell
+	 * @return
+	 */
+	public ArrayList<Integer> viewTrackingAsBitsExceptCurrent() {
+		if (!isTracking)
+			return null;
+		return board.viewBitsAtInputtedCellsExceptCurrent();
+	}
 	
 	/**
 	 * Clears both inputBuffer and current cell info
@@ -351,7 +392,8 @@ public class BWT {
 	 * @return
 	 */
 	public int getCurrentCellBits() {
-		if (lastCell < 0)
+		Integer lastCell = board.getCurrentCellInd();
+		if (lastCell == null || lastCell < 0)
 			return 0;
 		return board.getBitsAtCell(lastCell);
 	}
@@ -362,7 +404,8 @@ public class BWT {
 	 * @return
 	 */
 	public char getCurrentCellGlyph() {
-		if (lastCell < 0)
+		Integer lastCell = board.getCurrentCellInd();
+		if (lastCell == null || lastCell < 0)
 			return '-';
 		return board.getGlyphAtCell(lastCell);
 	}
@@ -376,8 +419,11 @@ public class BWT {
 	 * @return true : if off track of matching c
 	 */
 	public boolean offTrackFromChar(char c) {
-		if (lastCell < 0)
+		Integer lastCell = board.getCurrentCellInd();
+		if (lastCell == null || lastCell < 0) {
+			Log.i("Check input", "Char off track; lastCell = " + lastCell);
 			return false;
+		}
 		int currBits = board.getBitsAtCell(lastCell);
 		int expBits = braille.get(c);
 		return (((currBits & expBits) ^ currBits) > 0);
@@ -392,27 +438,31 @@ public class BWT {
 	public boolean offTrackFromString(String s) {
 
 		// Check what's in trackingBuffer
-		String currDump = viewTrackingAsString();
-		int indexFound = s.indexOf(currDump);
-		if (indexFound != 0 && currDump.length() > 0)
+		String finishedDump = viewTrackingAsStringExceptCurrent();
+		
+		int indexFound = s.indexOf(finishedDump);
+		if (indexFound != 0 && finishedDump.length() > 0) {
+			Log.i("Check input", "Is off track; finishedDump = '" + finishedDump + "'");
 			return true;
+		}
 
 		// Check the most recent cell
-		return offTrackFromChar(s.charAt(currDump.length()));
+		return offTrackFromChar(s.charAt(finishedDump.length()));
 	}
 
 	public boolean currentMatchesChar(char c) {
-		if (lastCell < 0)
+		Integer lastCell = board.getCurrentCellInd();
+		if (lastCell == null || lastCell < 0)
 			return false;
 		int currBits = board.getBitsAtCell(lastCell);
 		int expBits = braille.get(c);
 		return (currBits == expBits);
 
 	}
-
+	
 	public boolean currentMatchesString(String s) {
 		// Check what's in trackingBuffer
-		String currDump = viewTrackingAsString();
+		String currDump = viewTrackingAsStringExceptCurrent();
 		int indexFound = s.indexOf(currDump);
 		if (currDump.equals(s))
 			return true;
@@ -469,6 +519,7 @@ public class BWT {
 
 		// Determine if there has been a cell change (Event Handler updates
 		// lastCell)
+		int lastCell = board.getCurrentCellInd();
 		if (currCell != lastCell)
 			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell,
 					currCell, board), "onChangeCellEvent");

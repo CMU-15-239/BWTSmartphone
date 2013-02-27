@@ -95,35 +95,21 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			else{
 				bwt.initializeEventListeners();
 				bwt.startTracking();
-
-				regenerate();
-				speakOutQueue("Spell the word " + getCurr() + ".");
-
-				createListeners();
+				
+				runGame();
 			}
 		} else
 			Log.e("TTS", "Initilization Failed!");
 	}
-	
-	private void deleteLastCharacter() {
-		BWT.getBoard().backspaceByInput();
-	}
 
 	private void runGame() {
-		AnimalListener = new GenericEventListener() {
+		regenerate();
+		speakOutQueue("Spell the word " + getCurr() + ".");
 
-			@Override
-			public void eventTriggered(Object arg0, Event arg1) {
-				if(currAnimal.length() > BWT.getBoard().getUsedCells()){
-					
-				}
-			}
-
-		};
+		createListeners();
 	}
 
 	private void createListeners() {
-
 		// Say last typed character if available
 		ChangeListener = new GenericEventListener() {
 			public void eventTriggered(Object arg0, Event arg1) {
@@ -140,24 +126,28 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 				speakOutQueue(last + ".");
 			}
 		};
-
+		
 		// Handles the checking and comparing of the expected word vs user input
 		AnimalListener = new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
+				String goal = getCurr();
+				
+
+				/** FOR DEBUGGING **/
 				bwt.defaultBoardHandler(arg0, arg1);
 				BoardEvent e = (BoardEvent) arg1;
 
-				/** FOR DEBUGGING **/
 				String trial = bwt.viewTrackingAsString();
-				String goal = getCurr();
+				
 				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: "
 						+ goal);
 
 				int cellstate = e.getCellState();
 				Log.i("Animal Game", "Current cell (" + e.getCellInd()
 						+ ") bits: " + Integer.toBinaryString(cellstate));
-
+				/*********************/
+				
 				// Matches
 				if (bwt.currentMatchesString(goal)) {
 					bwt.clearAllTracking();
