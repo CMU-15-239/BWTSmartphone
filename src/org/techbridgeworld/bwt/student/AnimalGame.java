@@ -106,6 +106,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 		regenerate();
 		speakOutQueue("Spell the word " + getCurr() + ".");
 
+
 		createListeners();
 	}
 
