@@ -7,7 +7,7 @@ import java.util.Locale;
 import javaEventing.EventManager;
 
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
-import org.techbridgeworld.bwt.libs.Braille;
+import org.techbridgeworld.bwt.api.libs.Braille;
 
 import android.util.Log;
 

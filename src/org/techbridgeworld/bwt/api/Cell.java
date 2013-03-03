@@ -1,8 +1,6 @@
 package org.techbridgeworld.bwt.api;
 
-import org.techbridgeworld.bwt.libs.Braille;
-
-import android.util.Log;
+import org.techbridgeworld.bwt.api.libs.Braille;
 
 public class Cell {
 /**

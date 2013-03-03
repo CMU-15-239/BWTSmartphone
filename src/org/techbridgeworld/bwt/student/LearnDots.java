@@ -11,6 +11,7 @@ import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.BoardEvent;
+import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,9 +31,6 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 	private String[] numbers = {"one", "two", "three", "four", "five", "six"};
 
 	private TextToSpeech tts;
-
-	private static final int SWIPE_MIN_DISTANCE = 120;
-	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector; 
 
 	private Random generator = new Random(15239);
@@ -241,8 +239,10 @@ public class LearnDots extends Activity implements TextToSpeech.OnInitListener {
 
 		@Override
 		public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+			FlingHelper fling = new FlingHelper(event1, event2, velocityX, velocityY);
+			
 			// Swipe up
-			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			if (fling.isUp()) {
 				Intent intent = new Intent(LearnDots.this, GameActivity.class);
 
 				// If we've started the dot listener, remove it since we're done with it.

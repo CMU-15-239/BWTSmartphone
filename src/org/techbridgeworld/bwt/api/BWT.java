@@ -15,7 +15,7 @@ import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.api.events.CellsEvent;
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 import org.techbridgeworld.bwt.api.events.MainBtnEvent;
-import org.techbridgeworld.bwt.libs.Braille;
+import org.techbridgeworld.bwt.api.libs.Braille;
 
 import android.app.Activity;
 import android.content.Context;
@@ -44,7 +44,7 @@ public class BWT {
 												// for.
 
 	// Buffer / Debounce stuff
-	private byte[] dataBuffer = new byte[6];
+	private char[] dataBuffer = new char[6];
 	private int bufferIdx = 0;
 	private Hashtable<String, Boolean> debounceHash = new Hashtable<String, Boolean>();
 
@@ -227,38 +227,39 @@ public class BWT {
 			// If we are done, and if the buffer represents a non-blocked key,
 			// then
 			// log the buffer, clear it, and set its index to 0.
-			if (data[i] == 110 || data[i] == 116) {
+			if (data[i] == 'n' || data[i] == 't') {
 
 				// This is to catch the initial "bt" received from the device.
-				if (data[i] == 116) {
-					dataBuffer[bufferIdx] = data[i];
+				if (data[i] == 't') {
+					dataBuffer[bufferIdx] = (char)data[i];
 					bufferIdx++;
 				}
 
-				String message = "";
-				for (int j = 0; j < bufferIdx; j++) {
-					message += (char) dataBuffer[j];
-				}
+				StringBuilder message = new StringBuilder();
+				message.append(dataBuffer, 0, bufferIdx);
 
-				if (!isDebounced(message)) { // Fire a trigger!
+				if (!isDebounced(message.toString())) { // Fire a trigger!
 					Log.i("DataTransfer", "Fired trigger '" + message + "'");
 
-					triggerNewDataEvent(message);
-					debounceKey(message);
+					triggerNewDataEvent(message.toString());
+					debounceKey(message.toString());
 
 				} else {
 					// Log.d("DataTransfer", "Button press blocked!");
 				}
 
 				bufferIdx = 0;
-				dataBuffer = new byte[6];
+				//reset dataBuffer
+				for(int j = 0; j < 6; j++) {
+					dataBuffer[j] = 0;
+				}
 
 			} else {
 				if (bufferIdx >= 6) {
 					Log.e("DataTransfer", "bufferIdx out of range: "
 							+ bufferIdx);
 				} else {
-					dataBuffer[bufferIdx] = data[i];
+					dataBuffer[bufferIdx] = (char)data[i];
 					bufferIdx++;
 				}
 			}
@@ -460,18 +461,39 @@ public class BWT {
 
 	}
 	
-	public boolean currentMatchesString(String s) {
+	/**
+	 * Used to find the last typed char that's done, the moment it's done,
+	 * in a series of characters expected (String s)
+	 * 
+	 * @param s is the String you're comparing input with
+	 * @return index of the last character that matches part of s
+	 * Returns -1 if character not done, or if not even on right track
+	 */
+	public int currentMatchingIndexOfString(String s) {
 		// Check what's in trackingBuffer
 		String currDump = viewTrackingAsStringExceptCurrent();
 		int indexFound = s.indexOf(currDump);
 		if (currDump.equals(s))
-			return true;
-		if (indexFound != 0 || currDump.length() != s.length() - 1)
-			return false;
+			return currDump.length() - 1;
+		if (indexFound != 0)
+			return -1;
 
 		// Check the most recent cell
-		return currentMatchesChar(s.charAt(currDump.length()));
+		int index = currDump.length();
+		char ch = s.charAt(index);
+		if(currentMatchesChar(ch))
+			return index;
+		else return -1;
 
+	}
+	
+	/**
+	 * Determines if input matches expected String
+	 * @param s
+	 * @return true of current input matches string s
+	 */
+	public boolean currentMatchesString(String s) {
+		return (currentMatchingIndexOfString(s) == s.length() -1);
 	}
 	
 	/**
@@ -514,7 +536,6 @@ public class BWT {
 			CellsEvent cellsEvent = new CellsEvent(message, board);
 			EventManager.triggerEvent(this, cellsEvent, "onCellsEvent");
 
-			// Determine if there has been a cell change.
 			currCell = cellsEvent.getCell();
 			currDot = cellsEvent.getDot();
 		}

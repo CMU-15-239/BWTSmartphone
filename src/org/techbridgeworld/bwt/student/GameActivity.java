@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.techbridgeworld.bwt.student.libs.FlingHelper;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -25,9 +27,6 @@ import android.widget.TextView;
 public class GameActivity extends Activity implements TextToSpeech.OnInitListener {
 
 	private TextToSpeech tts;
-	
-	private static final int SWIPE_MIN_DISTANCE = 120;
-	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector; 
 	
 	private Context context;
@@ -157,15 +156,16 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
-		public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+		public boolean onFling(MotionEvent start, MotionEvent end, float velocityX, float velocityY) {
+			FlingHelper fling = new FlingHelper(start, end, velocityX, velocityY);
 			// Swipe up
-			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			if(fling.isUp()) {
 				Intent intent = new Intent(GameActivity.this, WelcomeActivity.class);
 				startActivity(intent);
 			}
 
 			// Swipe down
-			else if (event2.getY() - event1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			else if (fling.isDown()) {
 				switch(currentOption) {
 					case 0: 
 						Intent intent1 = new Intent(GameActivity.this, LearnDots.class);
@@ -184,7 +184,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 			
 			// Swipe left
-			else if (event1.getX() - event2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+			else if (fling.isLeft()) {
 				currentOption = (currentOption - 1) % numOptions; 
 				if(currentOption == -1) 
 					currentOption += numOptions;
@@ -193,7 +193,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 			}
 			
 			// Swipe right
-			else if (event2.getX() - event1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+			else if (fling.isRight()) {
 				currentOption = (currentOption + 1) % numOptions; 
 				student_game.setText(options[currentOption]);
 				student_game.setContentDescription(options[currentOption]);

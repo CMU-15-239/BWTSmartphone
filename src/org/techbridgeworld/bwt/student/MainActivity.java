@@ -4,7 +4,6 @@ import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
-import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 
 import android.app.Activity;
@@ -48,8 +47,6 @@ public class MainActivity extends Activity {
     			@Override
     			public void eventTriggered(Object sender, Event event) {
     				bwt.defaultBoardHandler(sender, event);
-    				BoardEvent e = (BoardEvent)event;
-		    		
 		    		//RESULT: Warning of CalledFromWrongThreadException: only the
 		    		//original thread that created a view hierarchy
 		    		//displayln("Got onBoard event");

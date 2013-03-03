@@ -3,13 +3,11 @@ package org.techbridgeworld.bwt.student;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
-
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
-import org.techbridgeworld.bwt.api.events.BoardEvent;
-import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
+import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -24,10 +22,8 @@ import android.widget.TextView;
 public class AnimalGame extends Activity implements TextToSpeech.OnInitListener {
 
 	private TextToSpeech tts;
-
-	private static final int SWIPE_MIN_DISTANCE = 120;
-	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector;
+	
 	private Random generator = new Random(new Date().getTime());
 
 	private TextView animal_game;
@@ -37,7 +33,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	private int currentOption = 0;
 
 	private final BWT bwt = new BWT(this, AnimalGame.this);
-	private GenericEventListener AnimalListener, ChangeListener;
+	private GenericEventListener AnimalListener;
 
 	private String currAnimal = "";
 	private String[] animals = { "bee", "camel", "cat", "cow", "dog", "horse",
@@ -104,30 +100,21 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 
 	private void runGame() {
 		regenerate();
-		speakOutQueue("Spell the word " + getCurr() + ".");
-
+		speakDirections();
 
 		createListeners();
 	}
+	
+	/**
+	 * Says what word needs to be written
+	 * For Replay purposes
+	 */
+	private void speakDirections() {
+		speakOutQueue("Spell the word " + getCurr() + ".");
+	}
 
 	private void createListeners() {
-		// Say last typed character if available
-		ChangeListener = new GenericEventListener() {
-			public void eventTriggered(Object arg0, Event arg1) {
-				bwt.defaultChangeCellHandler(arg0, arg1);
-				ChangeCellEvent e = (ChangeCellEvent) arg1;
-				if (e.getOldCell() == -1)
-					return;
 
-				char last = e.getOldCellGlyph();
-				int cellState = e.getOldCellBits();
-				Log.i("Animal Game", "Just typed character " + last + " ("
-						+ Integer.toBinaryString(cellState) + ") to cellInd "
-						+ e.getOldCell());
-				speakOutQueue(last + ".");
-			}
-		};
-		
 		// Handles the checking and comparing of the expected word vs user input
 		AnimalListener = new GenericEventListener() {
 			@Override
@@ -148,24 +135,34 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 //				Log.i("Animal Game", "Current cell (" + e.getCellInd()
 //						+ ") bits: " + Integer.toBinaryString(cellstate));
 //				/*********************/
+
 				
-				// Matches
-				if (bwt.currentMatchesString(goal)) {
-					speakOutQueue(bwt.getCurrentCellGlyph() + ".");
-					bwt.clearAllTracking();
-					regenerate();
-					speakOutReplace("Good. Spell the word " + getCurr() + ".");
-				}
 				// Goes off track of goal
-				else if (bwt.offTrackFromString(goal)) {
+				if (bwt.offTrackFromString(goal)) {
 					bwt.clearAllTracking();
 					speakOutReplace("No. Try again.");
 				}
+				// On track --> Determine whether/what to speak out
+				else {
+					int indexMatching = bwt.currentMatchingIndexOfString(goal);
+					
+					// Just finished typing an expected char
+					if(indexMatching >= 0)
+						speakOutQueue(goal.charAt(indexMatching) + ".");
+					
+					// Matches, go onto next word
+					if (indexMatching == goal.length() - 1) {
+						bwt.clearAllTracking();
+						regenerate();
+						speakOutQueue("Good.");
+						speakDirections();
+					}
+				}
 			}
 		};
+		
 
 		bwt.replaceListener("onBoardEvent", AnimalListener);
-		bwt.replaceListener("onChangeCellEvent", ChangeListener);
 	}
 
 	// Add a string to the text-to-speech queue.
@@ -181,12 +178,21 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	// Listen for swipes, and enact the appropriate menu item if necessary.
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
+		/**
+		 * For replaying the instruction
+		 */
+		@Override
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			speakDirections();
+			return true;
+		}
+		
 		@Override
 		public boolean onFling(MotionEvent event1, MotionEvent event2,
 				float velocityX, float velocityY) {
+			FlingHelper fling = new FlingHelper(event1, event2, velocityX, velocityY);
 			// Swipe up
-			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE
-					&& Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			if (fling.isUp()) {
 				Intent intent = new Intent(AnimalGame.this, GameActivity.class);
 				bwt.stopTracking();
 				bwt.removeEventListeners();
@@ -195,8 +201,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			}
 
 			// Swipe left (Rotate left through menu items)
-			else if (event1.getX() - event2.getX() > SWIPE_MIN_DISTANCE
-					&& Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+			else if (fling.isLeft()) {
 				currentOption = (currentOption - 1) % numOptions;
 				if (currentOption == -1)
 					currentOption += numOptions;
@@ -204,9 +209,8 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 				animal_game.setContentDescription(options[currentOption]);
 			}
 
-			// Swipe right (Rotate left through menu items)
-			else if (event2.getX() - event1.getX() > SWIPE_MIN_DISTANCE
-					&& Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+			// Swipe right (Rotate right through menu items)
+			else if (fling.isRight()) {
 				currentOption = (currentOption + 1) % numOptions;
 				animal_game.setText(options[currentOption]);
 				animal_game.setContentDescription(options[currentOption]);

@@ -2,6 +2,8 @@ package org.techbridgeworld.bwt.student;
 
 import java.util.Locale;
 
+import org.techbridgeworld.bwt.student.libs.FlingHelper;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,9 +16,6 @@ import android.view.MotionEvent;
 public class WelcomeActivity extends Activity implements TextToSpeech.OnInitListener {
 
 	private TextToSpeech tts;
-	
-	private static final int SWIPE_MIN_DISTANCE = 120;
-	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector;
 	
 	private String welcome_prompt;
@@ -66,14 +65,15 @@ public class WelcomeActivity extends Activity implements TextToSpeech.OnInitList
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
-		public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+		public boolean onFling(MotionEvent start, MotionEvent end, float velocityX, float velocityY) {
+			FlingHelper fling = new FlingHelper(start, end, velocityX, velocityY);
 			// Swipe up
-			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			if (fling.isUp()) {
 				speakOut("Please rotate the phone 180 degrees.");
 			}
 
 			// Swipe down
-			else if (event2.getY() - event1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			else if (fling.isDown()) {
 		        tts.stop();
 		        tts.shutdown();
 				Intent intent = new Intent(WelcomeActivity.this, GameActivity.class);
@@ -81,13 +81,13 @@ public class WelcomeActivity extends Activity implements TextToSpeech.OnInitList
 			}
 			
 			// Swipe left
-			else if (event1.getX() - event2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-				speakOut("Please rotate the phone 90 degrees to the right.");
+			else if (fling.isLeft()) {
+				speakOut("Please rotate the phone 90 degrees counter-clockwise.");
 			}
 			
 			// Swipe right
-			else {
-				speakOut("Please rotate the phone 90 degrees to the left.");
+			else if (fling.isRight()) {
+				speakOut("Please rotate the phone 90 degrees clockwise.");
 			}
 
 			return true;

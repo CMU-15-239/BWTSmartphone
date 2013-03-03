@@ -10,7 +10,8 @@ import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.BoardEvent;
-import org.techbridgeworld.bwt.libs.Braille;
+import org.techbridgeworld.bwt.api.libs.Braille;
+import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
 import android.content.Context;
@@ -29,9 +30,6 @@ public class LearnLetters extends Activity implements
 		TextToSpeech.OnInitListener {
 
 	private TextToSpeech tts;
-
-	private static final int SWIPE_MIN_DISTANCE = 120;
-	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private GestureDetectorCompat detector;
 
 	private static final Braille braille = new Braille();
@@ -188,10 +186,11 @@ public class LearnLetters extends Activity implements
 		@Override
 		public boolean onFling(MotionEvent event1, MotionEvent event2,
 				float velocityX, float velocityY) {
+			FlingHelper fling = new FlingHelper(event1, event2, velocityX, velocityY);
+			
 			// Swipe up
-			Log.d("Learn letters", "Swipe up occurred");
-			if (event1.getY() - event2.getY() > SWIPE_MIN_DISTANCE
-					&& Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+			Log.d("Learn letters", "Swipe up occurred. Let's exit.");
+			if (fling.isUp()) {
 				Intent intent = new Intent(LearnLetters.this,
 						GameActivity.class);
 				bwt.stopTracking();
