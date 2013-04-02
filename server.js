@@ -1,7 +1,19 @@
-var http = require('http');
-http.createServer(function(req,res){
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Hello World\n');
-}).listen(3000, '127.0.0.1');
+var express = require('express'),
+    words   = require('./routes/words');
 
-console.log('Server running at http://127.0.0.1:3000/');
+var app = express();
+
+app.configure(function(){
+  app.use(express.logger('dev'));
+  app.use(express.bodyParser());
+});
+
+// words CRUD
+app.get('/words', words.findAll);
+app.get('/words/:id', words.findById);
+app.post('/words', words.addWord);
+app.put('/words/:id', words.updateWord);
+app.delete('/words/:id', words.deleteWord);
+
+app.listen(3000);
+console.log('Listening on port 3000...');
