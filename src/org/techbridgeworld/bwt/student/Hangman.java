@@ -1,5 +1,7 @@
 package org.techbridgeworld.bwt.student;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -12,7 +14,11 @@ import org.techbridgeworld.bwt.api.events.SubmitEvent;
 import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
@@ -25,6 +31,12 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 
 	private TextToSpeech tts;
 	private GestureDetectorCompat detector;
+
+	private Context context;
+	private MediaPlayer player;
+	private String dir;
+	private int currentFile;
+	private ArrayList<String> filenames;
 	
 	private Random generator = new Random(new Date().getTime());
 
@@ -62,7 +74,26 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
 
+		try {
+			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		player = new MediaPlayer();
+		dir = context.getFilesDir().getPath().toString();
+		currentFile = 0;
+		filenames = new ArrayList<String>();
+		
 		bwt.init();
+	}
+
+	@Override
+	protected void onStop() {
+		// Stop media player.
+		if(player != null)
+			player.release();
+	    super.onStop();
 	}
 	
     @Override
@@ -99,7 +130,65 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		} else
 			Log.e("TTS", "Initilization Failed!");
 	}
+	/**
+	 * Plays the audio files
+	 * 
+	 * @param filename
+	 */
+	public void playAudio(String filename) {
+		try {
+			player.reset();
+			FileInputStream fis = new FileInputStream(dir + "/" + filename
+					+ ".m4a");
+			player.setDataSource(fis.getFD());
+			fis.close();
+			player.prepare();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
+		player.setOnCompletionListener(new OnCompletionListener() {
+			@Override
+			public void onCompletion(MediaPlayer mp) {
+				player.stop();
+				if (currentFile < filenames.size() - 1) {
+					currentFile++;
+					playAudio(filenames.get(currentFile));
+				} else {
+					filenames.clear();
+					currentFile = 0;
+				}
+			}
+		});
+
+		player.start();
+	}
+
+
+	/**
+	 * Clears everything in the audio queue
+	 */
+	private void clearAudioQueue() {
+		if (player.isPlaying()) {
+			filenames.clear();
+			currentFile = 0;
+		}
+	}
+	
+	/**
+	 * Adds the resourceId to the filenames
+	 * @param resourceId = R.string.___ (id)
+	 */
+	private void queueAudio(int resourceId) {
+		filenames.add(getResources().getString(resourceId));
+	}
+	private void queueAudio(String str) {
+		filenames.add(str);
+	}
+	
+	
 	private void runGame() {
 		currWordInd = -1;
 		regenerate();
@@ -113,7 +202,8 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		guessedBank = new ArrayList<Character>();
 		
 		if(currWordInd >= wordBank.length) {
-			speakOutQueue("Congratulations! You've beat hangman! Starting Over.");
+//			speakOutQueue("Congratulations! You've beat hangman! Starting Over.");
+			//start over if they beat the game
 			runGame();
 			return;
 		}
@@ -124,13 +214,21 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		numCorrectLetters = 0;
 		
 		int numLetters = currWord.length();
-		speakOutQueue("The new word has " + numLetters + " letters.");
+		queueAudio(R.string.the_new_word);
+		queueAudio(((Integer)numLetters).toString());
+		queueAudio(R.string.letters);
+//		speakOutQueue("The new word has " + numLetters + " letters.");
+		
 		wordStatus = new char[numLetters];
 		for (int i = 0; i < numLetters; i++) {
 			wordStatus[i] = '-';
-			speakOutQueue("Dash.");
+			queueAudio(R.string.dash);
+//			speakOutQueue("Dash.");
 		}
-		speakOutQueue("Guess a letter.");
+		queueAudio(R.string.guess_a_letter);
+//		speakOutQueue("Guess a letter.");
+		
+		playAudio(filenames.get(0));
 		
 		//swap strings in array; everything before currWordInd have been done
 		wordBank[nextWordInd] = wordBank[currWordInd];
@@ -139,10 +237,17 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	
 	private void spellWordStatus() {
 		for (int i = 0; i < currWord.length(); i++) {
-			char c = wordStatus[i];
-			if (c == '-') speakOutQueue("Dash.");
-			else speakOutQueue(c + ". ");
+			Character c = wordStatus[i];
+			if (c == '-') {
+				queueAudio(R.string.dash);
+//				speakOutQueue("Dash.");
+			}
+			else {
+				queueAudio(c.toString());
+//				speakOutQueue(c + ". ");
+			}
 		}
+		playAudio(filenames.get(0));
 	}
 	
 	/**
@@ -150,17 +255,34 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	 * Alerts user of current word status, and number of mistakes made.
 	 */
 	private void promptGuess() {
-		speakOutQueue("So far the word is ");
+		queueAudio(R.string.so_far);
+//		speakOutQueue("So far the word is ");
 		spellWordStatus();
-		if(numMistakes == 1) 
-			speakOutQueue("You've made " + numMistakes + " mistake.");
-		else
-			speakOutQueue("You've made " + numMistakes + " mistakes.");
+		
+		queueAudio(R.string.youve_made);
+		if(numMistakes == 1) {
+			queueAudio(R.string.one);
+			queueAudio(R.string.mistake);
+//			speakOutQueue("You've made " + numMistakes + " mistake.");
+		}
+
+		else {
+			queueAudio(((Integer)numMistakes).toString());
+			queueAudio(R.string.mistakes);
+//			speakOutQueue("You've made " + numMistakes + " mistakes.");
+		}
+			
 		
 		//Warning of last chance.
-		if(numMistakes == MAX_MISTAKES - 1)
-			speakOutQueue("But you have one last chance to guess the entire word");
-		speakOutQueue("Guess a letter.");
+		if(numMistakes == MAX_MISTAKES - 1) {
+			queueAudio(R.string.but_you_have);
+//			speakOutQueue("But you have one last chance to guess the entire word");
+		}
+			
+		queueAudio(R.string.guess_a_letter);
+//		speakOutQueue("Guess a letter.");
+		
+		playAudio(filenames.get(0));
 	}
 	
 	/**
@@ -186,7 +308,10 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		
 		//Move onto next word if all the letters are there
 		if(numCorrectLetters == currWord.length()) {
-			speakOutQueue("Good.");
+			queueAudio(R.string.good);
+			playAudio(filenames.get(0));
+//			speakOutQueue("Good.");
+			
 			revealCurrWord();
 			regenerate();
 		}
@@ -196,16 +321,23 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	}
 	
 	private void revealCurrWord() {
-		speakOutQueue("The correct word was ");
+		queueAudio(R.string.the_correct_answer_was);
+//		speakOutQueue("The correct word was ");
 		for (int i = 0; i < currWord.length(); i++) {
-			speakOutQueue(currWord.charAt(i) + ".");
+			Character ch = currWord.charAt(i);
+			queueAudio(ch.toString());
+//			speakOutQueue(currWord.charAt(i) + ".");
 		}
+		playAudio(filenames.get(0));
 				
 	}
 	
 	private void wrongGuessHandler() {
 		numMistakes++;
-		speakOutQueue("No.");
+		queueAudio(R.string.no);
+		playAudio(filenames.get(0));
+		
+//		speakOutQueue("No.");
 		
 		//Reached max number of mistakes, move onto new word
 		if(numMistakes == MAX_MISTAKES) {
@@ -231,18 +363,25 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 				int cellInd = e.getCellInd();
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
+
+				clearAudioQueue();
 				
 				//Input wasn't a Braille character
 				if(glyphAtCell == '-') {
-					speakOutReplace("Invalid input.");
+					queueAudio(R.string.invalid_input);
+					playAudio(filenames.get(0));
+//					speakOutReplace("Invalid input.");
 					wrongGuessHandler();
 					return;
 				}
 				
-				speakOutReplace(glyphAtCell + ". ");
+				queueAudio(((Character)glyphAtCell).toString());
+				playAudio(filenames.get(0));
+//				speakOutReplace(glyphAtCell + ". ");
 				
 				if(guessedBank.contains(glyphAtCell)) {
-					speakOutQueue("You've already guessed that letter.");
+					queueAudio(R.string.youve_already);
+					playAudio(filenames.get(0));
 					promptGuess();
 					return;
 				}
@@ -263,15 +402,15 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		bwt.replaceListener("onSubmitEvent", HangmanListener);
 	}
 
-	// Add a string to the text-to-speech queue.
-	private void speakOutQueue(String text) {
-		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-	}
-
-	// Replace the text-to-speech queue with the given string.
-	private void speakOutReplace(String text) {
-		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-	}
+//	// Add a string to the text-to-speech queue.
+//	private void speakOutQueue(String text) {
+//		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+//	}
+//
+//	// Replace the text-to-speech queue with the given string.
+//	private void speakOutReplace(String text) {
+//		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+//	}
 
 	// Listen for swipes, and enact the appropriate menu item if necessary.
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {

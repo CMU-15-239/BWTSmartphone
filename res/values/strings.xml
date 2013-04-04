@@ -12,19 +12,76 @@
 	<string name="open_message">BWT for Teachers must be opened before BWT for Students.</string>
 	<string name="ok">OK</string>
 
-	<string name="learn_dots">learn dots</string>
-	<string name="good">good</string>
-	<string name="find_dot">find_dot</string>
-	<string name="no">no</string>
-	
-	<string name="learn_letters">learn letters</string>
-	<string name="please_press">please_press</string>
-	<string name="please_write">please_write</string>
-	<string name="to_write_the_letter">to_write_the_letter</string>
-	
-	<string name="animal_game">animal game</string>
 
 	<string name="replay">Replay</string>
 	<string name="delete">Delete</string>
+	
+	
 	<string name="hangman">hangman</string>
+	<string name="animal_game">animal game</string>
+	<string name="learn_letters">learn letters</string>
+	<string name="learn_dots">learn dots</string>
+
+	<string name="numbers">numbers</string>
+	<string name="letters">letters</string>
+	<string name="phrases">phrases</string>
+		
+	<string name="one">one</string>
+	<string name="two">two</string>
+	<string name="three">three</string>
+	<string name="four">four</string>
+	<string name="five">five</string>
+	<string name="six">six</string>
+	<string name="seven">seven</string>
+	<string name="eight">eight</string>
+	
+	<string name="a">a</string>
+	<string name="b">b</string>
+	<string name="c">c</string>
+	<string name="d">d</string>
+	<string name="e">e</string>
+	<string name="f">f</string>
+	<string name="g">g</string>
+	<string name="h">h</string>
+	<string name="i">i</string>
+	<string name="j">j</string>
+	<string name="k">k</string>
+	<string name="l">l</string>
+	<string name="m">m</string>
+	<string name="n">n</string>
+	<string name="o">o</string>
+	<string name="p">p</string>
+	<string name="q">q</string>
+	<string name="r">r</string>
+	<string name="s">s</string>
+	<string name="t">t</string>
+	<string name="u">u</string>
+	<string name="v">v</string>
+	<string name="w">w</string>
+	<string name="x">x</string>
+	<string name="y">y</string>
+	<string name="z">z</string>
+	
+	<string name="find_dot">find dot</string>
+	<string name="good">good</string>
+	<string name="no">no</string>	
+	
+	<string name="invalid_input">invalid input</string>
+	<string name="please_press">please press</string>
+	<string name="please_write">please write</string>
+	<string name="to_write_the_letter">to write the letter</string>
+	
+	<string name="please_write_the_name">please write the name of the animal that makes the sound</string>
+	<string name="the_correct_answer_was">the correct answer was</string>
+	<string name="press">press</string>
+	
+	<string name="but_you_have">but you have one last chance to guess the entire word</string>
+	<string name="dash">dash</string>
+	<string name="guess_a_letter">guess a letter</string>
+	<string name="mistake">mistake</string>
+	<string name="mistakes">mistakes</string>
+	<string name="so_far">so far the word is</string>
+	<string name="the_new_word">the new word has</string>
+	<string name="youve_already">you\'ve already guessed that letter.</string>
+	<string name="youve_made">you\'ve made</string>
 </resources>

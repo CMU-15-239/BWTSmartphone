@@ -1,5 +1,8 @@
 package org.techbridgeworld.bwt.student;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
@@ -12,7 +15,11 @@ import org.techbridgeworld.bwt.api.libs.Braille;
 import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GestureDetectorCompat;
@@ -26,8 +33,14 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	private TextToSpeech tts;
 	private GestureDetectorCompat detector;
 	
-	private Random generator = new Random(new Date().getTime());
 
+	private Context context;
+	private MediaPlayer player;
+	private String dir;
+	private int currentFile;
+	private ArrayList<String> filenames;
+	
+	private Random generator = new Random(new Date().getTime());
 	private TextView animal_game;
 
 	private String[] options;
@@ -64,10 +77,34 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 
 		animal_game = (TextView) findViewById(R.id.animal_game);
 
+		//initialize text to speech and gesture detector
 		tts = new TextToSpeech(this, this);
 		detector = new GestureDetectorCompat(this, new MyGestureListener());
 
+		// Attempt to get context of teacher app.
+		try {
+			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		} 
+
+		// Initialize the media player, get the directory of the media files.
+		player = new MediaPlayer();
+		dir = context.getFilesDir().getPath().toString();
+		currentFile = 0;
+		filenames = new ArrayList<String>(); 
+		
+		//Initialize bwt connection
 		bwt.init();
+	}
+
+
+	@Override
+	protected void onStop() {
+		// Stop media player.
+		if(player != null)
+			player.release();
+	    super.onStop();
 	}
 	
     @Override
@@ -85,19 +122,7 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 		this.detector.onTouchEvent(event);
 		return super.onTouchEvent(event);
 	}
-
-	private String getCurr() {
-		return currAnimal;
-	}
-
-	private void regenerate() {
-		currAnimal = animals[generator.nextInt(animals.length)];
-		currLetterInd = 0;
-		wrongCounter = 0;
-		stage = ANIM_SOUND_STAGE;
-		
-	}
-
+	
 	@Override
 	public void onInit(int status) {
 		bwt.start();
@@ -116,6 +141,78 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			Log.e("TTS", "Initilization Failed!");
 	}
 
+	/**
+	 * Plays the audio files
+	 * 
+	 * @param filename
+	 */
+	public void playAudio(String filename) {
+		try {
+			player.reset();
+			FileInputStream fis = new FileInputStream(dir + "/" + filename
+					+ ".m4a");
+			player.setDataSource(fis.getFD());
+			fis.close();
+			player.prepare();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		player.setOnCompletionListener(new OnCompletionListener() {
+			@Override
+			public void onCompletion(MediaPlayer mp) {
+				player.stop();
+				if (currentFile < filenames.size() - 1) {
+					currentFile++;
+					playAudio(filenames.get(currentFile));
+				} else {
+					filenames.clear();
+					currentFile = 0;
+				}
+			}
+		});
+
+		player.start();
+	}
+
+
+	/**
+	 * Clears everything in the audio queue
+	 */
+	private void clearAudioQueue() {
+		if (player.isPlaying()) {
+			filenames.clear();
+			currentFile = 0;
+		}
+	}
+	
+	/**
+	 * Adds the resourceId to the filenames
+	 * @param resourceId = R.string.___ (id)
+	 */
+	private void queueAudio(int resourceId) {
+		filenames.add(getResources().getString(resourceId));
+	}
+	private void queueAudio(String str) {
+		filenames.add(str);
+	}
+	
+	
+	private String getCurr() {
+		return currAnimal;
+	}
+
+	private void regenerate() {
+		currAnimal = animals[generator.nextInt(animals.length)];
+		currLetterInd = 0;
+		wrongCounter = 0;
+		stage = ANIM_SOUND_STAGE;
+		
+	}
+
+
 	private void runGame() {
 		regenerate();
 		speakDirections();
@@ -131,27 +228,41 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	 */
 	private void speakDirections() {
 		if(stage == ANIM_SOUND_STAGE) {
-			speakOutQueue("Please write the name of the animal that makes the sound ");
-			speakOutQueue(getCurr() + ".");
+			queueAudio(R.string.please_write_the_name);
+			queueAudio(getCurr());
+
+			playAudio(filenames.get(0));
+			
+//			speakOutQueue("Please write the name of the animal that makes the sound ");
+//			speakOutQueue(getCurr() + ".");
 		}
 		else if (stage == SPELL_ANIM_STAGE) {
-			speakOutQueue("Please write ");
+			queueAudio(R.string.please_write);			
+			playAudio(filenames.get(0));
+//			speakOutQueue("Please write ");
 			spellCurrWord();
 		}
 		else if (stage == GIVE_DOTS_STAGE) {
 			char currLetter = getCurr().charAt(currLetterInd);
 			int btns = braille.get(currLetter);
 			
-			speakOutQueue("To write the letter ");
-			speakOutQueue(currLetter + ".");
-			speakOutQueue("please press ");
+			queueAudio(R.string.to_write_the_letter);
+			queueAudio(((Character)currLetter).toString());
+			queueAudio(R.string.please_press);
+			
+//			speakOutQueue("To write the letter ");
+//			speakOutQueue(currLetter + ".");
+//			speakOutQueue("please press ");
 			
 			//Speak out dots that represent the letter
 			for (int i = 0; i < 6; i++) {
 				if ((btns & (1 << i)) > 0) {
-					speakOutQueue(((Integer)i).toString() + ".");
+					String num = ((Integer)i).toString();
+					queueAudio(num);
+//					speakOutQueue(((Integer)i).toString() + ".");
 				}
 			}
+			playAudio(filenames.get(0));
 		}
 	}
 	
@@ -160,8 +271,11 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	 */
 	private void spellCurrWord() {
 		for (int i = 0; i < getCurr().length(); i++) {
-			speakOutQueue(getCurr().charAt(i) + ".");
+			Character let = getCurr().charAt(i);
+			queueAudio(let.toString());
+//			speakOutQueue(getCurr().charAt(i) + ".");
 		}
+		playAudio(filenames.get(0));
 	}
 	
 
@@ -190,14 +304,18 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 				int cellInd = e.getCellInd();
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
-
+				
+				clearAudioQueue();
+				
 				// Speak out character typed
 				if(glyphAtCell == '-') {
-					speakOutReplace("Invalid Input.");
+					queueAudio(R.string.invalid_input);
 				}
 				else {
-					speakOutReplace(glyphAtCell + ".");
+					String chStr = ((Character)glyphAtCell).toString();
+					queueAudio(chStr);
 				}
+				playAudio(filenames.get(0));
 
 				char expectedChar = getCurr().charAt(currLetterInd);
 				
@@ -214,7 +332,10 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	}
 
 	private void wrongCharacterHandler() {
-		speakOutQueue("No.");
+		queueAudio(R.string.no);
+		playAudio(filenames.get(0));
+		
+//		speakOutQueue("No.");
 		wrongCounter++;
 		
 		if(stage == GIVE_DOTS_STAGE) {
@@ -229,7 +350,8 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 			}
 			else if(stage == ANIM_SOUND_STAGE) {
 				stage = SPELL_ANIM_STAGE;
-				speakOutQueue("The correct answer was ");
+				queueAudio(R.string.the_correct_answer_was);
+				playAudio(filenames.get(0));
 				spellCurrWord();
 			}
 			wrongCounter = 0;
@@ -240,39 +362,42 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	}
 	
 	private void correctCharacterHandler() {
+		wrongCounter = 0;
+		
+//		speakOutQueue("Good.");
 		
 		//Special case: Re-learning how to write a letter
 		if(stage == GIVE_DOTS_STAGE) {
-			wrongCounter = 0;
-			speakOutQueue("Good.");
+			queueAudio(R.string.good);
+			playAudio(filenames.get(0));
 			stage = SPELL_ANIM_STAGE;
 			currLetterInd = 0;
 			speakDirections();
-			return;
 		}
-		
-		currLetterInd++;
-		
-		// Finished word, go onto next word
-		if (currLetterInd == getCurr().length()) {
-			wrongCounter = 0;
-			speakOutQueue("Good.");
-			bwt.resetBoard();
-			regenerate();
-			speakDirections();
+		else {
+			currLetterInd++;
+			
+			// Finished word, go onto next word
+			if (currLetterInd == getCurr().length()) {
+				queueAudio(R.string.good);
+				playAudio(filenames.get(0));				
+				bwt.resetBoard();
+				regenerate();
+				speakDirections();
+			}
 		}
 	}
 	
 	
-	// Add a string to the text-to-speech queue.
-	private void speakOutQueue(String text) {
-		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-	}
-
-	// Replace the text-to-speech queue with the given string.
-	private void speakOutReplace(String text) {
-		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-	}
+//	// Add a string to the text-to-speech queue.
+//	private void speakOutQueue(String text) {
+//		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+//	}
+//
+//	// Replace the text-to-speech queue with the given string.
+//	private void speakOutReplace(String text) {
+//		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+//	}
 
 	// Listen for swipes, and enact the appropriate menu item if necessary.
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
