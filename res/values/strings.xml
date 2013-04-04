@@ -26,4 +26,5 @@
 
 	<string name="replay">Replay</string>
 	<string name="delete">Delete</string>
+	<string name="hangman">hangman</string>
 </resources>

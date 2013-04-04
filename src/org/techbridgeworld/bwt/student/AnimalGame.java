@@ -7,6 +7,8 @@ import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
+import org.techbridgeworld.bwt.api.events.SubmitEvent;
+import org.techbridgeworld.bwt.api.libs.Braille;
 import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
@@ -33,11 +35,23 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	private int currentOption = 0;
 
 	private final BWT bwt = new BWT(this, AnimalGame.this);
+	private final Braille braille = new Braille();
 	private GenericEventListener AnimalListener;
 
-	private String currAnimal = "";
-	private String[] animals = { "bee", "camel", "cat", "cow", "dog", "horse",
+	private final String[] animals = { "bee", "camel", "cat", "cow", "dog", "horse",
 			"pig", "rooster", "sheep", "zebra" };
+	
+	private final int ANIM_SOUND_STAGE = 0;
+	private final int SPELL_ANIM_STAGE = 1;
+	private final int GIVE_DOTS_STAGE = 2;
+	
+	private final int MAX_WRONG = 3;
+	
+	private int stage;
+	private int wrongCounter;
+	
+	private String currAnimal = "";
+	private int currLetterInd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +92,10 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 
 	private void regenerate() {
 		currAnimal = animals[generator.nextInt(animals.length)];
+		currLetterInd = 0;
+		wrongCounter = 0;
+		stage = ANIM_SOUND_STAGE;
+		
 	}
 
 	@Override
@@ -106,12 +124,46 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 	}
 	
 	/**
-	 * Says what word needs to be written
-	 * For Replay purposes
+	 * stage ANIM_SOUND: Makes the noise of the animal
+	 * stage SPELL_ANIM: Spell out animal
+	 * stage GIVE_DOTS : Give dots to make required letter
+	 * In a separate function for Replay purposes
 	 */
 	private void speakDirections() {
-		speakOutQueue("Spell the word " + getCurr() + ".");
+		if(stage == ANIM_SOUND_STAGE) {
+			speakOutQueue("Please write the name of the animal that makes the sound ");
+			speakOutQueue(getCurr() + ".");
+		}
+		else if (stage == SPELL_ANIM_STAGE) {
+			speakOutQueue("Please write ");
+			spellCurrWord();
+		}
+		else if (stage == GIVE_DOTS_STAGE) {
+			char currLetter = getCurr().charAt(currLetterInd);
+			int btns = braille.get(currLetter);
+			
+			speakOutQueue("To write the letter ");
+			speakOutQueue(currLetter + ".");
+			speakOutQueue("please press ");
+			
+			//Speak out dots that represent the letter
+			for (int i = 0; i < 6; i++) {
+				if ((btns & (1 << i)) > 0) {
+					speakOutQueue(((Integer)i).toString() + ".");
+				}
+			}
+		}
 	}
+	
+	/**
+	 * Spell out the animal for the student
+	 */
+	private void spellCurrWord() {
+		for (int i = 0; i < getCurr().length(); i++) {
+			speakOutQueue(getCurr().charAt(i) + ".");
+		}
+	}
+	
 
 	private void createListeners() {
 
@@ -119,52 +171,99 @@ public class AnimalGame extends Activity implements TextToSpeech.OnInitListener 
 		AnimalListener = new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
-				String goal = getCurr();
-				
+				bwt.defaultSubmitHandler(arg0, arg1);
+				SubmitEvent e = (SubmitEvent) arg1;
+				Log.d("Animal Game", "Triggered Submit Event");
 
 //				/** FOR DEBUGGING **/
-//				bwt.defaultBoardHandler(arg0, arg1);
-//				BoardEvent e = (BoardEvent) arg1;
 //
 //				String trial = bwt.viewTrackingAsString();
 //				
 //				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: "
 //						+ goal);
 //
-//				int cellstate = e.getCellState();
-//				Log.i("Animal Game", "Current cell (" + e.getCellInd()
+//				int cellstate = e.getCellBits();
+//				Log.i("Animal Game", "Submitted cell (" + e.getCellInd()
 //						+ ") bits: " + Integer.toBinaryString(cellstate));
 //				/*********************/
 
-				
-				// Goes off track of goal
-				if (bwt.offTrackFromString(goal)) {
-					bwt.clearAllTracking();
-					speakOutReplace("No. Try again.");
+				int cellInd = e.getCellInd();
+				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
+				bwt.clearTouchedCells();
+
+				// Speak out character typed
+				if(glyphAtCell == '-') {
+					speakOutReplace("Invalid Input.");
 				}
-				// On track --> Determine whether/what to speak out
 				else {
-					int indexMatching = bwt.currentMatchingIndexOfString(goal);
-					
-					// Just finished typing an expected char
-					if(indexMatching >= 0)
-						speakOutQueue(goal.charAt(indexMatching) + ".");
-					
-					// Matches, go onto next word
-					if (indexMatching == goal.length() - 1) {
-						bwt.clearAllTracking();
-						regenerate();
-						speakOutQueue("Good.");
-						speakDirections();
-					}
+					speakOutReplace(glyphAtCell + ".");
 				}
+
+				char expectedChar = getCurr().charAt(currLetterInd);
+				
+				//Check input against expected char and handle accordingly
+				if (glyphAtCell != expectedChar)
+					wrongCharacterHandler();
+				else
+					correctCharacterHandler();
 			}
 		};
 		
 
-		bwt.replaceListener("onBoardEvent", AnimalListener);
+		bwt.replaceListener("onSubmitEvent", AnimalListener);
 	}
 
+	private void wrongCharacterHandler() {
+		speakOutQueue("No.");
+		wrongCounter++;
+		
+		if(stage == GIVE_DOTS_STAGE) {
+			//do nothing special. Repeat same instructions
+			speakDirections();
+			return;
+		}
+		
+		if(wrongCounter >= MAX_WRONG) {
+			if(stage == SPELL_ANIM_STAGE) {
+				stage = GIVE_DOTS_STAGE;
+			}
+			else if(stage == ANIM_SOUND_STAGE) {
+				stage = SPELL_ANIM_STAGE;
+				speakOutQueue("The correct answer was ");
+				spellCurrWord();
+			}
+			wrongCounter = 0;
+		}
+		currLetterInd = 0;
+		speakDirections();
+		
+	}
+	
+	private void correctCharacterHandler() {
+		
+		//Special case: Re-learning how to write a letter
+		if(stage == GIVE_DOTS_STAGE) {
+			wrongCounter = 0;
+			speakOutQueue("Good.");
+			stage = SPELL_ANIM_STAGE;
+			currLetterInd = 0;
+			speakDirections();
+			return;
+		}
+		
+		currLetterInd++;
+		
+		// Finished word, go onto next word
+		if (currLetterInd == getCurr().length()) {
+			wrongCounter = 0;
+			speakOutQueue("Good.");
+			bwt.resetBoard();
+			regenerate();
+			speakDirections();
+		}
+	}
+	
+	
 	// Add a string to the text-to-speech queue.
 	private void speakOutQueue(String text) {
 		tts.speak(text, TextToSpeech.QUEUE_ADD, null);

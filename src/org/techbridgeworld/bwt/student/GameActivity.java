@@ -37,7 +37,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 	private TextView student_game;
 	
 	private String[] options;
-	private int numOptions = 3;
+	private int numOptions = 4;
 	private int currentOption = 0; 
 
 	@Override
@@ -50,6 +50,7 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 		options[0] = getResources().getString(R.string.learn_dots);
 		options[1] = getResources().getString(R.string.learn_letters);
 		options[2] = getResources().getString(R.string.animal_game);
+		options[3] = getResources().getString(R.string.hangman);
 		
 		game_prompt = getResources().getString(R.string.game_prompt);
 		student_game = (TextView) findViewById(R.id.student_game);
@@ -166,20 +167,25 @@ public class GameActivity extends Activity implements TextToSpeech.OnInitListene
 
 			// Swipe down
 			else if (fling.isDown()) {
+				Class<?> chosenClass = null;
 				switch(currentOption) {
 					case 0: 
-						Intent intent1 = new Intent(GameActivity.this, LearnDots.class);
-						startActivity(intent1);
+						chosenClass = LearnDots.class;
 						break;
 					case 1:
-						Intent intent2 = new Intent(GameActivity.this, LearnLetters.class);
-						startActivity(intent2);
+						chosenClass = LearnLetters.class;
 						break;
 					case 2:
-						Intent intent3 = new Intent(GameActivity.this, AnimalGame.class);
-						startActivity(intent3);
+						chosenClass = AnimalGame.class;
+						break;
+					case 3:
+						chosenClass = Hangman.class;
 					default:
 						break;
+				}
+				if(chosenClass != null) {
+					Intent intent = new Intent(GameActivity.this, chosenClass);
+					startActivity(intent);
 				}
 			}
 			

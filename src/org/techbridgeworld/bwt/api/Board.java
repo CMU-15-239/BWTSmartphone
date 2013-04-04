@@ -18,6 +18,7 @@ public class Board {
 	private boolean altFlag = false;
 	private LinkedList<Integer> inputInfo;
 	private Cell universalCell;
+	private Integer currCellInd;
 
 	/**
 	 * Constructor. Initializes all the cells to 0, and sets the current cell to
@@ -32,6 +33,7 @@ public class Board {
 		this.universalCell = new Cell();
 		this.board = temp;
 		this.inputInfo = new LinkedList<Integer>();
+		this.currCellInd = -1;
 	}
 
 	/**
@@ -82,6 +84,7 @@ public class Board {
 		this.universalCell.setValue(0);
 		this.altFlag = false;
 		this.inputInfo.clear();
+		this.currCellInd = -1;
 	}
 
 	/**
@@ -89,10 +92,27 @@ public class Board {
 	 * 
 	 * @return currently active cell index.
 	 */
-	public Integer getCurrentCellInd() {
-		return inputInfo.peekLast();
+	public Integer getCurrCellInd() {
+		return currCellInd;
 	}
 
+	/**
+	 * Called when SubmitEvent is successful, to show already submitted
+	 */
+	public void resetCurrCellInd() {
+		currCellInd = -1;
+	}
+	
+	/**
+	 * Getter method for the last cell with inputed char.
+	 * Different from currCellInd, in that it is only -1 if empty
+	 * Will not be -1 on push of AltBtn or Submitting
+	 * @return last inputed cell index.
+	 */
+	public Integer getLastInputInfoInd() {
+		if(inputInfo.isEmpty()) return -1;
+		return inputInfo.getLast();
+	}
 	/**
 	 * Getter method for the number of used cells.
 	 * 
@@ -172,6 +192,18 @@ public class Board {
 	}
 	
 	/**
+	 * Clears the touched cell's state on the board and empties
+	 * inputInfo.
+	 */
+	public void clearTouchedCells() {
+		while(!inputInfo.isEmpty()) {
+			board[inputInfo.poll()].setValue(0);
+		}
+		this.universalCell.setValue(0);
+		this.currCellInd = -1;
+	}
+	
+	/**
 	 * Gets the first cellInd accessed in inputInfo, and
 	 * returns the trimmed String that includes glyphs from every
 	 * cell ind that follows. 
@@ -199,6 +231,7 @@ public class Board {
 		}
 		//clear buffer and board's cells within range
 		inputInfo.clear();
+		this.currCellInd = -1;
 		return buf.toString();
 	}
 	
@@ -232,6 +265,7 @@ public class Board {
 			//clear cells touched
 			setBitsAtCell(cellInd, 0);
 		}
+		this.currCellInd = -1;
 		return buf.toString();
 	}
 
@@ -295,6 +329,7 @@ public class Board {
 			bits.add(board[cellInd].getBrailleCode());
 			board[cellInd].setValue(0);
 		}
+		this.currCellInd = -1;
 		return bits;
 	}
 	
@@ -355,12 +390,13 @@ public class Board {
 			cellInd = ((32-cellInd) + 16) %32 + 1;
 		}
 		
-		int currCellInd = inputInfo.peekLast();
-		if(currCellInd != cellInd) {
-			EventManager.triggerEvent(this, new ChangeCellEvent(currCellInd, cellInd, this));
+		int prevCellInd = inputInfo.peekLast();
+		if(prevCellInd != cellInd) {
+			EventManager.triggerEvent(this, new ChangeCellEvent(prevCellInd, cellInd, this));
 			inputInfo.push(cellInd);
 		}
-
+		
+		this.currCellInd = cellInd;
 		return board[cellInd].setDot(buttonNum);
 	}
 
@@ -372,18 +408,18 @@ public class Board {
 	public void handleNewInput(String message) {
 		// If an alt button has been pressed, set the altFlag to true.
 		if (message.equals("a")) {
+			this.currCellInd = -1;
 			altFlag = true;
 		}
 		
 		// If it's a button, update the appropriate dot in cell 0 (i.e. the
 		// button cell).
 		else if ("bcdefg".indexOf(message) != -1) {
-
-			// If the button cell is 0, increment usedCells.
+			this.currCellInd = 0;
+			// If the button cells haven't been touched yet, add to inputInfo
 			if (this.board[0].getBrailleCode() == 0) {
 				inputInfo.add(0);
 			}
-			
 			int dotNum = 0;
 			
 			switch (message.toLowerCase(Locale.getDefault()).charAt(0)) {
@@ -428,6 +464,7 @@ public class Board {
 			cell = ((32-cell) + 16) %32 + 1;
 			dot = (dot +2) %6 + 1;
 			
+			this.currCellInd = cell;
 			// If the selected cell had nothing in it, push to inputInfo.
 			if (board[cell].getBrailleCode() == 0) {
 				inputInfo.add(cell);

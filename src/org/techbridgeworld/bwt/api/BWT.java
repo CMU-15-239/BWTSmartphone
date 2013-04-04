@@ -15,6 +15,7 @@ import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.api.events.CellsEvent;
 import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 import org.techbridgeworld.bwt.api.events.MainBtnEvent;
+import org.techbridgeworld.bwt.api.events.SubmitEvent;
 import org.techbridgeworld.bwt.api.libs.Braille;
 
 import android.app.Activity;
@@ -40,8 +41,10 @@ public class BWT {
 	// Constants
 	private static final int BAUDRATE = 57600;
 	private static final int TIMEOUT = 1000;
-	private static final int DEBOUNCE = 300; // Milliseconds to disable a button
+	private static final int DEBOUNCE = 300; 	// Milliseconds to disable a button
 												// for.
+	private static final int INACTIVE_TIME = 5000;	//time (ms) of inactivity
+													//before triggering SubmitEvent
 
 	// Buffer / Debounce stuff
 	private char[] dataBuffer = new char[6];
@@ -53,7 +56,10 @@ public class BWT {
 	private UsbSerialDriver usbDriver;
 	private SerialInputOutputManager serialManager;
 
-	private Handler handler = new Handler();
+	private Handler debounceHandler = new Handler();
+	private Handler inactivityHandler = new Handler();
+	private Runnable inactivityRunnable;
+	
 	private final ExecutorService executor = Executors
 			.newSingleThreadExecutor();
 	private final SerialInputOutputManager.Listener listener = new SerialInputOutputManager.Listener() {
@@ -82,6 +88,7 @@ public class BWT {
 		this.context = context;
 		BWT.board = new Board();
 		this.isTracking = false;
+		inactivityRunnable = null;
 	}
 
 	/**
@@ -172,6 +179,7 @@ public class BWT {
 		startIoManager();
 	}
 
+	
 	/**
 	 * Manages the debounce hashtable for seeing whether it is a new press or
 	 * different
@@ -197,7 +205,7 @@ public class BWT {
 			}
 		};
 
-		handler.post(r);
+		debounceHandler.post(r);
 	}
 
 	/**
@@ -266,6 +274,38 @@ public class BWT {
 		}
 	}
 
+	
+	private void startInactivityTimer() {
+		inactivityRunnable = new Runnable() {
+			@Override
+			public void run() {
+				//Trigger the SubmitEvent since time's up
+				Integer cell = board.getCurrCellInd();
+				if(cell != -1) {
+					SubmitEvent submitEvt = new SubmitEvent(cell, board.getBitsAtCell(cell));
+					EventManager.triggerEvent(this, submitEvt, "onSubmitEvent");
+				}
+			}
+		};
+		inactivityHandler.postDelayed(inactivityRunnable, INACTIVE_TIME);
+	}
+	
+	private void resetInactivityTimer() {
+		if(inactivityRunnable == null) {
+			Log.e("Inactivity Timer", "Calling resetInactivityTimer without start (instantiating Runnable)");
+			return;
+		}
+		
+		inactivityHandler.removeCallbacks(inactivityRunnable);
+		inactivityHandler.postDelayed(inactivityRunnable, INACTIVE_TIME);
+	}
+	
+	private void stopInactivityTimer() {
+		inactivityHandler.removeCallbacks(inactivityRunnable);
+		inactivityRunnable = null;
+	}
+	
+	
 	/** Board getter */
 	public static Board getBoard() {
 		return board;
@@ -276,6 +316,7 @@ public class BWT {
 	 */
 	public void startTracking() {
 		isTracking = true;
+		startInactivityTimer();
 	}
 
 	/**
@@ -285,6 +326,7 @@ public class BWT {
 	 */
 	public String stopTracking() {
 		isTracking = false;
+		stopInactivityTimer();
 		return board.viewAndEmptyAsInputted();
 	}
 
@@ -373,28 +415,27 @@ public class BWT {
 	}
 	
 	/**
-	 * Clears both inputBuffer and current cell info
+	 * Clears and resets state of the board
 	 */
-	public void clearAllTracking() {
+	public void resetBoard() {
 		board.clearBoard();
 	}
 
 	/**
-	 * Clears and resets state of the board
+	 * Clears only touched inputs and resets state of the board
 	 */
-	public void resetBoard() {
-		clearAllTracking();
-		board.clearBoard();
+	public void clearTouchedCells() {
+		board.clearTouchedCells();
 	}
-
+	
 	/**
 	 * Gets the bits pressed for 'lastCell'
 	 * 
 	 * @return
 	 */
 	public int getCurrentCellBits() {
-		Integer lastCell = board.getCurrentCellInd();
-		if (lastCell == null || lastCell < 0)
+		Integer lastCell = board.getCurrCellInd();
+		if (lastCell < 0)
 			return 0;
 		return board.getBitsAtCell(lastCell);
 	}
@@ -405,10 +446,17 @@ public class BWT {
 	 * @return
 	 */
 	public char getCurrentCellGlyph() {
-		Integer lastCell = board.getCurrentCellInd();
-		if (lastCell == null || lastCell < 0)
-			return '-';
+		Integer lastCell = board.getLastInputInfoInd();
 		return board.getGlyphAtCell(lastCell);
+	}
+	
+	/**
+	 * Gets the char for given cell
+	 * 
+	 * @return
+	 */
+	public char getGlyphAtCell(int cellInd) {
+		return board.getGlyphAtCell(cellInd);
 	}
 
 	/**
@@ -420,8 +468,8 @@ public class BWT {
 	 * @return true : if off track of matching c
 	 */
 	public boolean offTrackFromChar(char c) {
-		Integer lastCell = board.getCurrentCellInd();
-		if (lastCell == null || lastCell < 0) {
+		Integer lastCell = board.getLastInputInfoInd();
+		if (lastCell < 0) {
 			Log.d("Check input", "Char off track; lastCell = " + lastCell);
 			return false;
 		}
@@ -452,8 +500,8 @@ public class BWT {
 	}
 
 	public boolean currentMatchesChar(char c) {
-		Integer lastCell = board.getCurrentCellInd();
-		if (lastCell == null || lastCell < 0)
+		Integer lastCell = board.getLastInputInfoInd();
+		if (lastCell < 0)
 			return false;
 		int currBits = board.getBitsAtCell(lastCell);
 		int expBits = braille.get(c);
@@ -473,9 +521,10 @@ public class BWT {
 		// Check what's in trackingBuffer
 		String currDump = viewTrackingAsStringExceptCurrent();
 		int indexFound = s.indexOf(currDump);
+		
 		if (currDump.equals(s))
 			return currDump.length() - 1;
-		if (indexFound != 0)
+		if (indexFound != 0 && currDump.length() > 0)
 			return -1;
 
 		// Check the most recent cell
@@ -505,12 +554,15 @@ public class BWT {
 	private void triggerNewDataEvent(String message) {
 		if (!isTracking)
 			return;
-
+		
+		//Reset timer of inactivity
+		resetInactivityTimer();
+		
 		message = message.toLowerCase(Locale.getDefault()).replaceAll("n", "").trim();
 		if (message.equals("bt"))
 			return;
 		
-		Integer lastCell = board.getCurrentCellInd();
+		Integer lastCell = board.getCurrCellInd();
 
 		//First, update board
 		board.handleNewInput(message);
@@ -527,11 +579,13 @@ public class BWT {
 		if (referenceStr.indexOf(message) == 0) {
 			EventManager.triggerEvent(this, new AltBtnEvent(message),
 					"onAltBtnEvent");
+			
 		} else if (referenceStr.indexOf(message) > 0) {
 			MainBtnEvent mainBtnEvent = new MainBtnEvent(message, board);
 			EventManager.triggerEvent(this, mainBtnEvent, "onMainBtnEvent");
 			currCell = 0;
 			currDot = mainBtnEvent.getDot();
+			
 		} else {
 			CellsEvent cellsEvent = new CellsEvent(message, board);
 			EventManager.triggerEvent(this, cellsEvent, "onCellsEvent");
@@ -542,9 +596,12 @@ public class BWT {
 
 		// Determine if there has been a cell change (Event Handler updates
 		// lastCell)
-		if ( lastCell != null && currCell != lastCell)
+		if (currCell != lastCell && lastCell != -1) {
 			EventManager.triggerEvent(this, new ChangeCellEvent(lastCell,
 					currCell, board), "onChangeCellEvent");
+			EventManager.triggerEvent(this, new SubmitEvent(lastCell, board.getBitsAtCell(lastCell)),
+					"onSubmitEvent");
+		}
 
 		if (currCell >= 0)
 			currCellBits = board.getBitsAtCell(currCell);
@@ -572,6 +629,9 @@ public class BWT {
 
 		EventManager.registerEventListener("onChangeCellEvent",
 				createOnChangeCellListener(), ChangeCellEvent.class);
+		
+		EventManager.registerEventListener("onSubmitEvent",
+				createOnSubmitListener(), SubmitEvent.class);
 	}
 
 	/**
@@ -583,6 +643,7 @@ public class BWT {
 		EventManager.unregisterAllEventListenersForContext("onAltBtnEvent");
 		EventManager.unregisterAllEventListenersForContext("onCellsEvent");
 		EventManager.unregisterAllEventListenersForContext("onChangeCellEvent");
+		EventManager.unregisterAllEventListenersForContext("onSubmitEvent");
 	}
 
 	/**
@@ -606,6 +667,8 @@ public class BWT {
 			c = CellsEvent.class;
 		else if (context == "onChangeCellEvent")
 			c = ChangeCellEvent.class;
+		else if (context == "onSubmitEvent")
+			c = SubmitEvent.class;
 		else
 			return false;
 
@@ -627,7 +690,7 @@ public class BWT {
 	}
 
 	public void defaultAltBtnHandler(Object sender, Event event) {
-		// Doesn't do anything. Let developers decide functionality
+		board.setAltFlag(true);
 		Log.i("EventTriggering", "Calling default onAltBtn event handler");
 	}
 	
@@ -653,6 +716,13 @@ public class BWT {
 		Log.i("EventTriggering", "Calling default onChangeCell event handler");
 		//return oldCellBits;
 	}
+	
+	
+	public void defaultSubmitHandler(Object sender, Event event) {
+		board.resetCurrCellInd();
+		Log.i("EventTriggering", "Calling default onSubmit event handler");
+	}
+
 
 	/**
 	 * Creates the default event Listeners set up for BWT
@@ -698,6 +768,15 @@ public class BWT {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
 				defaultChangeCellHandler(sender, event);
+			}
+		};
+	}
+	
+	private GenericEventListener createOnSubmitListener() {
+		return new GenericEventListener() {
+			@Override
+			public void eventTriggered(Object sender, Event event) {
+				defaultSubmitHandler(sender, event);
 			}
 		};
 	}

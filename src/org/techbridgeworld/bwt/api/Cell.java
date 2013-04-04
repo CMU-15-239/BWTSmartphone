@@ -109,9 +109,9 @@ public class Cell {
 	/**
 	 * Return the character corresponding to this sequence of dots,
 	 * according to the character map
-	 * If the character is not present in the map, the return value is null
+	 * If the character is not present in the map, the return value is '-'
 	 * 
-	 * @return Character | null
+	 * @return Character | '-'
 	 */
 	public Character getGlyph() {
 		return braille.get(brailleCode);

@@ -45,6 +45,9 @@
         <activity android:name="org.techbridgeworld.bwt.student.AnimalGame" 
             android:screenOrientation="portrait"
 			android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <activity android:name="org.techbridgeworld.bwt.student.Hangman" 
+            android:screenOrientation="portrait"
+			android:configChanges="keyboardHidden|orientation|screenSize"/>
     </application>
 
 </manifest>
