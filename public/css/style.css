@@ -1,24 +1,37 @@
+/***********************
+  Table Styling
+***********************/
+
+.word-table{
+    width: 100%;
+}
+.tbl-no{
+    width: 20px;
+}
+.tbl-edit{
+    width: 90px;
+}
+
+
 /*default css*/
 
 
-div.clearfix:after {
+.clearfix:after {
     content: "";
     display: block;
     height: 0;
     clear: both;
     visibility: hidden;
 }
-body {
-}
 
 * html .clearfix {
     height: 1%; 
 } 
 
-span.emphasis {
+.emphasis {
     font-weight: 700;
 }
-div.wrapper {
+.wrapper {
     width:890px;
     margin: 0 auto;
 }
