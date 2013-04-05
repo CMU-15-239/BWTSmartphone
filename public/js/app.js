@@ -2,6 +2,12 @@ $('.assignments').typeahead({
   'source' : ['Assignment 1', 'Assignment 2']
 });
 
+
+
+/****************************
+  Table population stuff.
+****************************/
+
 // Some sample data to make sure population works. 
 var sampleWords = [
   {word: 'Hello', def: 'An exclamatory greeting'},
@@ -21,8 +27,6 @@ var wordRow = Handlebars.compile(
   "</tr>");
 
 
-
-
 // Takes an array of word items and injects them into the DOM
 function populateWordList(data){
   // Do at least some sort of type checking.
@@ -38,3 +42,32 @@ function populateWordList(data){
 
 // Run on sample data;
 populateWordList(sampleWords);
+
+
+/****************************
+  Table editing stuff.
+****************************/
+$("td").click(function(){
+
+  if($(this).find(".temp-input").length != 0)
+    return;
+
+  var oldValue = $(this).html();
+
+  var replacement = $("<input>")
+    .attr("value", oldValue)
+    .addClass("temp-input");
+
+  $(this).html(replacement);
+  $(".temp-input").focus();
+
+  $(".temp-input").blur(function(){
+
+      $(this).after($(this).val());
+      $(this).remove();
+
+  });
+
+  $("temp-input").focus();
+
+});
