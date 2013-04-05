@@ -5,7 +5,7 @@ var Server  = mongo.Server,
 
 // Create a new db connection.
 var server = new Server('localhost', 27017, {auto_reconnect : true});
-db = new Db('wordsdb', server);
+db = new Db('wordsdb', server, {safe : true});
 
 // Open the database.
 db.open(function(err,db) {
