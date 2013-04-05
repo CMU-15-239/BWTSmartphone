@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 
-    <link rel='stylesheet' type='text/css' href='/css/reset.css' />
+    <!-- <link rel='stylesheet' type='text/css' href='/css/reset.css' /> -->
     
     <link rel='stylesheet' type='text/css' href='/css/bootstrap.min.css'/>
     <link rel='stylesheet' type='text/css' href='/css/style.css'/>
@@ -29,16 +29,20 @@
         </div>
     </header>  
 
-
     <section id='content' class='container-fluid clearfix'>
         <div class="row-fluid">
 
             <!-- Sidebar -->
             <div class="span3 well">
-                <h3>Assignments</h3>
                 <div class="row-fluid">
                     <input type="text" class="span9 assignments" style="margin: 0 auto;" > 
                     <button class="span3 btn btn-primary">Go</button>
+                </div>
+                <hr />
+                <div class="row-fluid">
+                    <ul id="assn-list" class="nav nav-list">
+                        <li class="nav-header">Assignments</li>
+                    </ul>
                 </div>
             </div>
 
