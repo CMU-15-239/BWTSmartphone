@@ -2,20 +2,16 @@
 <resources>
 
     <string name="app_name">BWT for Students</string>
-    
-    <string name="welcome_prompt">Welcome!</string>
+
 	<string name="game_prompt">Please select a game.</string>
-	
-	<string name="start">Start</string>
+	<string name="game_help">This app lets you play the games associated with your BWT. Double tap a game to start.</string>
 	
 	<string name="install_message">BWT for Teachers must be installed and opened before BWT for Students.</string>	
 	<string name="open_message">BWT for Teachers must be opened before BWT for Students.</string>
 	<string name="ok">OK</string>
 
-
 	<string name="replay">Replay</string>
 	<string name="delete">Delete</string>
-	
 	
 	<string name="hangman">hangman</string>
 	<string name="animal_game">animal game</string>
@@ -66,11 +62,11 @@
 	<string name="good">good</string>
 	<string name="no">no</string>	
 	
-	<string name="invalid_input">invalid input</string>
 	<string name="please_press">please press</string>
 	<string name="please_write">please write</string>
 	<string name="to_write_the_letter">to write the letter</string>
 	
+	<string name="invalid_input">invalid input</string>
 	<string name="please_write_the_name">please write the name of the animal that makes the sound</string>
 	<string name="the_correct_answer_was">the correct answer was</string>
 	<string name="press">press</string>

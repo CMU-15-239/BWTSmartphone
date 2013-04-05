@@ -1,9 +1,5 @@
 package org.techbridgeworld.bwt.student;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Random;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
@@ -11,34 +7,22 @@ import javaEventing.interfaces.GenericEventListener;
 import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.BoardEvent;
 import org.techbridgeworld.bwt.api.libs.Braille;
-import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
+import android.view.KeyEvent;
 
-public class LearnLetters extends Activity implements
-		TextToSpeech.OnInitListener {
+public class LearnLetters extends Activity {
 
+	private MyApplication application;
 	private TextToSpeech tts;
-	private GestureDetectorCompat detector;
+	private MediaPlayer player;
 
 	private static final Braille braille = new Braille();
-
-	private Context context;
-	private MediaPlayer player;
-	private String dir;
-	private int currentFile;
-	private ArrayList<String> filenames;
 
 	private String[] numbers = { "one", "two", "three", "four", "five", "six" };
 
@@ -59,25 +43,27 @@ public class LearnLetters extends Activity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.learn_letters);
+		
+		application = ((MyApplication) getApplicationContext());
+		tts = application.myTTS;
+		player = application.myPlayer;
+		
+		application.currentFile = 0;
+		application.filenames.clear();
 
-		tts = new TextToSpeech(this, this);
-		detector = new GestureDetectorCompat(this, new MyGestureListener());
-
-		try {
-			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		player = new MediaPlayer();
-		dir = context.getFilesDir().getPath().toString();
-		currentFile = 0;
-		filenames = new ArrayList<String>();
-
+		// Initialize the BWT connection.
 		bwt.init();
 		Log.i("Learn letters", "BWT Inited...");
-
+		
+		// Start the BWT
+		bwt.start();
+		
+		// Start tracking the state of the BWT
+		bwt.initializeEventListeners();
+		Log.i("Learn letters", "BWT Started...");
+		bwt.startTracking();
+		runGame();
+		
 		groupInd = 0;
 
 		attemptNum = 0;
@@ -120,87 +106,6 @@ public class LearnLetters extends Activity implements
         }
         super.onDestroy();
     }
-    
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		this.detector.onTouchEvent(event);
-		return super.onTouchEvent(event);
-	}
-
-	@Override
-	public void onInit(int status) {
-		if (status == TextToSpeech.SUCCESS) {
-			int result = tts.setLanguage(Locale.US);
-			if (result == TextToSpeech.LANG_MISSING_DATA
-					|| result == TextToSpeech.LANG_NOT_SUPPORTED)
-				Log.e("TTS", "This language is not supported");
-			else {
-		        bwt.start();
-				bwt.initializeEventListeners();
-				Log.i("Learn letters", "BWT Started...");
-				bwt.startTracking();
-				runProgram();
-			}
-		} else
-			Log.e("TTS", "Initilization Failed!");
-	}
-
-	/**
-	 * Plays the audio files
-	 * 
-	 * @param filename
-	 */
-	public void playAudio(String filename) {
-		try {
-			player.reset();
-			FileInputStream fis = new FileInputStream(dir + "/" + filename
-					+ ".m4a");
-			player.setDataSource(fis.getFD());
-			fis.close();
-			player.prepare();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		player.setOnCompletionListener(new OnCompletionListener() {
-			@Override
-			public void onCompletion(MediaPlayer mp) {
-				player.stop();
-				if (currentFile < filenames.size() - 1) {
-					currentFile++;
-					playAudio(filenames.get(currentFile));
-				} else {
-					filenames.clear();
-					currentFile = 0;
-				}
-			}
-		});
-
-		player.start();
-	}
-
-	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
-
-		@Override
-		public boolean onFling(MotionEvent event1, MotionEvent event2,
-				float velocityX, float velocityY) {
-			FlingHelper fling = new FlingHelper(event1, event2, velocityX, velocityY);
-			
-			// Swipe up
-			Log.d("Learn letters", "Swipe up occurred. Let's exit.");
-			if (fling.isUp()) {
-				Intent intent = new Intent(LearnLetters.this,
-						GameActivity.class);
-				bwt.stopTracking();
-				bwt.removeEventListeners();
-		        bwt.stop();
-				startActivity(intent);
-			}
-			return true;
-		}
-	}
 
 	private void createListener() {
 		Log.i("Learn letters", "Created own listeners...");
@@ -231,23 +136,17 @@ public class LearnLetters extends Activity implements
 				
 				if (currentBrailleCode == expectedBrailleCode) {
 					//User is correct
-					if (player.isPlaying()) {
-						filenames.clear();
-						currentFile = 0;
-					}
-					filenames.add(getResources().getString(R.string.good));
-					playAudio(filenames.get(0));
+					application.clearAudioQueue();
+					application.queueAudio(R.string.good);
+					application.playAudio();
 
 					prepNextLetter();
 					Log.d("Learn letters", "user is correct");
 				} else if (isWrong) {
 					// User is wrong
-					if (player.isPlaying()) {
-						filenames.clear();
-						currentFile = 0;
-					}
-					filenames.add(getResources().getString(R.string.no));
-					playAudio(filenames.get(0));
+					application.clearAudioQueue();
+					application.queueAudio(R.string.no);
+					application.playAudio();
 
 					redoCurrLetter();
 					Log.d("Learn letters", "user is wrong");
@@ -259,7 +158,7 @@ public class LearnLetters extends Activity implements
 		});
 	}
 
-	private void runProgram() {
+	private void runGame() {
 		groupInd = 0;
 		countLetterInd = 0;
 		introducing = true;
@@ -342,13 +241,13 @@ public class LearnLetters extends Activity implements
 			}
 		}
 
-		filenames.add(getResources().getString(R.string.to_write_the_letter));
-		filenames.add(((Character) let).toString());
-		filenames.add(getResources().getString(R.string.please_press));
+		application.queueAudio(R.string.to_write_the_letter);
+		application.queueAudio(((Character) let).toString());
+		application.queueAudio(R.string.please_press);
 		String[] buttons = btnStrBuf.toString().split(" ");
 		for (int i = 0; i < buttons.length; i++)
-			filenames.add(numbers[Integer.parseInt(buttons[i]) - 1]);
-		playAudio(filenames.get(0));
+			application.queueAudio(numbers[Integer.parseInt(buttons[i]) - 1]);
+		application.playAudio();
 	}
 
 	/**
@@ -360,9 +259,9 @@ public class LearnLetters extends Activity implements
 	private void instructionTestLetter(int groupInd, int letterInd) {
 		char let = letters[groupInd][letterInd];
 
-		filenames.add(getResources().getString(R.string.please_write));
-		filenames.add(((Character) let).toString());
-		playAudio(filenames.get(0));
+		application.queueAudio(R.string.please_write);
+		application.queueAudio(((Character) let).toString());
+		application.playAudio();
 	}
 
 	/**
@@ -380,5 +279,19 @@ public class LearnLetters extends Activity implements
 			givenArr[i] = tmp;
 		}
 		return givenArr;
+	}
+	
+	// If the user presses back, go back properly
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			Intent intent = new Intent(LearnLetters.this, GameActivity.class);
+			bwt.stopTracking();
+			bwt.removeEventListeners();
+	        bwt.stop();
+			startActivity(intent);
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }

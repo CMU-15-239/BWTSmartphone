@@ -1,50 +1,28 @@
 package org.techbridgeworld.bwt.student;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Random;
 import javaEventing.interfaces.Event;
 import javaEventing.interfaces.GenericEventListener;
 
 import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.SubmitEvent;
-import org.techbridgeworld.bwt.student.libs.FlingHelper;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.support.v4.view.GestureDetectorCompat;
-import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.widget.TextView;
+import android.view.KeyEvent;
 
-public class Hangman extends Activity implements TextToSpeech.OnInitListener {
+public class Hangman extends Activity {
 
+	private MyApplication application;
 	private TextToSpeech tts;
-	private GestureDetectorCompat detector;
-
-	private Context context;
 	private MediaPlayer player;
-	private String dir;
-	private int currentFile;
-	private ArrayList<String> filenames;
 	
 	private Random generator = new Random(new Date().getTime());
-
-	private TextView hangman;
-
-	private String[] options;
-	private int numOptions = 2;
-	private int currentOption = 0;
 
 	private final BWT bwt = new BWT(this, Hangman.this);
 	private GenericEventListener HangmanListener;
@@ -63,29 +41,19 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.hangman);
 
-		options = new String[numOptions];
-		options[0] = getResources().getString(R.string.replay);
-		options[1] = getResources().getString(R.string.delete);
-
-		hangman = (TextView) findViewById(R.id.hangman);
-
-		tts = new TextToSpeech(this, this);
-		detector = new GestureDetectorCompat(this, new MyGestureListener());
-
-		try {
-			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		player = new MediaPlayer();
-		dir = context.getFilesDir().getPath().toString();
-		currentFile = 0;
-		filenames = new ArrayList<String>();
+		application = ((MyApplication) getApplicationContext());
+		tts = application.myTTS;
+		player = application.myPlayer;
+		
+		application.currentFile = 0;
+		application.filenames.clear();
 		
 		bwt.init();
+		bwt.start();
+		bwt.initializeEventListeners();
+		bwt.startTracking();
+		runGame();
 	}
 
 	@Override
@@ -105,94 +73,10 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
         }
         super.onDestroy();
     }
-
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		this.detector.onTouchEvent(event);
-		return super.onTouchEvent(event);
-	}
-
-	
-	@Override
-	public void onInit(int status) {
-		bwt.start();
-		if (status == TextToSpeech.SUCCESS) {
-			int result = tts.setLanguage(Locale.US);
-			if (result == TextToSpeech.LANG_MISSING_DATA
-					|| result == TextToSpeech.LANG_NOT_SUPPORTED)
-				Log.e("TTS", "This language is not supported");
-			else{
-				bwt.initializeEventListeners();
-				bwt.startTracking();
-				
-				runGame();
-			}
-		} else
-			Log.e("TTS", "Initilization Failed!");
-	}
-	/**
-	 * Plays the audio files
-	 * 
-	 * @param filename
-	 */
-	public void playAudio(String filename) {
-		try {
-			player.reset();
-			FileInputStream fis = new FileInputStream(dir + "/" + filename
-					+ ".m4a");
-			player.setDataSource(fis.getFD());
-			fis.close();
-			player.prepare();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		player.setOnCompletionListener(new OnCompletionListener() {
-			@Override
-			public void onCompletion(MediaPlayer mp) {
-				player.stop();
-				if (currentFile < filenames.size() - 1) {
-					currentFile++;
-					playAudio(filenames.get(currentFile));
-				} else {
-					filenames.clear();
-					currentFile = 0;
-				}
-			}
-		});
-
-		player.start();
-	}
-
-
-	/**
-	 * Clears everything in the audio queue
-	 */
-	private void clearAudioQueue() {
-		if (player.isPlaying()) {
-			filenames.clear();
-			currentFile = 0;
-		}
-	}
-	
-	/**
-	 * Adds the resourceId to the filenames
-	 * @param resourceId = R.string.___ (id)
-	 */
-	private void queueAudio(int resourceId) {
-		filenames.add(getResources().getString(resourceId));
-	}
-	private void queueAudio(String str) {
-		filenames.add(str);
-	}
-	
 	
 	private void runGame() {
 		currWordInd = -1;
 		regenerate();
-
 		createListeners();
 	}
 
@@ -214,21 +98,21 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		numCorrectLetters = 0;
 		
 		int numLetters = currWord.length();
-		queueAudio(R.string.the_new_word);
-		queueAudio(((Integer)numLetters).toString());
-		queueAudio(R.string.letters);
+		application.queueAudio(R.string.the_new_word);
+		application.queueAudio(((Integer)numLetters).toString());
+		application.queueAudio(R.string.letters);
 //		speakOutQueue("The new word has " + numLetters + " letters.");
 		
 		wordStatus = new char[numLetters];
 		for (int i = 0; i < numLetters; i++) {
 			wordStatus[i] = '-';
-			queueAudio(R.string.dash);
+			application.queueAudio(R.string.dash);
 //			speakOutQueue("Dash.");
 		}
-		queueAudio(R.string.guess_a_letter);
+		application.queueAudio(R.string.guess_a_letter);
 //		speakOutQueue("Guess a letter.");
 		
-		playAudio(filenames.get(0));
+		application.playAudio();
 		
 		//swap strings in array; everything before currWordInd have been done
 		wordBank[nextWordInd] = wordBank[currWordInd];
@@ -239,15 +123,15 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		for (int i = 0; i < currWord.length(); i++) {
 			Character c = wordStatus[i];
 			if (c == '-') {
-				queueAudio(R.string.dash);
+				application.queueAudio(R.string.dash);
 //				speakOutQueue("Dash.");
 			}
 			else {
-				queueAudio(c.toString());
+				application.queueAudio(c.toString());
 //				speakOutQueue(c + ". ");
 			}
 		}
-		playAudio(filenames.get(0));
+		application.playAudio();
 	}
 	
 	/**
@@ -255,34 +139,33 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	 * Alerts user of current word status, and number of mistakes made.
 	 */
 	private void promptGuess() {
-		queueAudio(R.string.so_far);
+		application.queueAudio(R.string.so_far);
 //		speakOutQueue("So far the word is ");
 		spellWordStatus();
 		
-		queueAudio(R.string.youve_made);
+		application.queueAudio(R.string.youve_made);
 		if(numMistakes == 1) {
-			queueAudio(R.string.one);
-			queueAudio(R.string.mistake);
+			application.queueAudio(R.string.one);
+			application.queueAudio(R.string.mistake);
 //			speakOutQueue("You've made " + numMistakes + " mistake.");
 		}
 
 		else {
-			queueAudio(((Integer)numMistakes).toString());
-			queueAudio(R.string.mistakes);
+			application.queueAudio(((Integer)numMistakes).toString());
+			application.queueAudio(R.string.mistakes);
 //			speakOutQueue("You've made " + numMistakes + " mistakes.");
 		}
-			
 		
 		//Warning of last chance.
 		if(numMistakes == MAX_MISTAKES - 1) {
-			queueAudio(R.string.but_you_have);
+			application.queueAudio(R.string.but_you_have);
 //			speakOutQueue("But you have one last chance to guess the entire word");
 		}
 			
-		queueAudio(R.string.guess_a_letter);
+		application.queueAudio(R.string.guess_a_letter);
 //		speakOutQueue("Guess a letter.");
 		
-		playAudio(filenames.get(0));
+		application.playAudio();
 	}
 	
 	/**
@@ -292,7 +175,6 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	 * - otherwise, re-prompt
 	 */
 	private void correctGuessHandler(char guessedLetter) {
-
 		guessedBank.add(guessedLetter);
 		
 		//update wordStatus
@@ -308,8 +190,8 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 		
 		//Move onto next word if all the letters are there
 		if(numCorrectLetters == currWord.length()) {
-			queueAudio(R.string.good);
-			playAudio(filenames.get(0));
+			application.queueAudio(R.string.good);
+			application.playAudio();
 //			speakOutQueue("Good.");
 			
 			revealCurrWord();
@@ -321,21 +203,21 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 	}
 	
 	private void revealCurrWord() {
-		queueAudio(R.string.the_correct_answer_was);
+		application.queueAudio(R.string.the_correct_answer_was);
 //		speakOutQueue("The correct word was ");
 		for (int i = 0; i < currWord.length(); i++) {
 			Character ch = currWord.charAt(i);
-			queueAudio(ch.toString());
+			application.queueAudio(ch.toString());
 //			speakOutQueue(currWord.charAt(i) + ".");
 		}
-		playAudio(filenames.get(0));
+		application.playAudio();
 				
 	}
 	
 	private void wrongGuessHandler() {
 		numMistakes++;
-		queueAudio(R.string.no);
-		playAudio(filenames.get(0));
+		application.queueAudio(R.string.no);
+		application.playAudio();
 		
 //		speakOutQueue("No.");
 		
@@ -352,7 +234,6 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 
 
 	private void createListeners() {
-
 		// Handles the checking and comparing of the expected word vs user input
 		HangmanListener = new GenericEventListener() {
 			@Override
@@ -364,24 +245,24 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
 
-				clearAudioQueue();
+				application.clearAudioQueue();
 				
 				//Input wasn't a Braille character
 				if(glyphAtCell == '-') {
-					queueAudio(R.string.invalid_input);
-					playAudio(filenames.get(0));
+					application.queueAudio(R.string.invalid_input);
+					application.playAudio();
 //					speakOutReplace("Invalid input.");
 					wrongGuessHandler();
 					return;
 				}
 				
-				queueAudio(((Character)glyphAtCell).toString());
-				playAudio(filenames.get(0));
+				application.queueAudio(((Character)glyphAtCell).toString());
+				application.playAudio();
 //				speakOutReplace(glyphAtCell + ". ");
 				
 				if(guessedBank.contains(glyphAtCell)) {
-					queueAudio(R.string.youve_already);
-					playAudio(filenames.get(0));
+					application.queueAudio(R.string.youve_already);
+					application.playAudio();
 					promptGuess();
 					return;
 				}
@@ -411,49 +292,18 @@ public class Hangman extends Activity implements TextToSpeech.OnInitListener {
 //	private void speakOutReplace(String text) {
 //		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 //	}
-
-	// Listen for swipes, and enact the appropriate menu item if necessary.
-	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
-
-		/**
-		 * For replaying the instruction
-		 */
-		@Override
-		public boolean onSingleTapConfirmed(MotionEvent e) {
-			promptGuess();
+	
+	// If the user presses back, go to the home screen
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			Intent intent = new Intent(Hangman.this, GameActivity.class);
+			bwt.stopTracking();
+			bwt.removeEventListeners();
+	        bwt.stop();
+			startActivity(intent);
 			return true;
 		}
-		
-		@Override
-		public boolean onFling(MotionEvent event1, MotionEvent event2,
-				float velocityX, float velocityY) {
-			FlingHelper fling = new FlingHelper(event1, event2, velocityX, velocityY);
-			// Swipe up
-			if (fling.isUp()) {
-				Intent intent = new Intent(Hangman.this, GameActivity.class);
-				bwt.stopTracking();
-				bwt.removeEventListeners();
-		        bwt.stop();
-				startActivity(intent);
-			}
-
-			// Swipe left (Rotate left through menu items)
-			else if (fling.isLeft()) {
-				currentOption = (currentOption - 1) % numOptions;
-				if (currentOption == -1)
-					currentOption += numOptions;
-				hangman.setText(options[currentOption]);
-				hangman.setContentDescription(options[currentOption]);
-			}
-
-			// Swipe right (Rotate right through menu items)
-			else if (fling.isRight()) {
-				currentOption = (currentOption + 1) % numOptions;
-				hangman.setText(options[currentOption]);
-				hangman.setContentDescription(options[currentOption]);
-			}
-
-			return true;
-		}
+		return super.onKeyDown(keyCode, event);
 	}
 }
