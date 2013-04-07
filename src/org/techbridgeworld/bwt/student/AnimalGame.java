@@ -11,7 +11,6 @@ import org.techbridgeworld.bwt.api.libs.Braille;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -21,7 +20,6 @@ public class AnimalGame extends Activity {
 
 	private MyApplication application;
 	private TextToSpeech tts;
-	private MediaPlayer player;
 
 	private Random generator = new Random(new Date().getTime());
 
@@ -47,10 +45,10 @@ public class AnimalGame extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.list);
 		
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
-		player = application.myPlayer;
 
 		application.currentFile = 0;
 		application.filenames.clear();
@@ -61,15 +59,6 @@ public class AnimalGame extends Activity {
 		bwt.initializeEventListeners();
 		bwt.startTracking();
 		runGame();
-	}
-
-
-	@Override
-	protected void onStop() {
-		// Stop media player.
-		if(player != null)
-			player.release();
-	    super.onStop();
 	}
 	
     @Override
@@ -184,7 +173,7 @@ public class AnimalGame extends Activity {
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
 				
-				application.clearAudioQueue();
+				application.clearAudio();
 				
 				// Speak out character typed
 				if(glyphAtCell == '-') {

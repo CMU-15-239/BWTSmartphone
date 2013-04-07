@@ -10,7 +10,6 @@ import org.techbridgeworld.bwt.api.events.BoardEvent;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -22,7 +21,6 @@ public class LearnDots extends Activity {
 
 	private MyApplication application;
 	private TextToSpeech tts;
-	private MediaPlayer player;
 	
 	private Random generator = new Random(15239);
 
@@ -37,11 +35,11 @@ public class LearnDots extends Activity {
 	 */
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.list);
 		
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
-		player = application.myPlayer;
-		
+
 		application.currentFile = 0;
 		application.filenames.clear();
 
@@ -57,14 +55,6 @@ public class LearnDots extends Activity {
 		runGame();
 	}
 
-	@Override
-	protected void onStop() {
-		// Stop media player.
-		if(player != null)
-			player.release();
-	    super.onStop();
-	}
-	
     @Override
     public void onDestroy() {
     	// Stop text-to-speech
@@ -80,7 +70,7 @@ public class LearnDots extends Activity {
 	 */
 	private void regenerate(){
 		currentDot = generator.nextInt(6) + 1;
-		application.clearAudioQueue();
+		application.clearAudio();
 		// "Good."
 		application.queueAudio(R.string.good);
 		// "Find dot"
@@ -128,7 +118,7 @@ public class LearnDots extends Activity {
 				
 				// Otherwise, tell the user that they are incorrect and repeat the prompt. 
 				else{
-					application.clearAudioQueue();
+					application.clearAudio();
 					application.queueAudio(R.string.no);
 					application.queueAudio(R.string.find_dot);
 					application.queueAudio(numbers[currentDot-1]);

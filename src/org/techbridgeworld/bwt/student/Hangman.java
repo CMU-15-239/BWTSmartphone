@@ -11,7 +11,6 @@ import org.techbridgeworld.bwt.api.events.SubmitEvent;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.KeyEvent;
@@ -20,13 +19,13 @@ public class Hangman extends Activity {
 
 	private MyApplication application;
 	private TextToSpeech tts;
-	private MediaPlayer player;
 	
 	private Random generator = new Random(new Date().getTime());
 
 	private final BWT bwt = new BWT(this, Hangman.this);
 	private GenericEventListener HangmanListener;
 
+	private String[] numbers = {"one", "two", "three", "four", "five", "six", "seven", "eight"};
 	private final String[] wordBank = { "fast", "dash", "quit", "milk", "computer", "money",
 			"dishes", "phone", "school", "teacher"};
 	private final int MAX_MISTAKES = 8;
@@ -41,10 +40,10 @@ public class Hangman extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.list);
 
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
-		player = application.myPlayer;
 		
 		application.currentFile = 0;
 		application.filenames.clear();
@@ -54,14 +53,6 @@ public class Hangman extends Activity {
 		bwt.initializeEventListeners();
 		bwt.startTracking();
 		runGame();
-	}
-
-	@Override
-	protected void onStop() {
-		// Stop media player.
-		if(player != null)
-			player.release();
-	    super.onStop();
 	}
 	
     @Override
@@ -99,7 +90,7 @@ public class Hangman extends Activity {
 		
 		int numLetters = currWord.length();
 		application.queueAudio(R.string.the_new_word);
-		application.queueAudio(((Integer)numLetters).toString());
+		application.queueAudio(numbers[numLetters]);
 		application.queueAudio(R.string.letters);
 //		speakOutQueue("The new word has " + numLetters + " letters.");
 		
@@ -245,7 +236,7 @@ public class Hangman extends Activity {
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
 
-				application.clearAudioQueue();
+				application.clearAudio();
 				
 				//Input wasn't a Braille character
 				if(glyphAtCell == '-') {

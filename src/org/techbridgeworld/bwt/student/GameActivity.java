@@ -16,7 +16,7 @@ public class GameActivity extends Activity {
 
 	private MyApplication application;
 	private TextToSpeech tts;
-	private Button[] buttons; 
+	private Button[] buttons;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +28,8 @@ public class GameActivity extends Activity {
 		application.prompt = getResources().getString(R.string.game_prompt);
 		application.help = getResources().getString(R.string.game_help);
 		
+		tts = application.myTTS;
+
 		SharedPreferences prefs = application.context.getSharedPreferences("BWT", 0);
 		if(prefs.getBoolean("firstRun", true)) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(GameActivity.this);
@@ -66,26 +68,31 @@ public class GameActivity extends Activity {
 				public void onClick(View v) {
 					Intent intent; 
 					switch(j) {
-					case 0: 
+					case 0:
+						tts.stop();
 						intent = new Intent(GameActivity.this, LearnDots.class);
 						startActivity(intent);
-					case 1: 
+						break;
+					case 1:
+						tts.stop();
 						intent = new Intent(GameActivity.this, LearnLetters.class);
 						startActivity(intent);
-					case 2: 
+						break;
+					case 2:
+						tts.stop();
 						intent = new Intent(GameActivity.this, AnimalGame.class);
 						startActivity(intent);
+						break;
 					case 3:
+						tts.stop();
 						intent = new Intent(GameActivity.this, Hangman.class);
 						startActivity(intent);
+						break;
 					default:	
 					}
 				}
 			}); 
 		}
-
-		tts = application.myTTS;
-		application.speakOut(application.prompt);
 	}
 
 	@Override

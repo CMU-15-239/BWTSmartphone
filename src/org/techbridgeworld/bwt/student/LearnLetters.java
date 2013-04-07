@@ -10,7 +10,6 @@ import org.techbridgeworld.bwt.api.libs.Braille;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -20,7 +19,6 @@ public class LearnLetters extends Activity {
 
 	private MyApplication application;
 	private TextToSpeech tts;
-	private MediaPlayer player;
 
 	private static final Braille braille = new Braille();
 
@@ -43,10 +41,10 @@ public class LearnLetters extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.list);
 		
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
-		player = application.myPlayer;
 		
 		application.currentFile = 0;
 		application.filenames.clear();
@@ -88,14 +86,6 @@ public class LearnLetters extends Activity {
 			shuffledIndices[i] = shuffleIndicesArr(shuffledIndices[i]);
 		}
 	}
-
-	@Override
-	protected void onStop() {
-		// Stop media player.
-		if(player != null)
-			player.release();
-	    super.onStop();
-	}
 	
     @Override
     public void onDestroy() {
@@ -136,7 +126,7 @@ public class LearnLetters extends Activity {
 				
 				if (currentBrailleCode == expectedBrailleCode) {
 					//User is correct
-					application.clearAudioQueue();
+					application.clearAudio();
 					application.queueAudio(R.string.good);
 					application.playAudio();
 
@@ -144,7 +134,7 @@ public class LearnLetters extends Activity {
 					Log.d("Learn letters", "user is correct");
 				} else if (isWrong) {
 					// User is wrong
-					application.clearAudioQueue();
+					application.clearAudio();
 					application.queueAudio(R.string.no);
 					application.playAudio();
 
