@@ -29,6 +29,7 @@ public class GameActivity extends Activity {
 		application.help = getResources().getString(R.string.game_help);
 		
 		tts = application.myTTS;
+		application.speakOut(application.prompt);
 
 		SharedPreferences prefs = application.context.getSharedPreferences("BWT", 0);
 		if(prefs.getBoolean("firstRun", true)) {
@@ -69,22 +70,18 @@ public class GameActivity extends Activity {
 					Intent intent; 
 					switch(j) {
 					case 0:
-						tts.stop();
 						intent = new Intent(GameActivity.this, LearnDots.class);
 						startActivity(intent);
 						break;
 					case 1:
-						tts.stop();
 						intent = new Intent(GameActivity.this, LearnLetters.class);
 						startActivity(intent);
 						break;
 					case 2:
-						tts.stop();
 						intent = new Intent(GameActivity.this, AnimalGame.class);
 						startActivity(intent);
 						break;
 					case 3:
-						tts.stop();
 						intent = new Intent(GameActivity.this, Hangman.class);
 						startActivity(intent);
 						break;
@@ -95,6 +92,12 @@ public class GameActivity extends Activity {
 		}
 	}
 
+	@Override
+	public void onPause() {
+		application.clearAudio();
+		super.onPause();
+	}
+	
 	@Override
 	public void onDestroy() {
 		if (tts != null) {

@@ -55,6 +55,12 @@ public class Hangman extends Activity {
 		runGame();
 	}
 	
+	@Override
+	public void onPause() {
+		application.clearAudio();
+		super.onPause();
+	}
+	
     @Override
     public void onDestroy() {
     	// Stop text-to-speech
@@ -90,7 +96,7 @@ public class Hangman extends Activity {
 		
 		int numLetters = currWord.length();
 		application.queueAudio(R.string.the_new_word);
-		application.queueAudio(numbers[numLetters]);
+		application.queueAudio(numbers[numLetters-1]);
 		application.queueAudio(R.string.letters);
 //		speakOutQueue("The new word has " + numLetters + " letters.");
 		
@@ -223,7 +229,6 @@ public class Hangman extends Activity {
 		}
 	}
 
-
 	private void createListeners() {
 		// Handles the checking and comparing of the expected word vs user input
 		HangmanListener = new GenericEventListener() {
@@ -288,10 +293,11 @@ public class Hangman extends Activity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			Intent intent = new Intent(Hangman.this, GameActivity.class);
 			bwt.stopTracking();
 			bwt.removeEventListeners();
 	        bwt.stop();
+	        
+	        Intent intent = new Intent(Hangman.this, GameActivity.class);
 			startActivity(intent);
 			return true;
 		}

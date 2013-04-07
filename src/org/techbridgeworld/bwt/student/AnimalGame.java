@@ -61,6 +61,12 @@ public class AnimalGame extends Activity {
 		runGame();
 	}
 	
+	@Override
+	public void onPause() {
+		application.clearAudio();
+		super.onPause();
+	}
+	
     @Override
     public void onDestroy() {
     	// Stop text-to-speech
@@ -271,10 +277,11 @@ public class AnimalGame extends Activity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			Intent intent = new Intent(AnimalGame.this, GameActivity.class);
 			bwt.stopTracking();
 			bwt.removeEventListeners();
 	        bwt.stop();
+	        
+	        Intent intent = new Intent(AnimalGame.this, GameActivity.class);
 			startActivity(intent);
 			return true;
 		}

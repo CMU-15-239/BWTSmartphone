@@ -39,7 +39,7 @@ public class LearnDots extends Activity {
 		
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
-
+		
 		application.currentFile = 0;
 		application.filenames.clear();
 
@@ -54,7 +54,13 @@ public class LearnDots extends Activity {
 		bwt.startTracking();
 		runGame();
 	}
-
+	
+	@Override
+	public void onPause() {
+		application.clearAudio();
+		super.onPause();
+	}
+	
     @Override
     public void onDestroy() {
     	// Stop text-to-speech
@@ -135,8 +141,6 @@ public class LearnDots extends Activity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			Intent intent = new Intent(LearnDots.this, GameActivity.class);
-			
 			// If we've started the dot listener, remove it since we're done with it.
 			if(DotListener != null){
 				EventManager.unregisterEventListener(DotListener, BoardEvent.class);
@@ -146,6 +150,7 @@ public class LearnDots extends Activity {
 			bwt.removeEventListeners();
 			bwt.stop();
 			
+			Intent intent = new Intent(LearnDots.this, GameActivity.class);
 			startActivity(intent);
 			return true;
 		}

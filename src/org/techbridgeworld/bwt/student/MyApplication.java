@@ -112,10 +112,12 @@ public class MyApplication extends Application implements OnInitListener {
 	 * Clears everything in the audio queue
 	 */
 	public void clearAudio() {
+		myTTS.stop();
 		if (myPlayer.isPlaying()) {
-			filenames.clear();
-			currentFile = 0;
+			myPlayer.stop();
 		}
+		filenames.clear();
+		currentFile = 0;
 	}
 	
 	public void playAudio() {
