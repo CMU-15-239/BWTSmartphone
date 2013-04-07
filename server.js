@@ -1,10 +1,30 @@
+// var path = require('path');
+// var express = require('express');
+// var http = require('http');
+// var mongoose = require('mongoose');
+// var passport = require('passport');
+// var LocalStrategy = require('passport-local').Strategy;
+// var words = require('./routes/words');
 var path = require('path');
 var express = require('express');
 var http = require('http');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var words = require('./routes/words');
+
+var mongo = require('mongodb');
+
+var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/myApp';
+var mongoOptions = { db: { safe: true }};
+mongoose.connect(mongoUri, mongoOptions, function (err, res) {
+  if (err) { 
+    console.log ('ERROR connecting to: ' + mongoUri + '. ' + err);
+  } else {
+    console.log ('Succeeded connected to: ' + mongoUri);
+  }
+});
+
+var portNumber = process.env.PORT || 3000
 
 function init(){
     var app = express();
@@ -12,14 +32,13 @@ function init(){
 
     var User = initPassportUser();
 
-    mongoose.connect('mongodb://localhost/myApp');
     checkForAndCreateRootUser(User);
 
     require('./loginRoutes')(app);
-    require('./appRoutes')(app);
+    require('./authRoutes')(app);
 
     http.createServer(app).listen(3000, function() {
-        console.log("Express server listening on port %d", 3000);
+        console.log("Express server listening on port %d", portNumber);
     });
 }
 
@@ -53,12 +72,12 @@ function initPassportUser(){
 }
 
 function checkForAndCreateRootUser(User){
-    User.findOne({username : "root" }, function(err, existingUser) {
+    User.findOne({username : "admin" }, function(err, existingUser) {
         if (err || existingUser) return;
-        var user = new User({ username : "root" });
+        var user = new User({ username : "admin" });
         user.superuser = true;
         user.registeredTimestamp = new Date();
-        user.setPassword("SECRET", function(err) {
+        user.setPassword("admin", function(err) {
             if (err) return;
             user.save(function(err) { });
         });  
