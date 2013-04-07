@@ -1,7 +1,7 @@
-// Imma write my own javascript. What you think I am, 3? 
+// Turn off Bootstrap's html-to-javascript features. 
 $('body').off('.data-api');
 
-
+// Enable typeahead.
 $('.assignments').typeahead({
   'source' : ['Assignment 1', 'Assignment 2']
 });
@@ -26,7 +26,7 @@ $('.assignments').typeahead({
     {assn: "Assignment4"}
   ];
 
-  // Handlebars templates
+  // Handlebars template for a word table row.
   var wordRow = Handlebars.compile(
     "<tr>" +
       "<td class='tbl-no'>{{number}}</td>" +
@@ -38,6 +38,7 @@ $('.assignments').typeahead({
       "</td>" +
     "</tr>");
 
+  // Handlebars template for an assignment row.
   var assnRow = Handlebars.compile(
     "<li{{#if active}} class='active'{{/if}}><a href='#'>{{assn}}</a></li>"
     );
@@ -63,8 +64,9 @@ $('.assignments').typeahead({
       console.error("Passed invalid data: ", data);
     }
 
+    // Make the first list item active by default.
     for(var i in data){
-      if(i == 0)
+      if(i === 0)
         data[i].active = true;
 
       console.log("appending ", assnRow(data[i]), data[i]);
@@ -81,31 +83,33 @@ $('.assignments').typeahead({
 /****************************
   Table editing stuff.
 ****************************/
-$(".tbl-word, .tbl-def").click(function(){
+(function(){
+  $(".tbl-word, .tbl-def").click(function(){
 
-  if($(this).find(".temp-input").length != 0){
-    return;
-  }
+    if($(this).find(".temp-input").length !== 0){
+      return;
+    }
 
-  var oldValue = $(this).html();
+    var oldValue = $(this).html();
 
-  var replacement = $("<input>")
-    .attr("value", oldValue)
-    .attr("style", "width: 100%")
-    .addClass("temp-input");
+    var replacement = $("<input>")
+      .attr("value", oldValue)
+      .attr("style", "width: 100%")
+      .addClass("temp-input");
 
-  $(this).html(replacement);
-  $(".temp-input").focus();
+    $(this).html(replacement);
+    $(".temp-input").focus();
 
-  $(".temp-input").blur(function(){
+    $(".temp-input").blur(function(){
 
-      $(this).after($(this).val());
-      $(this).remove();
+        $(this).after($(this).val());
+        $(this).remove();
 
+    });
+
+    $("temp-input").focus();
   });
-
-  $("temp-input").focus();
-});
+})();
 
 /****************************
   Assignment selecting stuff.
