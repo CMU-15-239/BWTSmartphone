@@ -86,6 +86,7 @@ $('.assignments').typeahead({
 (function(){
   $(".tbl-word, .tbl-def").click(function(){
 
+    // If this cell is already active, do nothing.
     if($(this).find(".temp-input").length !== 0){
       return;
     }
@@ -104,11 +105,25 @@ $('.assignments').typeahead({
 
         $(this).after($(this).val());
         $(this).remove();
+        validateRows();
 
     });
 
     $("temp-input").focus();
   });
+
+  function validateRows(){
+    var $words =$(".tbl-word");
+    for(var i in $words){
+      if($words[i].html().length > 8){
+        $($words[i]).parent().addClass("error");
+      }
+      else{
+        $($words[i]).parent().removeClass("error");
+      }
+    }
+  }
+
 })();
 
 /****************************
