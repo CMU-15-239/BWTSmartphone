@@ -63,13 +63,23 @@ module.exports = function (app) {
     });
   });
 
-  app.get('words', function(req, res) {
-    db.collection('words', function(err, collection) {
-      collection.find().toArray(function(err, items) {
-        res.send(items);
-      });
+    app.get('/words', function(req, res){
+         console.log('im loading user info')
+        if (!req.user){
+            console.log('401');
+            res.status(401);
+        }
+        if ((req.user)){
+            Word.find({}, function (err, words){
+                if (err) {
+                    console.log(err, 'tryin to find the username');
+                    res.send(err);
+                }
+                else {
+                    res.send(words);
+                }});
+        }
     });
-  });
 
   app.get('/words/:id', function(req, res) {
     var id = req.params.word;
