@@ -4,7 +4,7 @@ var http = require('http');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var words = require('./routes/words')
+var words = require('./routes/words');
 
 function init(){
     var app = express();
