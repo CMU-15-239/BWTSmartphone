@@ -31,8 +31,10 @@ function init(){
     configureExpress(app);
 
     var User = initPassportUser();
+    var Word = require('./Words');
 
     checkForAndCreateRootUser(User);
+    checkDefaultWords(Word);
 
     require('./loginRoutes')(app);
     require('./authRoutes')(app);
@@ -81,6 +83,16 @@ function checkForAndCreateRootUser(User){
             if (err) return;
             user.save(function(err) { });
         });  
+    });
+}
+function checkDefaultWords(Word) {
+    Word.findOne({word : "hello" }, function(err, existingWord) {
+        if (err || existingWord) return;
+        var word = new Word({ word : "Hell0" });
+        word.def = 'world';
+        word.pos = 'exlamation'
+        word.assns = ['omg']
+        word.save(function(err) {console.log(err) });
     });
 }
 // var express = require('express'),

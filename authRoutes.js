@@ -1,46 +1,47 @@
 
 var User = require('./User');
-var mongo = require('mongodb');
-var Server = mongo.Server;
-var Db = mongo.Db;
-var BSON = mongo.BSONPure;
+var Word = require('./Words')
+
+// var mongo = require('mongodb');
+// var Server = mongo.Server;
+// var Db = mongo.Db;
+// var BSON = mongo.BSONPure;
 
 
-var server = new Server('localhost', 27017, {auto_reconnect : true});
-db = new Db('wordsdb', server, {safe : true});
+// var server = new Server('localhost', 27017, {auto_reconnect : true});
+// db = new Db('wordsdb', server, {safe : true});
 
-// Open the database.
-db.open(function(err,db) {
-  if(!err) {
-    console.log("Connected to 'wordsdb' database");
-    db.collection('words', {safe:true}, function(err, collection) {
-      if(err) {
-        console.log("The 'words' collection doesn't exist. Creating it with sample data...");
-        populateDB();
-      }
-    });
-  }
-});
+// db.open(function(err,db) {
+//   if(!err) {
+//     console.log("Connected to 'wordsdb' database");
+//     db.collection('words', {safe:true}, function(err, collection) {
+//       if(err) {
+//         console.log("The 'words' collection doesn't exist. Creating it with sample data...");
+//         populateDB();
+//       }
+//     });
+//   }
+// });
 
-var populateDB = function(){
-  var words = [
-    {
-      word: "hello",
-      def: "A simple greeting",
-      pos: "exclamation",
-      assns: []
-    },
-    {
-      word: "world",
-      def: "The earth, together with all of its countries, peoples, and natural features.",
-      pos: "noun",
-      assns: []
-    }];
+// var populateDB = function(){
+//   var words = [
+//     {
+//       word: "hello",
+//       def: "A simple greeting",
+//       pos: "exclamation",
+//       assns: []
+//     },
+//     {
+//       word: "world",
+//       def: "The earth, together with all of its countries, peoples, and natural features.",
+//       pos: "noun",
+//       assns: []
+//     }];
 
-    db.collection('words', function(err, collection){
-      collection.insert(words, {safe:true}, function(err, result) {});
-    });
-};
+//     db.collection('words', function(err, collection){
+//       collection.insert(words, {safe:true}, function(err, result) {});
+//     });
+// };
  
 // ******************************
 
