@@ -48,20 +48,25 @@ var Word = require('./Words')
 module.exports = function (app) {
 
   app.post('/words', function(req, res) {
-    var word = req.body;
-    console.log('Adding word: ' + JSON.stringify(word));
-    db.collection('words', function(err, collection) {
-      collection.insert(word, {safe : true}, function(err, result) {
-        if(err) {
-          res.send({'error' : 'An error has occurred'});
-        }
-        else {
-          console.log('Success: ' + JSON.stringify(result[0]));
-          res.send(result[0]);
-        }
-      });
+        if (req.user) {
+            var word = new Word();
+            for (var key in req.body) {
+                console.log(req.body)
+                console.log(key, req.body[key]);
+               var value=req.body[key];
+               word[key]=value;
+            };
+            word.save(function(err) {
+                if (err) {
+                    console.log(err, 'ruhroh');
+                    return res.send({'err': err});
+                }
+                //console.log(student);
+                return res.send(word);
+            });  
+        };
+        console.log(word)
     });
-  });
 
     app.get('/words', function(req, res){
          console.log('im loading user info')
@@ -82,14 +87,24 @@ module.exports = function (app) {
     });
 
   app.get('/words/:id', function(req, res) {
-    var id = req.params.word;
-    console.log('Retrieving word: ' + id);
-    db.collection('words', function(err, collection) {
-      collection.findOne({'_id':new BSON.ObjectID(id)}, function(err, item) {
-        res.send(item);
-      });
+         console.log('im loading user info')
+         var id = req.params.word;
+        if (!req.user){
+            console.log('401');
+            res.status(401);
+        }
+        if ((req.user)){
+            Word.findOne({'_id':new BSON.ObjectID(id)}, function (err, user){
+                if (err) {
+                    console.log(err, 'tryin to find the username');
+                    res.send(err);
+                }
+                else {
+                    res.send(user);
+                }});
+        }
     });
-  });
+
 
   app.put('/words/:id', function(req, res) {
     var id = req.params.word;
