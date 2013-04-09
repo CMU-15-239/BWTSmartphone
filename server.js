@@ -84,7 +84,7 @@ function checkDefaultWords(Word) {
         var word = new Word({ word : "hello" });
         word.def = 'An exclamatory greeting';
         word.pos = 'exlamation';
-        word.assns = ['Test Assignment'];
+        word.assns = ['Level 1', 'Level 2', 'Level 3'];
         word.save(function(err) {console.log(err);});
     });
 }

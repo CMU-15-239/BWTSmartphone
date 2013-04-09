@@ -1,12 +1,14 @@
 var assignments;
 var words;
+var rawData;
 
 
 $(document).ready(function(){
 
   // Turn off Bootstrap's html-to-javascript features. 
   $('body').off('.data-api');
-
+  // Initialize modals:
+  $('#helpModal').modal({show: false});
 
   /****************************
     Templates
@@ -52,6 +54,10 @@ $(document).ready(function(){
   /****************************
     Listeners
   ****************************/
+  $("#help-btn").click(function(){
+    $("#helpModal").modal('show');
+  });
+
   // Cause clicking on a table cell to convert it into a textbox.
   function rebindTable(){
     $(".tbl-word, .tbl-def, .save-btn, .delete-btn").unbind('click');
@@ -127,6 +133,7 @@ $(document).ready(function(){
           success: function(data) {
             if(data.result === "success"){
               $that.parent().addClass("success");
+              assignments[payload.word] = payload;
               setTimeout(function(){
                 $that.parent().removeClass("success");
               }, 5000);
@@ -142,6 +149,7 @@ $(document).ready(function(){
     $(".delete-btn").click(function(){
       var thisWord = $(this).closest("tr").find(".tbl-word").html();
       var $that = $(this);
+      var thisList = $("#assn-title").html();
 
       $.ajax({
           url: '/words/' + thisWord,
@@ -149,6 +157,18 @@ $(document).ready(function(){
           success: function(result) {
             $that.closest('tr').remove();
             words[thisWord] = null;
+
+            var deleteIndex;
+
+            for(var i = 0; i < assignments[thisList].length; i++){
+              if(assignments[thisList][i].word === thisWord){
+                deleteIndex = i;
+                break;
+              }
+            }
+
+            assignments[thisList].splice(deleteIndex, 1);
+
           }
       });
     });
@@ -201,6 +221,7 @@ $(document).ready(function(){
 
 
   function parseData(data){
+    rawData = data;
     assignments = {};
     words = {};
 

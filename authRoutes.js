@@ -47,6 +47,26 @@ module.exports = function (app) {
         }
     });
 
+    app.get('/droid/words', function(req, res){
+        if (req.secret !=='i am a really creative secret'){
+            console.log('401');
+            res.status(401);
+        }
+        if (req.user || (req.secret ==='i am a really creative secret')){
+            Word.find({}, function (err, words){
+                if (err) {
+                    console.log(err, 'tryin to find the username');
+                    res.send(err);
+                }
+                else {
+                  var t = words.map(function(i){
+                    return i.word;
+                  });
+                  res.send(t);
+                }});
+        }
+    });
+
   app.get('/words/:id', function(req, res) {
          console.log('im loading user info');
          var id = req.params.word;

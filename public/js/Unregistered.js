@@ -49,8 +49,9 @@ App.prototype.registerLogin = function(){
                     }
                 },
                 function error(xhr, status, err){
-                    if(err)
-                        console.error(JSON.stringify(err));
+                    if(err){
+                        $("input").addClass("error-custom").removeClass("disabled-custom");
+                    }
                 });
     }.bind(this));
 };

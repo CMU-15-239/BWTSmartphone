@@ -9,17 +9,20 @@
     width: 20px;
 }
 .tbl-edit{
-    width: 90px;
+    width: 100px;
 }
 fieldset{
     border: none;
 }
-input{
-    
+.save-btn{
+    margin-right: 10px;
 }
 .disabled-custom{
   cursor: not-allowed;
   background-color: #eeeeee;
+}
+.error-custom{
+    border: 1px solid #f66;
 }
 
 #content{
