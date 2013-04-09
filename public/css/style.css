@@ -22,6 +22,10 @@ input{
   background-color: #eeeeee;
 }
 
+#content{
+    margin-bottom: 30px;
+}
+
 /***********************
   Bootstrap Initial CSS
 ***********************/

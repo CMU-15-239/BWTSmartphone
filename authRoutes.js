@@ -10,19 +10,19 @@ module.exports = function (app) {
   app.post('/words', function(req, res) {
         if (req.user) {
             var word = new Word();
-            for (var key in req.body) {
-                console.log(req.body);
-                console.log(key, req.body[key]);
-               var value=req.body[key];
-               word[key]=value;
-            }
+            word['word'] = req.body.word;
+            word['def'] = req.body.def;
+            word['assns'] = req.body.assns;
             word.save(function(err) {
                 if (err) {
                     console.log(err, 'ruhroh');
                     return res.send({'err': err});
                 }
                 //console.log(student);
-                return res.send(word);
+                return res.send({
+                  result : "success",
+                  data: word
+                });
             });
         }
         console.log(word);
@@ -69,7 +69,6 @@ module.exports = function (app) {
   app.put('/words/:word', function(req, res) {
     var word = req.params.word;
     console.log('Updating word: ' + word);
-    console.log(JSON.stringify(word));
     if ((req.user)){
       Word.find({'word': word}, null, function(err, success){
           if (err) {
@@ -77,10 +76,40 @@ module.exports = function (app) {
               //throw err;
           }
           else {
-              Word.remove(success);
-              Word.create(req.body);
-              console.log('successful');
-              res.send(req.body);
+              Word.remove({'word': word}, function(err){
+                if(err)
+                  console.log("Error removing file:", err);
+
+                var word = new Word();
+                for (var key in req.body) {
+                    console.log("Payload: ", req.body);
+                    console.log(key, req.body[key]);
+                   var value=req.body[key];
+                   word[key]=value;
+                }
+                word.save(function(err){
+                  if(err){
+                    console.log("Error updating word ", err);
+                    res.send({
+                      result: 'fail',
+                      error: err
+                    });
+                  }
+                  else{
+                    console.log('successful');
+                    res.send({
+                      result: 'success'
+                    });
+                  }
+                });
+
+                console.log('successful');
+                res.send({
+                  result: 'success',
+                });
+
+              });
+
           }});
     }
 

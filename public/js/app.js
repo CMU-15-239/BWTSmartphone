@@ -1,6 +1,6 @@
 var assignments;
-var rebind;
-var renderWordList;
+var words;
+
 
 $(document).ready(function(){
 
@@ -15,7 +15,6 @@ $(document).ready(function(){
   // Handlebars template for a word table row.
   var wordRow = Handlebars.compile(
     "<tr>" +
-      "<td class='tbl-no'>{{number}}</td>" +
       "<td class='tbl-word'>{{word}}</td>" +
       "<td class='tbl-def'>{{def}}</td>" +
       "<td class='tbl-edit'>" +
@@ -44,7 +43,6 @@ $(document).ready(function(){
 
     // For each item, add its number to its object and add it to the DOM.
     for(var i in data){
-      data[i].number = parseInt(i) + 1;
       $(".word-list").append(wordRow(data[i]));
     }
   }
@@ -56,8 +54,10 @@ $(document).ready(function(){
   ****************************/
   // Cause clicking on a table cell to convert it into a textbox.
   function rebindTable(){
-    $(".tbl-word, .tbl-def").unbind('click');
+    $(".tbl-word, .tbl-def, .save-btn, .delete-btn").unbind('click');
     $(".tbl-word, .tbl-def").click(function(){
+
+      $that = $(this);
 
       // If this cell is already active, do nothing.
       if($(this).find(".temp-input").length !== 0){
@@ -84,6 +84,74 @@ $(document).ready(function(){
 
       $("temp-input").focus();
     });
+
+    $(".save-btn").click(function(){
+      var thisWord = $(this).closest("tr").find(".tbl-word").html();
+      var thisDef = $(this).closest("tr").find(".tbl-def").html();
+      var currList = $("#assn-title").html();
+
+      var reqType = "PUT";
+      var reqURL = "/" + thisWord;
+      console.log(thisWord, thisDef, currList);
+
+      if(!words[thisWord]){
+        words[thisWord] = {word : thisWord, def : thisDef, assns : [currList]};
+        $.post("/words", words[thisWord], function(data){
+          if(data.result === "success"){
+            $that.parent().addClass("success");
+            setTimeout(function(){
+              $that.parent().removeClass("success");
+            }, 5000);
+          }
+          else{
+            console.log(data);
+            $that.parent().addClass("error");
+          }
+        });
+        return;
+      }
+      if($.inArray(currList, words[thisWord].assns) === -1)
+        words[thisWord].assns.push(currList);
+
+
+      var payload = {};
+          payload.word = thisWord;
+          payload.def  = thisDef;
+          payload.assn = words[thisWord].assns;
+
+
+      $.ajax({
+          url: '/words' + reqURL,
+          type: reqType,
+          data: payload,
+          success: function(data) {
+            if(data.result === "success"){
+              $that.parent().addClass("success");
+              setTimeout(function(){
+                $that.parent().removeClass("success");
+              }, 5000);
+            }
+            else{
+              console.log(data);
+              $that.parent().addClass("error");
+            }
+          }
+      });
+    });
+
+    $(".delete-btn").click(function(){
+      var thisWord = $(this).closest("tr").find(".tbl-word").html();
+      var $that = $(this);
+
+      $.ajax({
+          url: '/words/' + thisWord,
+          type: 'DELETE',
+          success: function(result) {
+            $that.closest('tr').remove();
+            words[thisWord] = null;
+          }
+      });
+    });
   }
 
   // Repopulate the word list whenever an assignment is picked. 
@@ -95,6 +163,15 @@ $(document).ready(function(){
       renderWordList($(this).attr("data-assn"));
     });
   }
+
+  $("#add-word").click(function(){
+    $(".word-list").append(wordRow({
+      word:"Click here to add a word...",
+      def:"Click here to add a definition"
+    }));
+    rebindTable();
+  });
+
 
 
   /****************************
@@ -109,7 +186,7 @@ $(document).ready(function(){
       return;
 
     for(var i in $words){
-      if($words[i].html().length > 8){
+      if($($words[i]).html().length > 8){
         $($words[i]).parent().addClass("error");
       }
       else{
@@ -125,8 +202,11 @@ $(document).ready(function(){
 
   function parseData(data){
     assignments = {};
+    words = {};
 
     for(var i in data){
+      words[data[i].word] = data[i];
+
       var _assns = data[i].assns;
       for(var assn in _assns){
         if(!assignments[_assns[assn]])
