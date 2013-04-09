@@ -100,7 +100,7 @@ public class LearnDots extends Activity {
 		// Generate the first dot.
 		currentDot = generator.nextInt(6) + 1;
 		application.queueAudio(R.string.find_dot);
-		application.queueAudio(numbers[getCurrent()-1]);
+		application.queueAudio(numbers[getCurrent() - 1]);
 		application.playAudio();
 		
 		createListener();
@@ -123,6 +123,8 @@ public class LearnDots extends Activity {
 				int trial = ((BoardEvent) event).getDot();
 				int goal = getCurrent();
 				Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
+
+				bwt.clearTouchedCells();
 				
 				// If they pressed the dot, then pick another dot.
 				if(trial == goal){

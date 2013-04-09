@@ -235,7 +235,7 @@ public class BWT {
 			// If we are done, and if the buffer represents a non-blocked key,
 			// then
 			// log the buffer, clear it, and set its index to 0.
-			if (data[i] == 'n' || data[i] == 't') {
+			if (data[i] == 'n' || data[i] == 'N' || data[i] == 't') {
 
 				// This is to catch the initial "bt" received from the device.
 				if (data[i] == 't') {
@@ -555,13 +555,13 @@ public class BWT {
 		if (!isTracking)
 			return;
 		
-		//Reset timer of inactivity
-		resetInactivityTimer();
 		
 		message = message.toLowerCase(Locale.getDefault()).replaceAll("n", "").trim();
-		if (message.equals("bt"))
+		if (message.equals("bt") || message.length() == 0)
 			return;
 		
+		//Reset timer of inactivity
+		resetInactivityTimer();
 		Integer lastCell = board.getCurrCellInd();
 
 		//First, update board

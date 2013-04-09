@@ -131,6 +131,7 @@ public class MyApplication extends Application implements OnInitListener {
 	 * Begin playing the audio files in filenames
 	 */
 	public void playAudio() {
+		if(filenames.isEmpty()) return;
 		playAudio(filenames.get(0));
 	}
 	
