@@ -79,7 +79,7 @@ public class LearnDots extends Activity {
 	 */
 	private void regenerate(){
 		currentDot = generator.nextInt(6) + 1;
-		application.clearAudio();
+		//application.clearAudio();
 		// "Good."
 		application.queueAudio(R.string.good);
 		// "Find dot"
@@ -131,7 +131,7 @@ public class LearnDots extends Activity {
 				
 				// Otherwise, tell the user that they are incorrect and repeat the prompt. 
 				else{
-					application.clearAudio();
+					//application.clearAudio();
 					application.queueAudio(R.string.no);
 					application.queueAudio(R.string.find_dot);
 					application.queueAudio(numbers[currentDot-1]);

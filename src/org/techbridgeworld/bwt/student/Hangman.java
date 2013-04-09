@@ -239,7 +239,7 @@ public class Hangman extends Activity {
 				int cellInd = e.getCellInd();
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
-				application.clearAudio();
+				//application.clearAudio();
 				
 				//Input wasn't a Braille character --> invalid input
 				if(glyphAtCell == '-') {

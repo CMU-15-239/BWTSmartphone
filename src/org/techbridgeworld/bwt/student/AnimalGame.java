@@ -181,7 +181,7 @@ public class AnimalGame extends Activity {
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
 				
-				application.clearAudio();
+				//application.clearAudio();
 				
 				// Speak out character typed
 				if(glyphAtCell == '-') {
