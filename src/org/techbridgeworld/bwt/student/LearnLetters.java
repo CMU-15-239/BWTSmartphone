@@ -70,7 +70,6 @@ public class LearnLetters extends Activity {
 		bwt.stopTracking();
 		bwt.removeEventListeners();
         bwt.stop();
-        
 		super.onPause();
 	}
 
@@ -97,6 +96,7 @@ public class LearnLetters extends Activity {
 
 		createListener();
 		instructionSpellLetter(groupInd, countLetterInd);
+		application.playAudio();
 	}
 	
 	private void createListener() {
@@ -128,18 +128,16 @@ public class LearnLetters extends Activity {
 				
 				//User is correct
 				if (currentBrailleCode == expectedBrailleCode) {
-					application.clearAudio();
+					//application.clearAudio(); 
 					application.queueAudio(R.string.good);
-					application.playAudio();
 
 					prepNextLetter();
 					Log.d("Learn letters", "user is correct");
 				}
 				//User is wrong
 				else if (isWrong) {
-					application.clearAudio();
+					//application.clearAudio(); 
 					application.queueAudio(R.string.no);
-					application.playAudio();
 
 					redoCurrLetter();
 					Log.d("Learn letters", "user is wrong");
@@ -148,6 +146,8 @@ public class LearnLetters extends Activity {
 				else {
 					Log.d("Learn letters", "user is still writing");
 				}
+
+				application.playAudio();
 			}
 		});
 	}
@@ -230,7 +230,6 @@ public class LearnLetters extends Activity {
 		String[] buttons = btnStrBuf.toString().split(" ");
 		for (int i = 0; i < buttons.length; i++)
 			application.queueAudio(numbers[Integer.parseInt(buttons[i]) - 1]);
-		application.playAudio();
 	}
 
 	/**
@@ -244,7 +243,6 @@ public class LearnLetters extends Activity {
 
 		application.queueAudio(R.string.please_write);
 		application.queueAudio(((Character) let).toString());
-		application.playAudio();
 	}
 
 	

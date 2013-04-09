@@ -61,7 +61,6 @@ public class LearnDots extends Activity {
 		bwt.stopTracking();
 		bwt.removeEventListeners();
 		bwt.stop();
-		
 		super.onPause();
 	}
 	
@@ -87,7 +86,6 @@ public class LearnDots extends Activity {
 		application.queueAudio(R.string.find_dot);
 		// "[Dot Number]."
 		application.queueAudio(numbers[currentDot-1]);
-		application.playAudio();
 	}
 
 	/**
@@ -137,8 +135,8 @@ public class LearnDots extends Activity {
 					application.queueAudio(R.string.no);
 					application.queueAudio(R.string.find_dot);
 					application.queueAudio(numbers[currentDot-1]);
-					application.playAudio();
 				}
+				application.playAudio();
 			}
 		};
 		

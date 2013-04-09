@@ -67,7 +67,6 @@ public class AnimalGame extends Activity {
 		bwt.stopTracking();
 		bwt.removeEventListeners();
         bwt.stop();
-        
 		super.onPause();
 	}
 	
@@ -104,6 +103,8 @@ public class AnimalGame extends Activity {
 	private void runGame() {
 		regenerate();
 		speakDirections();
+		//playAudio not called in functions above
+		application.playAudio();
 		createListeners();
 	}
 	
@@ -118,12 +119,10 @@ public class AnimalGame extends Activity {
 		if(stage == ANIM_SOUND_STAGE) {
 			application.queueAudio(R.string.please_write_the_name);
 			application.queueAudio(getCurr());
-			application.playAudio();
 		}
 		//Spell out the name of the animal
 		else if (stage == SPELL_ANIM_STAGE) {
-			application.queueAudio(R.string.please_write);			
-			application.playAudio();
+			application.queueAudio(R.string.please_write);
 			
 			spellCurrWord();
 		}
@@ -143,7 +142,6 @@ public class AnimalGame extends Activity {
 					application.queueAudio(num);
 				}
 			}
-			application.playAudio();
 		}
 	}
 	
@@ -155,7 +153,6 @@ public class AnimalGame extends Activity {
 			Character let = getCurr().charAt(i);
 			application.queueAudio(let.toString());
 		}
-		application.playAudio();
 	}
 	
 
@@ -194,7 +191,6 @@ public class AnimalGame extends Activity {
 					String chStr = ((Character)glyphAtCell).toString();
 					application.queueAudio(chStr);
 				}
-				application.playAudio();
 
 				char expectedChar = getCurr().charAt(currLetterInd);
 				
@@ -203,7 +199,10 @@ public class AnimalGame extends Activity {
 					wrongCharacterHandler();
 				else
 					correctCharacterHandler();
+				
+				application.playAudio();
 			}
+			
 		};
 		
 
@@ -216,7 +215,6 @@ public class AnimalGame extends Activity {
 	 */
 	private void wrongCharacterHandler() {
 		application.queueAudio(R.string.no);
-		application.playAudio();
 		
 		wrongCounter++;
 		
@@ -234,7 +232,6 @@ public class AnimalGame extends Activity {
 			else {	//stage == ANIM_SOUND_STAGE
 				stage = SPELL_ANIM_STAGE;
 				application.queueAudio(R.string.the_correct_answer_was);
-				application.playAudio();
 				spellCurrWord();
 				currLetterInd = 0;
 			}
@@ -257,7 +254,6 @@ public class AnimalGame extends Activity {
 		if(stage == GIVE_DOTS_STAGE) {
 			wrongCounter = 0;
 			application.queueAudio(R.string.good);
-			application.playAudio();
 			stage = SPELL_ANIM_STAGE;
 			currLetterInd = 0;
 			speakDirections();
@@ -274,8 +270,7 @@ public class AnimalGame extends Activity {
 			
 			// Finished word, go onto next word
 			if (currLetterInd == getCurr().length()) {
-				application.queueAudio(R.string.good);
-				application.playAudio();				
+				application.queueAudio(R.string.good);			
 				bwt.resetBoard();
 				regenerate();
 				speakDirections();

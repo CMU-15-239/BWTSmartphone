@@ -62,7 +62,6 @@ public class Hangman extends Activity {
 		bwt.stopTracking();
 		bwt.removeEventListeners();
         bwt.stop();
-        
 		super.onPause();
 	}
 	
@@ -80,6 +79,7 @@ public class Hangman extends Activity {
 		wordBankInd = -1;
 		regenerate();
 		createListeners();
+		application.playAudio();
 	}
 
 	private void regenerate() {
@@ -89,7 +89,7 @@ public class Hangman extends Activity {
 		
 		if(wordBankInd >= wordBank.length) {
 			//start over if they beat the game
-			runGame();
+			wordBankInd = -1;
 			return;
 		}
 
@@ -112,7 +112,6 @@ public class Hangman extends Activity {
 		}
 		application.queueAudio(R.string.guess_a_letter);
 		
-		application.playAudio();
 		
 		//swap strings in array; everything before wordBankInd have been done
 		wordBank[nextWordInd] = wordBank[wordBankInd];
@@ -133,7 +132,6 @@ public class Hangman extends Activity {
 				application.queueAudio(c.toString());
 			}
 		}
-		application.playAudio();
 	}
 	
 	/**
@@ -163,7 +161,6 @@ public class Hangman extends Activity {
 			
 		//Prompt another guess
 		application.queueAudio(R.string.guess_a_letter);
-		application.playAudio();
 	}
 	
 	/**
@@ -189,7 +186,6 @@ public class Hangman extends Activity {
 		//Move onto next word if all the letters are there
 		if(numCorrectLetters == currWord.length()) {
 			application.queueAudio(R.string.good);
-			application.playAudio();
 			
 			revealCurrWord();
 			regenerate();
@@ -208,7 +204,6 @@ public class Hangman extends Activity {
 			Character ch = currWord.charAt(i);
 			application.queueAudio(ch.toString());
 		}
-		application.playAudio();
 				
 	}
 	
@@ -219,7 +214,6 @@ public class Hangman extends Activity {
 	private void wrongGuessHandler() {
 		numMistakes++;
 		application.queueAudio(R.string.no);
-		application.playAudio();
 		
 		//Reached max number of mistakes, move onto new word
 		if(numMistakes == MAX_MISTAKES) {
@@ -250,20 +244,19 @@ public class Hangman extends Activity {
 				//Input wasn't a Braille character --> invalid input
 				if(glyphAtCell == '-') {
 					application.queueAudio(R.string.invalid_input);
-					application.playAudio();
 					wrongGuessHandler();
+					application.playAudio();
 					return;
 				}
 				
 				//Speak out character inputed
 				application.queueAudio(((Character)glyphAtCell).toString());
-				application.playAudio();
 				
 				//Check for already-guessed letters
 				if(guessedBank.contains(glyphAtCell)) {
 					application.queueAudio(R.string.youve_already);
-					application.playAudio();
 					promptGuess();
+					application.playAudio();
 					return;
 				}
 				else guessedBank.add(glyphAtCell);
@@ -276,6 +269,7 @@ public class Hangman extends Activity {
 				else {
 					correctGuessHandler(glyphAtCell);
 				}
+				application.playAudio();
 			}
 		};
 		

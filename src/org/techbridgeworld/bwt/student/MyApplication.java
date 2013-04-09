@@ -60,14 +60,15 @@ public class MyApplication extends Application implements OnInitListener {
                 public void onDone(String utteranceId)
                 {
                 	if(utteranceId.equals("utteranceId")) {
-	        			if(currentFile < filenames.size() - 1) {
-	        				currentFile++;
-	        				playAudio(filenames.get(currentFile));
-	        			}
-	        			else {
-	        				filenames.clear();
-	        				currentFile = 0;
-	        			}
+                		myTTS.stop();
+    					if(currentFile < filenames.size() - 1) {
+    						currentFile++;
+    						playAudio(filenames.get(currentFile));
+    					}
+    					else {
+    						filenames.clear();
+    						currentFile = 0;
+    					}
                 	}
                 }
 
@@ -89,23 +90,29 @@ public class MyApplication extends Application implements OnInitListener {
 	}
 	
 	/**
-	 * Use TextToSpeech to speak a string out loud
-	 * @param text
+	 * Use TextToSpeech to speak some text out loud
+	 * @param text (the text)
 	 */
 	public void speakOut(String text) {
 		myTTS.speak(text, TextToSpeech.QUEUE_ADD, params);
 	}
 	
 	/**
-	 * Adds the resourceId to the filenames
-	 * @param resourceId = R.string.___ (id)
+	 * Adds the resourceId to filenames
+	 * @param resourceId (i.e. R.string.___)
 	 */
 	public void queueAudio(int resourceId) {
 		filenames.add(getResources().getString(resourceId));
+		Log.i("neha", "added " + getResources().getString(resourceId) + " to queue.");
 	}
 	
+	/**
+	 * Adds the string to filenames
+	 * @param str (the string)
+	 */
 	public void queueAudio(String str) {
 		filenames.add(str);
+		Log.i("neha", "added " + str + " to queue.");
 	}
 	
 	/**
@@ -120,16 +127,20 @@ public class MyApplication extends Application implements OnInitListener {
 		currentFile = 0;
 	}
 	
+	/**
+	 * Begin playing the audio files in filenames
+	 */
 	public void playAudio() {
 		playAudio(filenames.get(0));
 	}
 	
 	/**
-	 * Plays audio from a given file
-	 * @param filename = file to play audio from. 
+	 * Play a certain audio file
+	 * @param filename (the audio file)
 	 */
 	public void playAudio(String filename) {
 		FileInputStream fis;
+		Log.i("neha", "playing " + filename + ".");
 		try {
 			filename = filename.replaceAll(" ", "_");
 			fis = new FileInputStream(dir + "/" + filename + ".m4a");
