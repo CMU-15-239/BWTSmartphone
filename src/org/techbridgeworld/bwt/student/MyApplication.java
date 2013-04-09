@@ -156,7 +156,7 @@ public class MyApplication extends Application implements OnInitListener {
 		} catch (FileNotFoundException e) {
 			Log.w("Audio", "Could not find file " + filename + ".m4a."); 
 			filename = filename.replaceAll("_", " ");
-			speakOut(filename); 
+			speakOut(filename);
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

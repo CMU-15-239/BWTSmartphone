@@ -58,6 +58,10 @@ public class LearnDots extends Activity {
 	@Override
 	public void onPause() {
 		application.clearAudio();
+		bwt.stopTracking();
+		bwt.removeEventListeners();
+		bwt.stop();
+		
 		super.onPause();
 	}
 	
@@ -100,12 +104,17 @@ public class LearnDots extends Activity {
 		application.queueAudio(R.string.find_dot);
 		application.queueAudio(numbers[getCurrent()-1]);
 		application.playAudio();
-
+		
+		createListener();
+	}
+	
+	private void createListener() {
 		// Listener to detect board input.
 		DotListener = new GenericEventListener(){
 
 			@Override
 			public void eventTriggered(Object arg0, Event event) {
+				Log.d("Learn Dots", "Triggered Board Event");
 				
 				//Do nothing in regards to AltBtn being pressed
 				if(((BoardEvent)event).getCellInd() == -1) {
@@ -145,10 +154,6 @@ public class LearnDots extends Activity {
 			if(DotListener != null){
 				EventManager.unregisterEventListener(DotListener, BoardEvent.class);
 			}
-			
-			bwt.stopTracking();
-			bwt.removeEventListeners();
-			bwt.stop();
 			
 			Intent intent = new Intent(LearnDots.this, GameActivity.class);
 			startActivity(intent);

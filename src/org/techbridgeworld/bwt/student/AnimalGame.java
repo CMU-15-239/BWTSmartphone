@@ -64,6 +64,10 @@ public class AnimalGame extends Activity {
 	@Override
 	public void onPause() {
 		application.clearAudio();
+		bwt.stopTracking();
+		bwt.removeEventListeners();
+        bwt.stop();
+        
 		super.onPause();
 	}
 	
@@ -81,6 +85,10 @@ public class AnimalGame extends Activity {
 		return currAnimal;
 	}
 
+	/**
+	 * Generate the next animal to be written with random generator.
+	 * Resets the variables as necessary
+	 */
 	private void regenerate() {
 		currAnimal = animals[generator.nextInt(animals.length)];
 		currLetterInd = 0;
@@ -88,6 +96,11 @@ public class AnimalGame extends Activity {
 		stage = ANIM_SOUND_STAGE;
 	}
 
+	/**
+	 * Run the Animal Game.
+	 * Generate a new word, give first instructions, then continue as 
+	 * user inputs expected word
+	 */
 	private void runGame() {
 		regenerate();
 		speakDirections();
@@ -101,21 +114,20 @@ public class AnimalGame extends Activity {
 	 * In a separate function for Replay purposes
 	 */
 	private void speakDirections() {
+		//Make the sound of the animal
 		if(stage == ANIM_SOUND_STAGE) {
 			application.queueAudio(R.string.please_write_the_name);
 			application.queueAudio(getCurr());
-
 			application.playAudio();
-			
-//			speakOutQueue("Please write the name of the animal that makes the sound ");
-//			speakOutQueue(getCurr() + ".");
 		}
+		//Spell out the name of the animal
 		else if (stage == SPELL_ANIM_STAGE) {
 			application.queueAudio(R.string.please_write);			
 			application.playAudio();
-//			speakOutQueue("Please write ");
+			
 			spellCurrWord();
 		}
+		//Provide dots to write the last incorrect letter for student
 		else if (stage == GIVE_DOTS_STAGE) {
 			char currLetter = getCurr().charAt(currLetterInd);
 			int btns = braille.get(currLetter);
@@ -124,16 +136,11 @@ public class AnimalGame extends Activity {
 			application.queueAudio(((Character)currLetter).toString());
 			application.queueAudio(R.string.please_press);
 			
-//			speakOutQueue("To write the letter ");
-//			speakOutQueue(currLetter + ".");
-//			speakOutQueue("please press ");
-			
 			//Speak out dots that represent the letter
 			for (int i = 0; i < 6; i++) {
 				if ((btns & (1 << i)) > 0) {
-					String num = ((Integer)i).toString();
+					String num = ((Integer)(i+1)).toString();
 					application.queueAudio(num);
-//					speakOutQueue(((Integer)i).toString() + ".");
 				}
 			}
 			application.playAudio();
@@ -141,20 +148,18 @@ public class AnimalGame extends Activity {
 	}
 	
 	/**
-	 * Spell out the animal for the student
+	 * Spell out the animal (currWord) for the student
 	 */
 	private void spellCurrWord() {
 		for (int i = 0; i < getCurr().length(); i++) {
 			Character let = getCurr().charAt(i);
 			application.queueAudio(let.toString());
-//			speakOutQueue(getCurr().charAt(i) + ".");
 		}
 		application.playAudio();
 	}
 	
 
 	private void createListeners() {
-
 		// Handles the checking and comparing of the expected word vs user input
 		AnimalListener = new GenericEventListener() {
 			@Override
@@ -205,11 +210,14 @@ public class AnimalGame extends Activity {
 		bwt.replaceListener("onSubmitEvent", AnimalListener);
 	}
 
+	/**
+	 * Handle wrong character according to stage and number of wrongs
+	 * in a row so far
+	 */
 	private void wrongCharacterHandler() {
 		application.queueAudio(R.string.no);
 		application.playAudio();
 		
-//		speakOutQueue("No.");
 		wrongCounter++;
 		
 		if(stage == GIVE_DOTS_STAGE) {
@@ -218,38 +226,51 @@ public class AnimalGame extends Activity {
 			return;
 		}
 		
+		//Increase stage number if committed max_wrong mistakes in a row
 		if(wrongCounter >= MAX_WRONG) {
 			if(stage == SPELL_ANIM_STAGE) {
 				stage = GIVE_DOTS_STAGE;
 			}
-			else if(stage == ANIM_SOUND_STAGE) {
+			else {	//stage == ANIM_SOUND_STAGE
 				stage = SPELL_ANIM_STAGE;
 				application.queueAudio(R.string.the_correct_answer_was);
 				application.playAudio();
 				spellCurrWord();
+				currLetterInd = 0;
 			}
 			wrongCounter = 0;
 		}
-		currLetterInd = 0;
+		else {
+			currLetterInd = 0;
+		}
 		speakDirections();
 		
 	}
 	
+	/**
+	 * On a correct input, clear wrongCounter and update stage
+	 * and instructions as necessary
+	 */
 	private void correctCharacterHandler() {
-		wrongCounter = 0;
-		
-//		speakOutQueue("Good.");
 		
 		//Special case: Re-learning how to write a letter
 		if(stage == GIVE_DOTS_STAGE) {
+			wrongCounter = 0;
 			application.queueAudio(R.string.good);
 			application.playAudio();
 			stage = SPELL_ANIM_STAGE;
 			currLetterInd = 0;
 			speakDirections();
 		}
+		//General case: wait until animal word is completed
 		else {
 			currLetterInd++;
+			
+			//SPELL_ANIM case: wrong counter should be kept until student
+			//reaches the end of the word
+			if(stage != SPELL_ANIM_STAGE || currLetterInd == getCurr().length()) {
+				wrongCounter = 0;
+			}
 			
 			// Finished word, go onto next word
 			if (currLetterInd == getCurr().length()) {
@@ -262,25 +283,10 @@ public class AnimalGame extends Activity {
 		}
 	}
 	
-	
-//	// Add a string to the text-to-speech queue.
-//	private void speakOutQueue(String text) {
-//		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-//	}
-//
-//	// Replace the text-to-speech queue with the given string.
-//	private void speakOutReplace(String text) {
-//		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-//	}
-	
 	// If the user presses back, go back properly
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			bwt.stopTracking();
-			bwt.removeEventListeners();
-	        bwt.stop();
-	        
 	        Intent intent = new Intent(AnimalGame.this, GameActivity.class);
 			startActivity(intent);
 			return true;

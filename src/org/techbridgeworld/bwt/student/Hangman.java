@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.KeyEvent;
 
 public class Hangman extends Activity {
@@ -31,7 +32,7 @@ public class Hangman extends Activity {
 	private final int MAX_MISTAKES = 8;
 	
 	private String currWord = "";
-	private int currWordInd;
+	private int wordBankInd;
 	private int numCorrectLetters;
 	private char[] wordStatus;
 	private ArrayList<Character> guessedBank;
@@ -58,6 +59,10 @@ public class Hangman extends Activity {
 	@Override
 	public void onPause() {
 		application.clearAudio();
+		bwt.stopTracking();
+		bwt.removeEventListeners();
+        bwt.stop();
+        
 		super.onPause();
 	}
 	
@@ -72,60 +77,60 @@ public class Hangman extends Activity {
     }
 	
 	private void runGame() {
-		currWordInd = -1;
+		wordBankInd = -1;
 		regenerate();
 		createListeners();
 	}
 
 	private void regenerate() {
-		currWordInd++;
+		wordBankInd++;
 		numMistakes = 0;
 		guessedBank = new ArrayList<Character>();
 		
-		if(currWordInd >= wordBank.length) {
-//			speakOutQueue("Congratulations! You've beat hangman! Starting Over.");
+		if(wordBankInd >= wordBank.length) {
 			//start over if they beat the game
 			runGame();
 			return;
 		}
 
 		//Won't repeat words already done
-		int nextWordInd = generator.nextInt(wordBank.length - currWordInd) + currWordInd;
+		int nextWordInd = generator.nextInt(wordBank.length - wordBankInd) + wordBankInd;
 		currWord = wordBank[nextWordInd];
 		numCorrectLetters = 0;
 		
+		//Tell student: "The new word has N letters"
 		int numLetters = currWord.length();
 		application.queueAudio(R.string.the_new_word);
 		application.queueAudio(numbers[numLetters-1]);
 		application.queueAudio(R.string.letters);
-//		speakOutQueue("The new word has " + numLetters + " letters.");
 		
+		//Speak out the dashes
 		wordStatus = new char[numLetters];
 		for (int i = 0; i < numLetters; i++) {
 			wordStatus[i] = '-';
 			application.queueAudio(R.string.dash);
-//			speakOutQueue("Dash.");
 		}
 		application.queueAudio(R.string.guess_a_letter);
-//		speakOutQueue("Guess a letter.");
 		
 		application.playAudio();
 		
-		//swap strings in array; everything before currWordInd have been done
-		wordBank[nextWordInd] = wordBank[currWordInd];
-		wordBank[currWordInd] = currWord;
+		//swap strings in array; everything before wordBankInd have been done
+		wordBank[nextWordInd] = wordBank[wordBankInd];
+		wordBank[wordBankInd] = currWord;
 	}
 	
+	/**
+	 * Spells to the user the status of the word they've been guessing,
+	 * where "dash" indicates that they still have yet to guess that character
+	 */
 	private void spellWordStatus() {
 		for (int i = 0; i < currWord.length(); i++) {
 			Character c = wordStatus[i];
 			if (c == '-') {
 				application.queueAudio(R.string.dash);
-//				speakOutQueue("Dash.");
 			}
 			else {
 				application.queueAudio(c.toString());
-//				speakOutQueue(c + ". ");
 			}
 		}
 		application.playAudio();
@@ -136,32 +141,28 @@ public class Hangman extends Activity {
 	 * Alerts user of current word status, and number of mistakes made.
 	 */
 	private void promptGuess() {
+		//Update user on status of word
 		application.queueAudio(R.string.so_far);
-//		speakOutQueue("So far the word is ");
 		spellWordStatus();
 		
+		//Update user on how many mistakes have been made
 		application.queueAudio(R.string.youve_made);
 		if(numMistakes == 1) {
 			application.queueAudio(R.string.one);
 			application.queueAudio(R.string.mistake);
-//			speakOutQueue("You've made " + numMistakes + " mistake.");
 		}
-
 		else {
 			application.queueAudio(((Integer)numMistakes).toString());
 			application.queueAudio(R.string.mistakes);
-//			speakOutQueue("You've made " + numMistakes + " mistakes.");
 		}
 		
-		//Warning of last chance.
+		//Warning of last chance
 		if(numMistakes == MAX_MISTAKES - 1) {
 			application.queueAudio(R.string.but_you_have);
-//			speakOutQueue("But you have one last chance to guess the entire word");
 		}
 			
+		//Prompt another guess
 		application.queueAudio(R.string.guess_a_letter);
-//		speakOutQueue("Guess a letter.");
-		
 		application.playAudio();
 	}
 	
@@ -189,7 +190,6 @@ public class Hangman extends Activity {
 		if(numCorrectLetters == currWord.length()) {
 			application.queueAudio(R.string.good);
 			application.playAudio();
-//			speakOutQueue("Good.");
 			
 			revealCurrWord();
 			regenerate();
@@ -199,24 +199,27 @@ public class Hangman extends Activity {
 		}		
 	}
 	
+	/**
+	 * Spell out the correct answer for the user
+	 */
 	private void revealCurrWord() {
 		application.queueAudio(R.string.the_correct_answer_was);
-//		speakOutQueue("The correct word was ");
 		for (int i = 0; i < currWord.length(); i++) {
 			Character ch = currWord.charAt(i);
 			application.queueAudio(ch.toString());
-//			speakOutQueue(currWord.charAt(i) + ".");
 		}
 		application.playAudio();
 				
 	}
 	
+	/**
+	 * Handle wrong guesses accordingly, whether they've met the max
+	 * mistakes or not.
+	 */
 	private void wrongGuessHandler() {
 		numMistakes++;
 		application.queueAudio(R.string.no);
 		application.playAudio();
-		
-//		speakOutQueue("No.");
 		
 		//Reached max number of mistakes, move onto new word
 		if(numMistakes == MAX_MISTAKES) {
@@ -236,26 +239,27 @@ public class Hangman extends Activity {
 			public void eventTriggered(Object arg0, Event arg1) {
 				bwt.defaultSubmitHandler(arg0, arg1);
 				SubmitEvent e = (SubmitEvent) arg1;
+				Log.d("Hangman", "Triggered Submit Event");
 
+				//Grab submitted character and clear board and audio				
 				int cellInd = e.getCellInd();
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
 				bwt.clearTouchedCells();
-
 				application.clearAudio();
 				
-				//Input wasn't a Braille character
+				//Input wasn't a Braille character --> invalid input
 				if(glyphAtCell == '-') {
 					application.queueAudio(R.string.invalid_input);
 					application.playAudio();
-//					speakOutReplace("Invalid input.");
 					wrongGuessHandler();
 					return;
 				}
 				
+				//Speak out character inputed
 				application.queueAudio(((Character)glyphAtCell).toString());
 				application.playAudio();
-//				speakOutReplace(glyphAtCell + ". ");
 				
+				//Check for already-guessed letters
 				if(guessedBank.contains(glyphAtCell)) {
 					application.queueAudio(R.string.youve_already);
 					application.playAudio();
@@ -275,28 +279,13 @@ public class Hangman extends Activity {
 			}
 		};
 		
-
 		bwt.replaceListener("onSubmitEvent", HangmanListener);
 	}
 
-//	// Add a string to the text-to-speech queue.
-//	private void speakOutQueue(String text) {
-//		tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-//	}
-//
-//	// Replace the text-to-speech queue with the given string.
-//	private void speakOutReplace(String text) {
-//		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-//	}
-	
 	// If the user presses back, go to the home screen
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			bwt.stopTracking();
-			bwt.removeEventListeners();
-	        bwt.stop();
-	        
 	        Intent intent = new Intent(Hangman.this, GameActivity.class);
 			startActivity(intent);
 			return true;

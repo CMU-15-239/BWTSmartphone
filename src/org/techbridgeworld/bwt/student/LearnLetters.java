@@ -61,35 +61,16 @@ public class LearnLetters extends Activity {
 		Log.i("Learn letters", "BWT Started...");
 		bwt.startTracking();
 		runGame();
-		
-		groupInd = 0;
-
-		attemptNum = 0;
-
-		// Shuffle order of indices for testing phase
-		shuffleIndices();
 	}
 
-	/**
-	 * Shuffle the indices for testing mode
-	 */
-	private void shuffleIndices() {
-		shuffledIndices = new int[letters.length][];
-		for (int i = 0; i < letters.length; i++) {
-			shuffledIndices[i] = new int[letters[i].length];
-			for (int j = 0; j < letters[i].length; j++) {
-				shuffledIndices[i][j] = j;
-			}
-		}
-
-		for (int i = 0; i < letters.length; i++) {
-			shuffledIndices[i] = shuffleIndicesArr(shuffledIndices[i]);
-		}
-	}
 	
 	@Override
 	public void onPause() {
 		application.clearAudio();
+		bwt.stopTracking();
+		bwt.removeEventListeners();
+        bwt.stop();
+        
 		super.onPause();
 	}
 
@@ -103,12 +84,27 @@ public class LearnLetters extends Activity {
         super.onDestroy();
     }
 
+	private void runGame() {
+		// Shuffle order of indices for testing phase
+		shuffleIndices();
+		
+		groupInd = 0;
+		attemptNum = 0;
+		countLetterInd = 0;
+		introducing = true;
+		BWT.getBoard().setBitsAtUnivCell(0);
+		expectedBrailleCode = braille.get(letters[groupInd][countLetterInd]);
+
+		createListener();
+		instructionSpellLetter(groupInd, countLetterInd);
+	}
+	
 	private void createListener() {
 		Log.i("Learn letters", "Created own listeners...");
 		bwt.replaceListener("onBoardEvent", new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object sender, Event event) {
-				Log.i("Learn letters", "Own event triggered for board...");
+				Log.i("Learn letters", "Board Event Triggered");
 				BoardEvent e = (BoardEvent) event;
 				
 				//Do nothing on the AltBtn press
@@ -118,55 +114,46 @@ public class LearnLetters extends Activity {
 
 				int currentBrailleCode = BWT.getBoard().getBitsAtUnivCell();
 				
-				/*****DEBUGGING PURPOSES******/
-				Log.i("Learn letters", "Dot input number: " + e.getDot());
-				Log.i("Learn letters",
-						"Current input: "
-								+ Integer.toBinaryString(currentBrailleCode)
-								+ "; " + "Expected input: "
-								+ Integer.toBinaryString(expectedBrailleCode));
-				/*******************************/
+//				/*****DEBUGGING PURPOSES******/
+//				Log.i("Learn letters", "Dot input number: " + e.getDot());
+//				Log.i("Learn letters",
+//						"Current input: "
+//								+ Integer.toBinaryString(currentBrailleCode)
+//								+ "; " + "Expected input: "
+//								+ Integer.toBinaryString(expectedBrailleCode));
+//				/*******************************/
 				
 				// ((c & e) ^ c) > 0 if extra bits set in c that's not in e
 				boolean isWrong = (((currentBrailleCode & expectedBrailleCode) ^ currentBrailleCode) > 0);
 				
+				//User is correct
 				if (currentBrailleCode == expectedBrailleCode) {
-					//User is correct
 					application.clearAudio();
 					application.queueAudio(R.string.good);
 					application.playAudio();
 
 					prepNextLetter();
 					Log.d("Learn letters", "user is correct");
-				} else if (isWrong) {
-					// User is wrong
+				}
+				//User is wrong
+				else if (isWrong) {
 					application.clearAudio();
 					application.queueAudio(R.string.no);
 					application.playAudio();
 
 					redoCurrLetter();
 					Log.d("Learn letters", "user is wrong");
-				} else {
-					// User is still in progress
+				}
+				//User is still in progress
+				else {
 					Log.d("Learn letters", "user is still writing");
 				}
 			}
 		});
 	}
 
-	private void runGame() {
-		groupInd = 0;
-		countLetterInd = 0;
-		introducing = true;
-		BWT.getBoard().setBitsAtUnivCell(0);
-		expectedBrailleCode = braille.get(letters[groupInd][countLetterInd]);
-
-		createListener();
-		instructionSpellLetter(groupInd, countLetterInd);
-	}
-
 	/**
-	 * Called when input is correct. Moves on.
+	 * Called when input is correct. Moves on to next letter.
 	 */
 	private void prepNextLetter() {
 		BWT.getBoard().setBitsAtUnivCell(0);
@@ -212,13 +199,13 @@ public class LearnLetters extends Activity {
 		BWT.getBoard().setBitsAtUnivCell(0);
 		attemptNum++;
 		int letterInd = introducing ? countLetterInd : shuffledIndices[groupInd][countLetterInd];
-		
+
+		// Note: In test mode, don't spell out until 3rd attempt
 		if (introducing || attemptNum >= 3) {
 			instructionSpellLetter(groupInd, letterInd);
 		} else if (!introducing) {
 			instructionTestLetter(groupInd, letterInd);
 		}
-		// Note: In test mode, don't spell out until 3rd attempt
 	}
 
 	/**
@@ -260,6 +247,26 @@ public class LearnLetters extends Activity {
 		application.playAudio();
 	}
 
+	
+	/**
+	 * Shuffle the indices for testing-students mode
+	 */
+	private void shuffleIndices() {
+		//initialize shuffledIndices
+		shuffledIndices = new int[letters.length][];
+		for (int i = 0; i < letters.length; i++) {
+			shuffledIndices[i] = new int[letters[i].length];
+			for (int j = 0; j < letters[i].length; j++) {
+				shuffledIndices[i][j] = j;
+			}
+		}
+		
+		//shuffle the indices
+		for (int i = 0; i < letters.length; i++) {
+			shuffledIndices[i] = shuffleIndicesArr(shuffledIndices[i]);
+		}
+	}
+
 	/**
 	 * Helper function to scramble order in which student is tested
 	 * @param givenArr
@@ -281,10 +288,6 @@ public class LearnLetters extends Activity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			bwt.stopTracking();
-			bwt.removeEventListeners();
-	        bwt.stop();
-	        
 	        Intent intent = new Intent(LearnLetters.this, GameActivity.class);
 			startActivity(intent);
 			return true;
