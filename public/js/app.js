@@ -54,10 +54,10 @@ $(document).ready(function(){
       console.error("Passed invalid data: ", data);
     }
 
-    console.log("appending ", assnRow(data[i]), data[i]);
+    // console.log("appending ", assnRow(data[i]), data[i]);
 
     for(var i in data){
-      data[i].number = i;
+      data[i].number = parseInt(i) + 1;
       $(".word-list").append(wordRow(data[i]));
     }
   }
@@ -70,12 +70,14 @@ $(document).ready(function(){
       return;
     }
 
-    console.log("Populating with ", data);
+    console.log("Populating with " + data);
 
     // Make the first list item active by default.
     for(var i in data){
       if(i === 0)
         data[i].active = true;
+      else
+        data[i].active = false;
 
       console.log("appending ", assnRow(data[i]), data[i]);
 
