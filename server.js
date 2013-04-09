@@ -10,14 +10,14 @@ var mongo = require('mongodb');
 var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/myApp';
 var mongoOptions = { db: { safe: true }};
 mongoose.connect(mongoUri, mongoOptions, function (err, res) {
-  if (err) { 
+  if (err) {
     console.log ('ERROR connecting to: ' + mongoUri + '. ' + err);
   } else {
     console.log ('Succeeded connected to: ' + mongoUri);
   }
 });
 
-var portNumber = process.env.PORT || 3000
+var portNumber = process.env.PORT || 3000;
 
 function init(){
     var app = express();
@@ -75,41 +75,16 @@ function checkForAndCreateRootUser(User){
         user.setPassword("admin", function(err) {
             if (err) return;
             user.save(function(err) { });
-        });  
+        });
     });
 }
 function checkDefaultWords(Word) {
-    Word.findOne({word : "hell0" }, function(err, existingWord) {
+    Word.findOne({word : "hello" }, function(err, existingWord) {
         if (err || existingWord) return;
-        var word = new Word({ word : "hell0" });
-        word.def = 'world';
-        word.pos = 'exlamation'
-        word.assns = ['omg']
-        word.save(function(err) {console.log(err) });
+        var word = new Word({ word : "hello" });
+        word.def = 'An exclamatory greeting';
+        word.pos = 'exlamation';
+        word.assns = ['Test Assignment'];
+        word.save(function(err) {console.log(err);});
     });
 }
-// var express = require('express'),
-//     words   = require('./routes/words');
-
-// var app = express();
-
-// app.configure(function(){
-//   app.use(express.logger('dev'));
-//   app.use(express.bodyParser());
-// });
-
-// app.use(express.static(__dirname + '/public'));
-
-
-// // words CRUD
-// app.get('/words', words.findAll);
-// app.get('/words/:id', words.findById);
-// app.post('/words', words.addWord);
-// app.put('/words/:id', words.updateWord);
-// app.delete('/words/:id', words.deleteWord);
-
-// app.get('/',express.static(__dirname + '/frontend'));
-
-
-// app.listen(3000);
-// console.log('Listening on port 3000...');

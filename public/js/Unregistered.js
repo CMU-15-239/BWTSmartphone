@@ -34,7 +34,7 @@ App.prototype.registerLogin = function(){
         data.append('username', username);
         data.append('password', password);
 
-        this.ajaxFormJSON(  
+        this.ajaxFormJSON(
                 {
                     username: username,
                     password: password

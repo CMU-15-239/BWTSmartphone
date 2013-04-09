@@ -1,6 +1,6 @@
+var assignments;
+
 $(document).ready(function(){
-
-
 
   // Turn off Bootstrap's html-to-javascript features. 
   $('body').off('.data-api');
@@ -10,24 +10,9 @@ $(document).ready(function(){
     'source' : ['Assignment 1', 'Assignment 2']
   });
 
-
-
   /****************************
     Data population stuff.
   ****************************/
-
-  // Some sample data to make sure population works. 
-  var sampleWords = [
-    {word: 'Hello', def: 'An exclamatory greeting'},
-    {word: 'World', def: 'The earth, together with all of its countries, peoples, and natural features.'}
-  ];
-
-  var sampleAssignments = [
-    {assn: "Assignment1"},
-    {assn: "Assignment2"},
-    {assn: "Assignment3"},
-    {assn: "Assignment4"}
-  ];
 
   // Handlebars template for a word table row.
   var wordRow = Handlebars.compile(
@@ -36,14 +21,14 @@ $(document).ready(function(){
       "<td class='tbl-word'>{{word}}</td>" +
       "<td class='tbl-def'>{{def}}</td>" +
       "<td class='tbl-edit'>" +
-          "<button class='btn btn-mini btn-primary'>Save</button>" +
-          "<button class='btn btn-mini btn-danger'>Delete</button>" +
+          "<button class='btn btn-mini btn-primary save-btn'>Save</button>" +
+          "<button class='btn btn-mini btn-danger delete-btn'>Delete</button>" +
       "</td>" +
     "</tr>");
 
   // Handlebars template for an assignment row.
   var assnRow = Handlebars.compile(
-    "<li{{#if active}} class='active'{{/if}}><a href='#'>{{assn}}</a></li>"
+    "<li class='{{#if active}}active {{/if}}assn-item' data-assn='{{assn}}'><a href='#'>{{assn}}</a></li>"
     );
 
 
@@ -141,8 +126,59 @@ $(document).ready(function(){
 
   $.get("/words", function(data){
     console.log(data);
-    populateWordList(data);
+    console.log(parseData(data));
   });
+
+  function parseData(data){
+    assignments = {};
+
+    for(var i in data){
+      for(var assn in data[i].assns){
+        if(!assignments[data[i].assns[assn]])
+          assignments[data[i].assns[assn]] = [];
+
+        assignments[data[i].assns[assn]].push({
+          word: data[i].word,
+          def: data[i].def
+        });
+      }
+    }
+
+    for(var list in assignments){
+      assignments[list].sort(function(a,b){
+        return a.word.localeCompare(b.word);
+      });
+
+
+    }
+
+    // Get an arbitrary first.
+    var first;
+    for(first in assignments) break;
+
+    populateWordList(assignments[first]);
+
+    for(var list in assignments){
+
+      var payload = {assn : list};
+      if(list === first)
+        payload.active = true;
+      else
+        payload.active = false;
+
+      console.log("Appending", payload);
+      $("#assn-list").append(assnRow(payload));
+    }
+
+    $("#assn-title").html(first);
+
+    console.log(assignments);
+  }
+
+  $(".assn-item").click(function(){
+    populateWordList(assignments[$(this).attr("data-assn")]);
+  });
+
 
 
 });
