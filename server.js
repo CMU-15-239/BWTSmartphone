@@ -87,4 +87,22 @@ function checkDefaultWords(Word) {
         word.assns = ['Level 1', 'Level 2', 'Level 3'];
         word.save(function(err) {console.log(err);});
     });
+
+    Word.findOne({word : "world" }, function(err, existingWord) {
+        if (err || existingWord) return;
+        var word = new Word({ word : "world" });
+        word.def = 'The earth, together with all of its countries, peoples, and natural features.';
+        word.pos = 'noun';
+        word.assns = ['Level 1'];
+        word.save(function(err) {console.log(err);});
+    });
+
+    Word.findOne({word : "dog" }, function(err, existingWord) {
+        if (err || existingWord) return;
+        var word = new Word({ word : "dog" });
+        word.def = 'Man\'s best friend.';
+        word.pos = 'noun';
+        word.assns = ['Level 1', 'Level 3'];
+        word.save(function(err) {console.log(err);});
+    });
 }
