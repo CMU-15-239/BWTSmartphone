@@ -44,6 +44,7 @@ module.exports = function (app) {
     });
 
     app.post('/login', passport.authenticate('local'), function(req, res) {
+        console.log(req)
         req.user.lastUserAgent = req.headers['user-agent'];
         req.user.lastIp = req.ip;
         req.user.lastHost = req.host;

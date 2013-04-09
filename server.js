@@ -44,7 +44,7 @@ function configureExpress(app){
         app.use(express.bodyParser());
         app.use(express.methodOverride());
 
-        app.use(express.cookieParser('your secret here'));
+        app.use(express.cookieParser('i am a really creative secret'));
         app.use(express.session());
 
         app.use(passport.initialize());
