@@ -1,17 +1,20 @@
-// Turn off Bootstrap's html-to-javascript features. 
-$('body').off('.data-api');
-
-// Enable typeahead.
-$('.assignments').typeahead({
-  'source' : ['Assignment 1', 'Assignment 2']
-});
+$(document).ready(function(){
 
 
 
-/****************************
-  Data population stuff.
-****************************/
-(function(){
+  // Turn off Bootstrap's html-to-javascript features. 
+  $('body').off('.data-api');
+
+  // Enable typeahead.
+  $('.assignments').typeahead({
+    'source' : ['Assignment 1', 'Assignment 2']
+  });
+
+
+
+  /****************************
+    Data population stuff.
+  ****************************/
 
   // Some sample data to make sure population works. 
   var sampleWords = [
@@ -51,6 +54,8 @@ $('.assignments').typeahead({
       console.error("Passed invalid data: ", data);
     }
 
+    console.log("appending ", assnRow(data[i]), data[i]);
+
     for(var i in data){
       data[i].number = i;
       $(".word-list").append(wordRow(data[i]));
@@ -62,7 +67,10 @@ $('.assignments').typeahead({
     // Do at least some sort of type checking.
     if(typeof data != "object" || !(data instanceof Array)){
       console.error("Passed invalid data: ", data);
+      return;
     }
+
+    console.log("Populating with ", data);
 
     // Make the first list item active by default.
     for(var i in data){
@@ -75,15 +83,10 @@ $('.assignments').typeahead({
     }
   }
 
-  // Run on sample data;
-  populateWordList(sampleWords);
-  populateAssignmentList(sampleAssignments);
-})();
 
-/****************************
-  Table editing stuff.
-****************************/
-(function(){
+  /****************************
+    Table editing stuff.
+  ****************************/
   $(".tbl-word, .tbl-def").click(function(){
 
     // If this cell is already active, do nothing.
@@ -124,12 +127,20 @@ $('.assignments').typeahead({
     }
   }
 
-})();
 
-/****************************
-  Assignment selecting stuff.
-****************************/
-$("#assn-list li").click(function(){
-  $(this).siblings().removeClass("active");
-  $(this).addClass("active");
+
+  /****************************
+    Assignment selecting stuff.
+  ****************************/
+  $("#assn-list li").click(function(){
+    $(this).siblings().removeClass("active");
+    $(this).addClass("active");
+  });
+
+  $.get("/words", function(data){
+    console.log(data);
+    populateWordList(data);
+  });
+
+
 });

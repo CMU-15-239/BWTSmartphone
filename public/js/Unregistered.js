@@ -7,27 +7,6 @@ App.prototype.registerEvents = function(){
     this.registerLogin();
 }
 
-// App.prototype.registerRegister = function(){
-//     $('#register').onButtonTap(function(){
-//         var username = $('#regUsername').val();
-//         var password = $('#regPassword').val();
-
-        
-//         this.ajaxFormJSON(  
-//                 {
-//                     username: username,
-//                     password: password
-//                 },
-//                 '/register',
-//                 function success(data){
-//                     alert(JSON.stringify(data));
-//                 },
-//                 function error(xhr, status, err){
-//                     alert(JSON.stringify(err));
-//                 });
-//     }.bind(this));
-// }
-
 App.prototype.ajaxFormJSON = function(json, url, onSuccess, onError){
     var data = new FormData();
     for (var key in json){
@@ -66,11 +45,28 @@ App.prototype.registerLogin = function(){
                         window.location = '/';
                     }
                     else {
-                        alert(JSON.stringify(data));
+                        console.log(JSON.stringify(data));
                     }
                 },
                 function error(xhr, status, err){
-                    alert(JSON.stringify(err));
+                    if(err)
+                        console.error(JSON.stringify(err));
                 });
     }.bind(this));
-}
+};
+
+
+$(document).ready(function(){
+new App();
+
+
+$("#loginPassword").keyup(function(event){
+  if(event.keyCode === 13){
+    $("#login").click();
+    $("input").addClass("disabled-custom");
+  }
+});
+
+$("#loginUsername").focus();
+
+});
