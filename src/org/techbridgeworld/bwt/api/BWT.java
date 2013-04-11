@@ -555,7 +555,7 @@ public class BWT {
 		if (!isTracking)
 			return;
 		
-		
+		resetInactivityTimer(); 
 		message = message.toLowerCase(Locale.getDefault()).replaceAll("n", "").trim();
 		if (message.equals("bt") || message.length() == 0)
 			return;

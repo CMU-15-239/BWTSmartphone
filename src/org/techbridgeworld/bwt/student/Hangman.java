@@ -27,8 +27,7 @@ public class Hangman extends Activity {
 	private GenericEventListener HangmanListener;
 
 	private String[] numbers = {"one", "two", "three", "four", "five", "six", "seven", "eight"};
-	private final String[] wordBank = { "fast", "dash", "quit", "milk", "computer", "money",
-			"dishes", "phone", "school", "teacher"};
+	private String[] wordBank = {};
 	private final int MAX_MISTAKES = 8;
 	
 	private String currWord = "";
@@ -48,6 +47,13 @@ public class Hangman extends Activity {
 		
 		application.currentFile = 0;
 		application.filenames.clear();
+		
+		ArrayList<String> arr = application.hangmanWords;
+		wordBank = new String[arr.size()];
+		if(arr != null) {
+			for (int i = 0; i < arr.size(); i++)
+				wordBank[i] = arr.get(i);
+		}
 		
 		bwt.init();
 		bwt.start();
