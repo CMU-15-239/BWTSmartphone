@@ -49,8 +49,8 @@ public class Hangman extends Activity {
 		application.filenames.clear();
 		
 		ArrayList<String> arr = application.hangmanWords;
-		wordBank = new String[arr.size()];
 		if(arr != null) {
+			wordBank = new String[arr.size()];
 			for (int i = 0; i < arr.size(); i++)
 				wordBank[i] = arr.get(i);
 		}

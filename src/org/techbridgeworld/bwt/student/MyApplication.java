@@ -213,7 +213,7 @@ public class MyApplication extends Application implements OnInitListener {
 			// Creating HTTP client
 			HttpClient httpClient = new DefaultHttpClient();
 			// Creating HTTP Post
-			HttpPost httpPost = new HttpPost("http://128.237.201.182:3000/login");
+			HttpPost httpPost = new HttpPost("http://128.237.204.207:3000/login");
 
 			// Building post parameters
 			// key and value pair
@@ -249,7 +249,7 @@ public class MyApplication extends Application implements OnInitListener {
 			try {        
 		        HttpClient client = new DefaultHttpClient();
 		        HttpGet request = new HttpGet();
-		        request.setURI(new URI("http://128.237.201.182:3000/words"));
+		        request.setURI(new URI("http://128.237.204.207:3000/words"));
 		        response = client.execute(request);
 		        Log.d("HTTP",  response.toString());
 		        responseStreamToJSON(response.getEntity().getContent());
