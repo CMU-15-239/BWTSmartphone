@@ -83,6 +83,10 @@ public class AnimalGame extends Activity {
 	private String getCurr() {
 		return currAnimal;
 	}
+	
+	private String getCurrSound() {
+		return currAnimal + "_sound";
+	}
 
 	/**
 	 * Generate the next animal to be written with random generator.
@@ -118,7 +122,8 @@ public class AnimalGame extends Activity {
 		//Make the sound of the animal
 		if(stage == ANIM_SOUND_STAGE) {
 			application.queueAudio(R.string.please_write_the_name);
-			application.queueAudio(getCurr());
+			application.queueAudio(getCurrSound());
+			
 		}
 		//Spell out the name of the animal
 		else if (stage == SPELL_ANIM_STAGE) {
@@ -149,6 +154,8 @@ public class AnimalGame extends Activity {
 	 * Spell out the animal (currWord) for the student
 	 */
 	private void spellCurrWord() {
+		application.queueAudio(getCurr());
+		
 		for (int i = 0; i < getCurr().length(); i++) {
 			Character let = getCurr().charAt(i);
 			application.queueAudio(let.toString());

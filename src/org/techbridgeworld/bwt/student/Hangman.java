@@ -98,7 +98,7 @@ public class Hangman extends Activity {
 			wordBankInd = -1;
 			return;
 		}
-
+		
 		//Won't repeat words already done
 		int nextWordInd = generator.nextInt(wordBank.length - wordBankInd) + wordBankInd;
 		currWord = wordBank[nextWordInd];
@@ -109,7 +109,7 @@ public class Hangman extends Activity {
 		application.queueAudio(R.string.the_new_word);
 		application.queueAudio(numbers[numLetters-1]);
 		application.queueAudio(R.string.letters);
-		
+
 		//Speak out the dashes
 		wordStatus = new char[numLetters];
 		for (int i = 0; i < numLetters; i++) {
