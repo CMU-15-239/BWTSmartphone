@@ -206,6 +206,7 @@ public class Hangman extends Activity {
 	 */
 	private void revealCurrWord() {
 		application.queueAudio(R.string.the_correct_answer_was);
+		application.queueAudio(currWord);
 		for (int i = 0; i < currWord.length(); i++) {
 			Character ch = currWord.charAt(i);
 			application.queueAudio(ch.toString());

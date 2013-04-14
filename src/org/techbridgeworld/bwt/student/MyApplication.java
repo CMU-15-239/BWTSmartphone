@@ -213,7 +213,7 @@ public class MyApplication extends Application implements OnInitListener {
 			// Creating HTTP client
 			HttpClient httpClient = new DefaultHttpClient();
 			// Creating HTTP Post
-			HttpPost httpPost = new HttpPost("http://128.237.204.207:3000/login");
+			HttpPost httpPost = new HttpPost("http://128.237.204.45:3000/login");
 
 			// Building post parameters
 			// key and value pair
@@ -249,7 +249,7 @@ public class MyApplication extends Application implements OnInitListener {
 			try {        
 		        HttpClient client = new DefaultHttpClient();
 		        HttpGet request = new HttpGet();
-		        request.setURI(new URI("http://128.237.204.207:3000/words"));
+		        request.setURI(new URI("http://128.237.204.45:3000/words"));
 		        response = client.execute(request);
 		        Log.d("HTTP",  response.toString());
 		        responseStreamToJSON(response.getEntity().getContent());
@@ -259,11 +259,9 @@ public class MyApplication extends Application implements OnInitListener {
 		        e.printStackTrace();
 		        Log.d("HTTP", "urisyntax");
 		    } catch (ClientProtocolException e) {
-		        // TODO Auto-generated catch block
 		        e.printStackTrace();
 		        Log.d("HTTP", "client protocol");
 		    } catch (IOException e) {
-		        // TODO Auto-generated catch block
 		        e.printStackTrace();
 		        Log.d("HTTP", "io exception");
 		    }
@@ -284,14 +282,12 @@ public class MyApplication extends Application implements OnInitListener {
 					writer.write(buffer, 0, n);
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				Log.e("HTTP", "responseStream for hangman - Reader IO Exception");
 			} finally {
 				try {
 					responseStream.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					Log.e("HTTP", "responseStream for hangman couldn't close");
 					e.printStackTrace();
 				}
@@ -305,7 +301,6 @@ public class MyApplication extends Application implements OnInitListener {
 		try {
 			hangmanJSON = new JSONArray(str);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			Log.e("HTTP", "responseStream - JSONExceptions");
 			e.printStackTrace();
 		}
@@ -318,7 +313,6 @@ public class MyApplication extends Application implements OnInitListener {
 					row = hangmanJSON.getJSONObject(i);
 					hangmanWords.add(row.getString("word"));
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					Log.e("HTTP", "responseStream (converting to array) - JSONExceptions");
 					e.printStackTrace();
 				}
