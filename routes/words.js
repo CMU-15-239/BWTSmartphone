@@ -97,13 +97,13 @@ var populateDB = function(){
       word: "hello",
       def: "A simple greeting",
       pos: "exclamation",
-      assns: []
+      assns: ["Level 1"]
     },
     {
       word: "world",
       def: "The earth, together with all of its countries, peoples, and natural features.",
       pos: "noun",
-      assns: []
+      assns: ["Level 2"]
     }];
 
     db.collection('words', function(err, collection){

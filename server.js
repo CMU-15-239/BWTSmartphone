@@ -94,33 +94,38 @@ function checkForAndCreateRootUser(User){
  * Used for debugging.
  */
 function checkDefaultWords(Word) {
-  // hello - an exclamatory greeting
-  Word.findOne({word : "hello" }, function(err, existingWord) {
+  Word.findOne({word : "fog" }, function(err, existingWord) {
     if (err || existingWord) return;
-    var word = new Word({ word : "hello" });
-    word.def = 'An exclamatory greeting';
-    word.pos = 'exlamation';
-    word.assns = ['Level 1', 'Level 2', 'Level 3'];
-    word.save(function(err) {console.log(err);});
-  });
-
-  // world - The earth, together with all of its countries, peoples, and natural features.
-  Word.findOne({word : "world" }, function(err, existingWord) {
-    if (err || existingWord) return;
-    var word = new Word({ word : "world" });
-    word.def = 'The earth, together with all of its countries, peoples, and natural features.';
+    var word = new Word({ word : "fog" });
+    word.def = 'a cloud on the ground';
     word.pos = 'noun';
     word.assns = ['Level 1'];
     word.save(function(err) {console.log(err);});
   });
 
-  // dog - Man's best friend.
-  Word.findOne({word : "dog" }, function(err, existingWord) {
+  Word.findOne({word : "predict" }, function(err, existingWord) {
     if (err || existingWord) return;
-    var word = new Word({ word : "dog" });
-    word.def = 'Man\'s best friend.';
+    var word = new Word({ word : "predict" });
+    word.def = 'to tell the future';
+    word.pos = 'verb';
+    word.assns = ['Level 1'];
+    word.save(function(err) {console.log(err);});
+  });
+
+  Word.findOne({word : "snowflakes" }, function(err, existingWord) {
+    if (err || existingWord) return;
+    var word = new Word({ word : "snowflakes" });
+    word.def = 'frozen water droplets';
     word.pos = 'noun';
-    word.assns = ['Level 1', 'Level 3'];
+    word.assns = ['Level 1'];
+    word.save(function(err) {console.log(err);});
+  });
+   Word.findOne({word : "humidity" }, function(err, existingWord) {
+    if (err || existingWord) return;
+    var word = new Word({ word : "humidity" });
+    word.def = 'moisture in the air';
+    word.pos = 'noun';
+    word.assns = ['Level 1'];
     word.save(function(err) {console.log(err);});
   });
 }
