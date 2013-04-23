@@ -70,13 +70,13 @@ $(document).ready(function(){
         return;
       }
 
-      var oldValue = $(this).html();
-
+      // Create an input populated with the cell's data.
       var replacement = $("<input>")
-        .attr("value", oldValue)
+        .attr("value", $(this).html())
         .attr("style", "width: 100%")
         .addClass("temp-input");
 
+      // Insert it into the table and focus on it. 
       $(this).html(replacement);
       $(".temp-input").focus();
 
@@ -91,16 +91,18 @@ $(document).ready(function(){
       $("temp-input").focus();
     });
 
+    // Binds the save button command to the save button. 
     $(".save-btn").click(function(){
+      // Get the appropriate information from the table.
       var thisWord = $(this).closest("tr").find(".tbl-word").html();
       var thisDef = $(this).closest("tr").find(".tbl-def").html();
       var currList = $("#assn-title").html();
 
-      var reqType = "PUT";
       var reqURL = "/" + thisWord;
-      console.log(thisWord, thisDef, currList);
 
+      // If the word isn't currently in the wordlist, request to create it.
       if(!words[thisWord]){
+        // Add it to our local wordlist. 
         words[thisWord] = {word : thisWord, def : thisDef, assns : [currList]};
         $.post("/words", words[thisWord], function(data){
           if(data.result === "success"){
@@ -116,19 +118,21 @@ $(document).ready(function(){
         });
         return;
       }
+
+      // If the word isn't in the local assignment, add it.
       if($.inArray(currList, words[thisWord].assns) === -1)
         words[thisWord].assns.push(currList);
 
-
+      // Create the word to be sent to the server.
       var payload = {};
           payload.word = thisWord;
           payload.def  = thisDef;
           payload.assn = words[thisWord].assns;
 
-
+      // Make the request.
       $.ajax({
           url: '/words' + reqURL,
-          type: reqType,
+          type: 'PUT',
           data: payload,
           success: function(data) {
             if(data.result === "success"){
@@ -146,11 +150,14 @@ $(document).ready(function(){
       });
     });
 
+    // Binds the delete command to the delete button. 
     $(".delete-btn").click(function(){
+      // Get info about the word.
       var thisWord = $(this).closest("tr").find(".tbl-word").html();
       var $that = $(this);
       var thisList = $("#assn-title").html();
 
+      // Send a delete request to the appropriate url.
       $.ajax({
           url: '/words/' + thisWord,
           type: 'DELETE',
