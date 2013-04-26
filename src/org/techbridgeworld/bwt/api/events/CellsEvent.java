@@ -4,6 +4,13 @@ import javaEventing.EventObject;
 
 import org.techbridgeworld.bwt.api.Board;
 
+/**
+ * CellsEvent is triggered whenever one of the bottom, smaller 32 cells
+ * is touched
+ * 
+ * @author Salem
+ *
+ */
 public class CellsEvent extends EventObject {
 	
 	private String message; // Raw button details 

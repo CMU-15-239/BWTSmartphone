@@ -2,6 +2,13 @@ package org.techbridgeworld.bwt.api.libs;
 
 import java.util.Hashtable;
 
+/**
+ * Braill.java contains mappings from a character to a binary number that
+ * represents dots in a Braille cell, and vice versa
+ * 
+ * @author Salem
+ *
+ */
 public class Braille {
 	
 	private static final Hashtable<Character, Integer> CharToBraille = new Hashtable<Character, Integer>(){

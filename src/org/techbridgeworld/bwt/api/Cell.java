@@ -2,6 +2,12 @@ package org.techbridgeworld.bwt.api;
 
 import org.techbridgeworld.bwt.api.libs.Braille;
 
+/**
+ * Cell.java keeps track of the dots on an individual Braille cell
+ * 
+ * @author Jessica and Salem
+ *
+ */
 public class Cell {
 /**
  * Valid braille codes (dots one through six)

@@ -16,6 +16,14 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
 
+/**
+ * Hangman activity grabs possible words from a wordbank off of the server
+ * and lets students guess the word. It keeps students updated about the
+ * current word using "Dash" as blanks, and reveals the word if the student
+ * reaches the maximum number of mistakes.
+ * 
+ * @author Jessica
+ */
 public class Hangman extends Activity {
 
 	private MyApplication application;
@@ -26,14 +34,23 @@ public class Hangman extends Activity {
 	private final BWT bwt = new BWT(this, Hangman.this);
 	private GenericEventListener HangmanListener;
 
-	private String[] numbers = {"one", "two", "three", "four", "five", "six", "seven", "eight"};
+	//Used for audio string in name (for naming number of letters in a word)
+	private String[] numbers = {"one", "two", "three", "four", "five", "six",
+			"seven", "eight"};
+	
+	//Contains words from grabbed from the server 
 	private String[] wordBank = {};
+	
+	//Maximum number of mistakes before the word is revealed
 	private final int MAX_MISTAKES = 8;
 	
+	//Variables dealing with status of current word
 	private String currWord = "";
 	private int wordBankInd;
-	private int numCorrectLetters;
 	private char[] wordStatus;
+	private int numCorrectLetters;
+	
+	//Variables for past guesses
 	private ArrayList<Character> guessedBank;
 	private int numMistakes;
 
@@ -48,6 +65,7 @@ public class Hangman extends Activity {
 		application.currentFile = 0;
 		application.filenames.clear();
 		
+		//Fill up the word bank with words from the server
 		ArrayList<String> arr = application.hangmanWords;
 		if(arr != null) {
 			wordBank = new String[arr.size()];
@@ -55,6 +73,7 @@ public class Hangman extends Activity {
 				wordBank[i] = arr.get(i);
 		}
 		
+		//Start the bwt connection
 		bwt.init();
 		bwt.start();
 		bwt.initializeEventListeners();
@@ -81,6 +100,9 @@ public class Hangman extends Activity {
         super.onDestroy();
     }
 	
+    /**
+     * Starts the hangman game
+     */
 	private void runGame() {
 		wordBankInd = -1;
 		regenerate();
@@ -88,6 +110,10 @@ public class Hangman extends Activity {
 		application.playAudio();
 	}
 
+	/**
+	 * Chooses a new random word from the wordBank and queues the audio
+	 * to be prompted for this word.
+	 */
 	private void regenerate() {
 		wordBankInd++;
 		numMistakes = 0;
@@ -98,6 +124,9 @@ public class Hangman extends Activity {
 			wordBankInd = -1;
 			return;
 		}
+		
+		//Un-comment for demo purposes
+		//if(hardcodeFirstWord(2)) return;
 		
 		//Won't repeat words already done
 		int nextWordInd = generator.nextInt(wordBank.length - wordBankInd) + wordBankInd;
@@ -117,7 +146,6 @@ public class Hangman extends Activity {
 			application.queueAudio(R.string.dash);
 		}
 		application.queueAudio(R.string.guess_a_letter);
-		
 		
 		//swap strings in array; everything before wordBankInd have been done
 		wordBank[nextWordInd] = wordBank[wordBankInd];
@@ -233,8 +261,13 @@ public class Hangman extends Activity {
 		}
 	}
 
+	/**
+	 * Handles the guessed input of the user and queues/plays audio
+	 * as necessary
+	 */
 	private void createListeners() {
-		// Handles the checking and comparing of the expected word vs user input
+		// Handles the checking and comparing of the expected word vs
+		// user input
 		HangmanListener = new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
@@ -245,7 +278,7 @@ public class Hangman extends Activity {
 				//Grab submitted character and clear board and audio				
 				int cellInd = e.getCellInd();
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
-				bwt.clearTouchedCells();
+				bwt.setBitsAtCell(cellInd, 0);
 				//application.clearAudio();
 				
 				//Input wasn't a Braille character --> invalid input
@@ -283,7 +316,7 @@ public class Hangman extends Activity {
 		bwt.replaceListener("onSubmitEvent", HangmanListener);
 	}
 
-	// If the user presses back, go to the home screen
+	/** If the user presses back, go to the home screen */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -292,5 +325,39 @@ public class Hangman extends Activity {
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+	
+	/**
+	 * Solely for demo purposes. Forces the first word to be
+	 * wordBank[wantedInd].
+	 * 
+	 * @param wantedInd : index in wordBank to be chosen as first word
+	 * @return true if it's the first word; false otherwise
+	 */
+	private boolean hardcodeFirstWord(int wantedInd) {
+		if(wordBankInd == 0) {
+			currWord = wordBank[wantedInd];
+			numCorrectLetters = 0;
+			
+			int numLetters = currWord.length();
+			application.queueAudio(R.string.the_new_word);
+			application.queueAudio(numbers[numLetters-1]);
+			application.queueAudio(R.string.letters);
+			
+			//Speak out the dashes
+			wordStatus = new char[numLetters];
+			for (int i = 0; i < numLetters; i++) {
+				wordStatus[i] = '-';
+				application.queueAudio(R.string.dash);
+			}
+			application.queueAudio(R.string.guess_a_letter);
+
+			// swap strings in array; everything before wordBankInd have been
+			// done
+			wordBank[wantedInd] = wordBank[wordBankInd];
+			wordBank[wordBankInd] = currWord;
+			return true;
+		}
+		return false;
 	}
 }

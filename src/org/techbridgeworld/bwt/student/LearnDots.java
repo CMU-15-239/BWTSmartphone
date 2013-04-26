@@ -15,6 +15,11 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
 
+/**
+ * Teach students the numbering of the dots on the BWT
+ * 
+ * @author Salem
+ */
 public class LearnDots extends Activity {
 
 	private String[] numbers = {"one", "two", "three", "four", "five", "six"};
@@ -76,15 +81,12 @@ public class LearnDots extends Activity {
 
 	/**
 	 * Get a new random dot, and trigger the associated audio.
+	 * (Audio: "Good. Find dot __")
 	 */
 	private void regenerate(){
 		currentDot = generator.nextInt(6) + 1;
-		//application.clearAudio();
-		// "Good."
 		application.queueAudio(R.string.good);
-		// "Find dot"
 		application.queueAudio(R.string.find_dot);
-		// "[Dot Number]."
 		application.queueAudio(numbers[currentDot-1]);
 	}
 
@@ -122,7 +124,6 @@ public class LearnDots extends Activity {
 				// Cast the given event as a BoardEvent, and get the relevant dot information.
 				int trial = ((BoardEvent) event).getDot();
 				int goal = getCurrent();
-				Log.i("Dot Game", "Just pressed dot " + trial + ". We want dot " + goal + ".");
 
 				bwt.clearTouchedCells();
 				
@@ -133,7 +134,6 @@ public class LearnDots extends Activity {
 				
 				// Otherwise, tell the user that they are incorrect and repeat the prompt. 
 				else{
-					//application.clearAudio();
 					application.queueAudio(R.string.no);
 					application.queueAudio(R.string.find_dot);
 					application.queueAudio(numbers[currentDot-1]);

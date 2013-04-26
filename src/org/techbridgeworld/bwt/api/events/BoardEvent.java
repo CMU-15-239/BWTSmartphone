@@ -2,6 +2,12 @@ package org.techbridgeworld.bwt.api.events;
 
 import javaEventing.EventObject;
 
+/**
+ * BoardEvent is triggered on any input from the user to the board.
+ * 
+ * @author Salem
+ *
+ */
 public class BoardEvent extends EventObject{
 
 	String message;

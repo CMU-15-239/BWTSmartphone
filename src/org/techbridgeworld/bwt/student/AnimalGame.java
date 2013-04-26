@@ -16,6 +16,20 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
 
+/**
+ * This activity is called "Animal Game" and prompts students to spell out the
+ * name of an animal by providing the sound the animal makes.
+ * If the user inputs an incorrect letter 3 times in a row, the stage will
+ * change to provide more hints to the user.
+ * 
+ * Different stages:
+ * 		Provide the sound of the animal
+ * 		Spell out the name of the animal
+ * 		Teach student how to write a letter with dot numbers
+ * 
+ * @author Jessica
+ *
+ */
 public class AnimalGame extends Activity {
 
 	private MyApplication application;
@@ -36,8 +50,8 @@ public class AnimalGame extends Activity {
 	
 	private final int MAX_WRONG = 3;
 	
-	private int stage;
-	private int wrongCounter;
+	private int stage;			//Keeps track of what stage student is in
+	private int wrongCounter;	//number of incorrect input in a row
 	
 	private String currAnimal = "";
 	private int currLetterInd;
@@ -80,10 +94,16 @@ public class AnimalGame extends Activity {
         super.onDestroy();
     }
 	
+    /**
+     * @return string of animal expected
+     */
 	private String getCurr() {
 		return currAnimal;
 	}
 	
+	/**
+	 * @return string of the wav file of the animal's sound
+	 */
 	private String getCurrSound() {
 		return currAnimal + "_sound";
 	}
@@ -109,6 +129,7 @@ public class AnimalGame extends Activity {
 		speakDirections();
 		//playAudio not called in functions above
 		application.playAudio();
+		
 		createListeners();
 	}
 	
@@ -163,6 +184,10 @@ public class AnimalGame extends Activity {
 	}
 	
 
+	/**
+	 * Create listener for a SubmitEvent to process every glyph written
+	 * and generate new animal sound or instruction based on input
+	 */
 	private void createListeners() {
 		// Handles the checking and comparing of the expected word vs user input
 		AnimalListener = new GenericEventListener() {
@@ -172,23 +197,10 @@ public class AnimalGame extends Activity {
 				SubmitEvent e = (SubmitEvent) arg1;
 				Log.d("Animal Game", "Triggered Submit Event");
 
-//				/** FOR DEBUGGING **/
-//
-//				String trial = bwt.viewTrackingAsString();
-//				
-//				Log.d("Animal Game", "Trial viewing: " + trial + "; Goal: "
-//						+ goal);
-//
-//				int cellstate = e.getCellBits();
-//				Log.i("Animal Game", "Submitted cell (" + e.getCellInd()
-//						+ ") bits: " + Integer.toBinaryString(cellstate));
-//				/*********************/
-
+				//get finished glyph and reset bits at that cell to be 0
 				int cellInd = e.getCellInd();
 				char glyphAtCell = bwt.getGlyphAtCell(cellInd);
-				bwt.clearTouchedCells();
-				
-				//application.clearAudio();
+				bwt.setBitsAtCell(cellInd, 0);
 				
 				// Speak out character typed
 				if(glyphAtCell == '-') {
@@ -202,17 +214,12 @@ public class AnimalGame extends Activity {
 				char expectedChar = getCurr().charAt(currLetterInd);
 				
 				//Check input against expected char and handle accordingly
-				if (glyphAtCell != expectedChar)
-					wrongCharacterHandler();
-				else
-					correctCharacterHandler();
+				if (glyphAtCell != expectedChar)	wrongCharacterHandler();
+				else	correctCharacterHandler();
 				
 				application.playAudio();
 			}
-			
 		};
-		
-
 		bwt.replaceListener("onSubmitEvent", AnimalListener);
 	}
 
@@ -248,7 +255,6 @@ public class AnimalGame extends Activity {
 			currLetterInd = 0;
 		}
 		speakDirections();
-		
 	}
 	
 	/**
@@ -285,7 +291,7 @@ public class AnimalGame extends Activity {
 		}
 	}
 	
-	// If the user presses back, go back properly
+	/** If the user presses back, go back properly */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {

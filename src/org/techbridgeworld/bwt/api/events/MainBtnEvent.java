@@ -8,12 +8,18 @@ import org.techbridgeworld.bwt.api.Board;
 
 import android.util.Log;
 
+/**
+ * MainBtnEvent is triggered whenever a dot on the main Braille cell was
+ * pushed.
+ * 
+ * @author Salem
+ *
+ */
 public class MainBtnEvent extends EventObject {
 
 	private String message; // Represents the raw signal
 	private int dot; // Represents the dot pressed.
 	private Board board; // Gives us a reference to the state of the board.
-	// TODO: Add param for what letter was just modified.
 	private char update;
 
 	public MainBtnEvent(String message, Board board) {

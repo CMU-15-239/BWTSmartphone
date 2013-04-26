@@ -4,20 +4,30 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Locale;
 
-import javaEventing.EventManager;
-
-import org.techbridgeworld.bwt.api.events.ChangeCellEvent;
 import org.techbridgeworld.bwt.api.libs.Braille;
 
 import android.util.Log;
 
+/**
+ * Board.java is in charge of keeping track of the user's input and is updated
+ * by BWT.java
+ * 
+ * @author Jessica and Salem
+ *
+ */
 public class Board {
 	private static Braille braille = new Braille();
 	
 	private final Cell board[];
 	private boolean altFlag = false;
+	
+	//Keeps track of input history from user (can be cleared)
 	private LinkedList<Integer> inputInfo;
+	
+	//a Cell that contains input from any of the Braille cells
 	private Cell universalCell;
+	
+	//index of the last active cell 
 	private Integer currCellInd;
 
 	/**
@@ -55,8 +65,7 @@ public class Board {
 	/**
 	 * Converts a raw braille representation to a glyph.
 	 * 
-	 * @param i
-	 *            = raw int
+	 * @param i = raw int
 	 * @return converted glyph from i.
 	 */
 	public char getBraille(int i) {
@@ -66,8 +75,7 @@ public class Board {
 	/**
 	 * Converts a character to a raw braille representation.
 	 * 
-	 * @param c
-	 *            = character to convert
+	 * @param c	= character to convert
 	 * @return raw braille representation of c.
 	 */
 	public int getBraille(char c) {
@@ -161,10 +169,8 @@ public class Board {
 	/**
 	 * Sets a cell to a given value
 	 * 
-	 * @param cellInd
-	 *            = cell index.
-	 * @param value
-	 *            = value to store in cell.
+	 * @param cellInd = cell index.
+	 * @param value = value to store in cell.
 	 */
 	public void setBitsAtCell(int cellInd, int value) {
 		board[cellInd].setValue(value);
@@ -381,6 +387,7 @@ public class Board {
 	public int handleNewInput(int cellInd, int buttonNum) {
 		if(cellInd == -1) {
 			altFlag = true;
+			return -1;
 		}
 		
 		if(cellInd != 0) {
@@ -392,7 +399,6 @@ public class Board {
 		
 		int prevCellInd = inputInfo.peekLast();
 		if(prevCellInd != cellInd) {
-			EventManager.triggerEvent(this, new ChangeCellEvent(prevCellInd, cellInd, this));
 			inputInfo.push(cellInd);
 		}
 		
