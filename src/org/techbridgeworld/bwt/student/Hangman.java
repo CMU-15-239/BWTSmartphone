@@ -36,7 +36,7 @@ public class Hangman extends Activity {
 
 	//Used for audio string in name (for naming number of letters in a word)
 	private String[] numbers = {"one", "two", "three", "four", "five", "six",
-			"seven", "eight"};
+			"seven", "eight", "nine", "ten"};
 	
 	//Contains words from grabbed from the server 
 	private String[] wordBank = {};
@@ -118,15 +118,12 @@ public class Hangman extends Activity {
 		wordBankInd++;
 		numMistakes = 0;
 		guessedBank = new ArrayList<Character>();
-		
+
+		//start over if they beat the game
 		if(wordBankInd >= wordBank.length) {
-			//start over if they beat the game
 			wordBankInd = -1;
 			return;
 		}
-		
-		//Un-comment for demo purposes
-		//if(hardcodeFirstWord(2)) return;
 		
 		//Won't repeat words already done
 		int nextWordInd = generator.nextInt(wordBank.length - wordBankInd) + wordBankInd;
@@ -325,39 +322,5 @@ public class Hangman extends Activity {
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
-	}
-	
-	/**
-	 * Solely for demo purposes. Forces the first word to be
-	 * wordBank[wantedInd].
-	 * 
-	 * @param wantedInd : index in wordBank to be chosen as first word
-	 * @return true if it's the first word; false otherwise
-	 */
-	private boolean hardcodeFirstWord(int wantedInd) {
-		if(wordBankInd == 0) {
-			currWord = wordBank[wantedInd];
-			numCorrectLetters = 0;
-			
-			int numLetters = currWord.length();
-			application.queueAudio(R.string.the_new_word);
-			application.queueAudio(numbers[numLetters-1]);
-			application.queueAudio(R.string.letters);
-			
-			//Speak out the dashes
-			wordStatus = new char[numLetters];
-			for (int i = 0; i < numLetters; i++) {
-				wordStatus[i] = '-';
-				application.queueAudio(R.string.dash);
-			}
-			application.queueAudio(R.string.guess_a_letter);
-
-			// swap strings in array; everything before wordBankInd have been
-			// done
-			wordBank[wantedInd] = wordBank[wordBankInd];
-			wordBank[wordBankInd] = currWord;
-			return true;
-		}
-		return false;
 	}
 }

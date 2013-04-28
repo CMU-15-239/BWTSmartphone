@@ -14,8 +14,13 @@ import android.widget.Button;
 
 public class GameActivity extends Activity {
 
+	// The global application
 	private MyApplication application;
+
+	// Speaks text aloud
 	private TextToSpeech tts;
+
+	// The UI buttons
 	private Button[] buttons;
 
 	@Override
@@ -23,19 +28,31 @@ public class GameActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 
+		// Get the global application
 		application = ((MyApplication) getApplicationContext());
 
+		// Retrieve the global objects from application
+		tts = application.myTTS;
+
+		// Set the prompt and help text
 		application.prompt = getResources().getString(R.string.game_prompt);
 		application.help = getResources().getString(R.string.game_help);
-		
-		tts = application.myTTS;
-		application.speakOut(application.prompt);
 
-		SharedPreferences prefs = application.context.getSharedPreferences("BWT", 0);
+		// Speak the prompt text aloud
+		application.speakOut(application.prompt);
+		
+		/*
+		 * If the teacher app has not yet been opened, provide the user with
+		 * an AlertDialog indicating that the teacher app must be opened first.
+		 */
+		SharedPreferences prefs =
+				application.context.getSharedPreferences("BWT", 0);
 		if(prefs.getBoolean("firstRun", true)) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(GameActivity.this);
-			builder.setMessage(R.string.open_message)
-			.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+			AlertDialog.Builder builder =
+					new AlertDialog.Builder(GameActivity.this);
+			builder.setMessage(R.string.open_message).setPositiveButton(
+					R.string.ok, new DialogInterface.OnClickListener()
+			{
 				public void onClick(DialogInterface dialog, int id) {
 					Intent intent = new Intent(Intent.ACTION_MAIN);
 					intent.addCategory(Intent.CATEGORY_HOME);
@@ -46,24 +63,35 @@ public class GameActivity extends Activity {
 			AlertDialog dialog = builder.create();
 			dialog.show();
 		}
-		
+
+		// Create an array containing the game options
 		String[] options = new String[4];
 		options[0] = getResources().getString(R.string.learn_dots);
 		options[1] = getResources().getString(R.string.learn_letters);
 		options[2] = getResources().getString(R.string.animal_game);
 		options[3] = getResources().getString(R.string.hangman);
-		
+
+		// Initialize buttons such that it has the same length as options
 		buttons = new Button[5];
 		buttons[0] = (Button) findViewById(R.id.one);
 		buttons[1] = (Button) findViewById(R.id.two);
 		buttons[2] = (Button) findViewById(R.id.three);
 		buttons[3] = (Button) findViewById(R.id.four);
-		
+
+		/*
+		 * For each option, set the corresponding buttons' text and content
+		 * description to that option and visibility to true.
+		 */
 		for(int i = 0; i < options.length; i++) {
 			final int j = i; 
 			buttons[i].setText(options[i]);
 			buttons[i].setContentDescription(options[i]);
 			buttons[i].setVisibility(View.VISIBLE);
+			
+			/*
+			 * When a button is clicked, set application's game variable
+			 * accordingly and start specified game activity.
+			 */
 			buttons[i].setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {

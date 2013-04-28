@@ -91,6 +91,9 @@ public class LearnLetters extends Activity {
         super.onDestroy();
     }
 
+    /**
+     * Shuffles indices and gives instruction for first letter
+     */
 	private void runGame() {
 		// Shuffle order of indices for testing phase
 		shuffleIndices();
@@ -107,6 +110,12 @@ public class LearnLetters extends Activity {
 		application.playAudio();
 	}
 	
+	/**
+	 * Checks the onBoardEvent trigger to see if the letter was correct,
+	 * wrong, or still in progress.
+	 * 
+	 * Updates audio as needed
+	 */
 	private void createListener() {
 		bwt.replaceListener("onBoardEvent", new GenericEventListener() {
 			@Override

@@ -98,6 +98,9 @@ public class LearnDots extends Activity {
 		return currentDot;
 	}
 
+	/**
+	 * Provides first instruction, then creates listener for the BWT board
+	 */
 	private void runGame(){
 		// Generate the first dot.
 		currentDot = generator.nextInt(6) + 1;
@@ -108,6 +111,11 @@ public class LearnDots extends Activity {
 		createListener();
 	}
 	
+	/**
+	 * Listens for input from the user for anywhere on the board.
+	 * Gives feedback based on the dot they pushed and queues and plays audio
+	 * as necessary
+	 */
 	private void createListener() {
 		// Listener to detect board input.
 		DotListener = new GenericEventListener(){
@@ -146,7 +154,7 @@ public class LearnDots extends Activity {
 		EventManager.registerEventListener(DotListener, BoardEvent.class);
 	}
 	
-	// If the user presses back, go back properly
+	/** If the user presses back, go back properly */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {

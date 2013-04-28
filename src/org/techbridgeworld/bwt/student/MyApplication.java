@@ -42,26 +42,26 @@ import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 
 /**
- * MyApplication initializes and stores the objects used throughout the
- * activities in this application. It also stores all "global" variables.
+ * MyApplication initializes the TTS and media player. It also obtains
+ * information from the server (hangmanWords through http request).
  * MyApplication is created before any activity in the application.
  * 
  * @author neharathi
  */
 public class MyApplication extends Application implements OnInitListener {
 
-	public Context context; 
-	
+	public Context context;
+
 	// Variables for text-to-speech
 	public TextToSpeech myTTS;
-	HashMap<String, String> params; 
+	HashMap<String, String> params;
 
 	// Variables used for playing audio files
 	public MediaPlayer myPlayer;
 	public String dir;
 	public int currentFile;
 	public ArrayList<String> filenames;
-	
+
 	// The text given upon opening an activity
 	public String prompt;
 
@@ -69,123 +69,135 @@ public class MyApplication extends Application implements OnInitListener {
 	public String help;
 
 	// The IP address of the server
-	public final String SERVER_ADDRESS = "http://128.237.198.23:3000";
+	public final String SERVER_ADDRESS = "http://128.237.196.208:3000";
 
 	// Contains the Hangman words from the server
 	public ArrayList<String> hangmanWords;
-	
+
 	@Override
-	public void onCreate () {
-		//Initializes TTS and media player variables
-		myTTS = new TextToSpeech(this, this); 
+	public void onCreate() {
+		// Initializes TTS and media player variables
+		myTTS = new TextToSpeech(this, this);
 		params = new HashMap<String, String>();
 		params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "utteranceId");
-		
+
 		myPlayer = new MediaPlayer();
 		currentFile = 0;
 		filenames = new ArrayList<String>();
-		
-		//Check for teacher app
+
+		// Check for teacher app
 		try {
 			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
-		
+
 		dir = context.getFilesDir().getPath().toString();
-		
-		new HTTPAsyncTask().execute();		
+
+		new HTTPAsyncTask().execute();
 	}
-	
+
 	@Override
+	// Initialize the TTS
 	public void onInit(int status) {
 		if (status == TextToSpeech.SUCCESS) {
-            myTTS.setOnUtteranceProgressListener(new UtteranceProgressListener()
-            {
-                @Override
-                public void onDone(String utteranceId)
-                {
-                	if(utteranceId.equals("utteranceId")) {
-                		myTTS.stop();
-    					if(currentFile < filenames.size() - 1) {
-    						currentFile++;
-    						playAudio(filenames.get(currentFile));
-    					}
-    					else {
-    						filenames.clear();
-    						currentFile = 0;
-    					}
-                	}
-                }
+			myTTS.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+				@Override
+				public void onDone(String utteranceId) {
+					// Stops the TTS and finishes up the media player files
+					if (utteranceId.equals("utteranceId")) {
+						myTTS.stop();
+						if (currentFile < filenames.size() - 1) {
+							currentFile++;
+							playAudio(filenames.get(currentFile));
+						} else {
+							filenames.clear();
+							currentFile = 0;
+						}
+					}
+				}
 
-                @Override
-                public void onError(String utteranceId) {}
+				@Override
+				public void onError(String utteranceId) {
+				}
 
-                @Override
-                public void onStart(String utteranceId) {}
-            });
+				@Override
+				public void onStart(String utteranceId) {
+				}
+			});
+
+			// Sets up the TTS
 			int result = myTTS.setLanguage(Locale.US);
-			if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
+			if (result == TextToSpeech.LANG_MISSING_DATA
+					|| result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
-			
-			if(prompt != null)
-				speakOut(prompt); 
-		}
-		else
+
+			if (prompt != null)
+				speakOut(prompt);
+		} else
 			Log.e("TTS", "Initilization Failed!");
 	}
-	
+
 	/**
 	 * Use TextToSpeech to speak some text out loud
-	 * @param text (the text)
+	 * 
+	 * @param text
+	 *            (the text)
 	 */
 	public void speakOut(String text) {
 		myTTS.speak(text, TextToSpeech.QUEUE_ADD, params);
 	}
-	
+
 	/**
 	 * Adds the resourceId to filenames
-	 * @param resourceId (i.e. R.string.___)
+	 * 
+	 * @param resourceId
+	 *            (i.e. R.string.___)
 	 */
 	public void queueAudio(int resourceId) {
 		filenames.add(getResources().getString(resourceId));
 	}
-	
+
 	/**
 	 * Adds the string to filenames
-	 * @param str (the string)
+	 * 
+	 * @param str
+	 *            (the string)
 	 */
 	public void queueAudio(String str) {
 		filenames.add(str);
 	}
-	
+
 	/**
 	 * Clears everything in the audio queue
 	 */
 	public void clearAudio() {
-		myTTS.stop();	
+		myTTS.stop();
 		if (myPlayer.isPlaying()) {
 			myPlayer.stop();
 		}
 		filenames.clear();
 		currentFile = 0;
 	}
-	
+
 	/**
 	 * Begin playing the audio files in filenames
 	 */
 	public void playAudio() {
-		if(filenames.isEmpty()) return;
+		if (filenames.isEmpty())
+			return;
 		playAudio(filenames.get(0));
 	}
-	
+
 	/**
 	 * Play a certain audio file
-	 * @param filename (the audio file)
+	 * 
+	 * @param filename
+	 *            (the audio file)
 	 */
 	public void playAudio(String filename) {
 		FileInputStream fis;
-		Log.i("neha", "playing " + filename + ".");
+		Log.i("Audio", "playing " + filename + ".");
 		try {
 			filename = filename.replaceAll(" ", "_");
 			fis = new FileInputStream(dir + "/" + filename + ".m4a");
@@ -198,19 +210,18 @@ public class MyApplication extends Application implements OnInitListener {
 			myPlayer.setOnCompletionListener(new OnCompletionListener() {
 				@Override
 				public void onCompletion(MediaPlayer mp) {
-					myPlayer.stop(); 
-					if(currentFile < filenames.size() - 1) {
+					myPlayer.stop();
+					if (currentFile < filenames.size() - 1) {
 						currentFile++;
 						playAudio(filenames.get(currentFile));
-					}
-					else {
+					} else {
 						filenames.clear();
 						currentFile = 0;
 					}
 				}
 			});
 		} catch (FileNotFoundException e) {
-			Log.w("Audio", "Could not find file " + filename + ".m4a."); 
+			Log.w("Audio", "Could not find file " + filename + ".m4a.");
 			filename = filename.replaceAll("_", " ");
 			speakOut(filename);
 		} catch (IllegalArgumentException e) {
@@ -225,12 +236,12 @@ public class MyApplication extends Application implements OnInitListener {
 	/**
 	 * HTTPAsyncTask populates hangmanWords on a background thread. To do this,
 	 * it makes a POST request to the server with the admin's credentials. The
-	 * server sends back a response containing the Hangman words. 
+	 * server sends back a response containing the Hangman words.
 	 * 
 	 * @author neharathi
 	 */
 	public class HTTPAsyncTask extends AsyncTask<Void, Integer, Void> {
-		
+
 		@Override
 		protected Void doInBackground(Void... params) {
 			// Initialize HTTP Post
@@ -266,7 +277,6 @@ public class MyApplication extends Application implements OnInitListener {
 			return null;
 		}
 	}
-
 
 	/**
 	 * Populates hangmanWords using the response stream.
