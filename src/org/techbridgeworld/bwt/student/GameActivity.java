@@ -72,7 +72,7 @@ public class GameActivity extends Activity {
 		options[3] = getResources().getString(R.string.hangman);
 
 		// Initialize buttons such that it has the same length as options
-		buttons = new Button[5];
+		buttons = new Button[4];
 		buttons[0] = (Button) findViewById(R.id.one);
 		buttons[1] = (Button) findViewById(R.id.two);
 		buttons[2] = (Button) findViewById(R.id.three);
@@ -95,26 +95,26 @@ public class GameActivity extends Activity {
 			buttons[i].setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Intent intent; 
+					Class<?> c = null;
 					switch(j) {
-					case 0:
-						intent = new Intent(GameActivity.this, LearnDots.class);
-						startActivity(intent);
-						break;
-					case 1:
-						intent = new Intent(GameActivity.this, LearnLetters.class);
-						startActivity(intent);
-						break;
-					case 2:
-						intent = new Intent(GameActivity.this, AnimalGame.class);
-						startActivity(intent);
-						break;
-					case 3:
-						intent = new Intent(GameActivity.this, Hangman.class);
-						startActivity(intent);
-						break;
-					default:	
+						case 0:
+							c = LearnDots.class;
+							break;
+						case 1:
+							c = LearnLetters.class;
+							break;
+						case 2:
+							c = AnimalGame.class;
+							break;
+						case 3:
+							c = Hangman.class;
+							break;
+						default:
+							return;
 					}
+					
+					Intent intent = new Intent(GameActivity.this, c);
+					startActivity(intent);
 				}
 			}); 
 		}
@@ -135,7 +135,8 @@ public class GameActivity extends Activity {
 		super.onDestroy();
 	}
 
-	// If the user presses back, go to the home screen
+	/** If the user presses back, go to the home screen
+	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
