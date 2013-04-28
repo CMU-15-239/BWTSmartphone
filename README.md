@@ -44,7 +44,7 @@ To build the project, you will need the Android SDK. The Android SDK comes pre-b
 You will also need to download and install the drivers for the phone you will be developing for, particularly if you are on Windows (Mac OSX tends to be more forgiving). These can be found on the manufacturer's website. 
 
 
- 5-7. Additional Libraries Required
+5-7. Additional Libraries Required
 -------------------------------------------------------------------------------
 
 All additional libraries are included in the repository. This app requires two external libraries: 
@@ -58,7 +58,7 @@ All additional libraries are included in the repository. This app requires two e
     information can be found [here](https://code.google.com/p/javaeventing/). 
 
 
- 8-9. Config files
+8-9. Config files
 -------------------------------------------------------------------------------
 
 The BWT student app has no config files, but there is one setting that needs to be updated. In ```org.techbridgeworld.bwt.student.MyApplication.java```, the address of the web server needs to be set. Modify the ```SERVER_ADDRESS``` value with the address of the webserver. 
@@ -78,6 +78,8 @@ To add the project to Eclipse, launch Eclipse and import the project. Specifical
 Next, you will need to plug in your Android smartphone into the computer via USB. Right click the BWTForSmartphone project in the Package Explorer (usually visable on the left-hand side of the screen) and select ```Run As > Android Application```. Your phone should appear in a list of connected devices. Select it, and wait until the Console displays that the app has been successfully installed. 
 
 Naturally, the produced .apk is designed to run exclusively on the Android platform. The packaged .apk file is located in ```BWTForSmartphone\bin``` after compiling.
+
+**Note:** *The website must be launched before the teacher app. The teacher app makes calls to the server's database, and if the website isn't running, the Hangman game will not populate with any words. This is a known bug.*
 
 
 12-16. Input and Output Files
