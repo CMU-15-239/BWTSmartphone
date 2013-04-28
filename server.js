@@ -1,11 +1,18 @@
+/* Constant values */
+var DEFAULT_PORT = 3000;
+var ADMIN_USERNAME = 'admin';
+var ADMIN_PASSWORD = 'admin';
+
+
+/* Imports */
 var path = require('path');
 var express = require('express');
 var http = require('http');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-
 var mongo = require('mongodb');
+
 
 /* Connect to the local instance of mongo. */ 
 var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/myApp';
@@ -18,7 +25,7 @@ mongoose.connect(mongoUri, mongoOptions, function (err, res) {
   }
 });
 
-var portNumber = process.env.PORT || 3000;
+var portNumber = process.env.PORT || DEFAULT_PORT;
 
 /* Initialize the node app, include express and passport.
  */
@@ -79,10 +86,10 @@ function initPassportUser(){
 function checkForAndCreateRootUser(User){
   User.findOne({username : "admin" }, function(err, existingUser) {
     if (err || existingUser) return;
-    var user = new User({ username : "admin" });
+    var user = new User({ username : ADMIN_USERNAME });
     user.superuser = true;
     user.registeredTimestamp = new Date();
-    user.setPassword("admin", function(err) {
+    user.setPassword(ADMIN_PASSWORD, function(err) {
       if (err) return;
       user.save(function(err) { });
     });
