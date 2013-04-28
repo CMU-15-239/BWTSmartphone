@@ -13,6 +13,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+/**
+ * GameActivity is the first activity in this application. In this activity, the
+ * teacher is prompted to select a game for her student to play.
+ * 
+ * @author neharathi
+ */
 public class GameActivity extends Activity {
 
 	// The global application
@@ -29,10 +35,8 @@ public class GameActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 
-		// Get the global application
+		// Get the global application and global text to speech
 		application = ((MyApplication) getApplicationContext());
-
-		// Retrieve the global objects from application
 		tts = application.myTTS;
 
 		// Set the prompt and help text
@@ -43,11 +47,10 @@ public class GameActivity extends Activity {
 		application.speakOut(application.prompt);
 		
 		/*
-		 * If the teacher app has not yet been opened, provide the user with
-		 * an AlertDialog indicating that the teacher app must be opened
-		 * first.
+		 * If the teacher app has not been installed, alert the user that it
+		 * must be installed and opened before the student app.
 		 */
-		if(application.context == null) {
+		if (application.context == null) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					GameActivity.this);
 			builder.setMessage(R.string.install_message).setPositiveButton(
@@ -60,6 +63,10 @@ public class GameActivity extends Activity {
 			AlertDialog dialog = builder.create();
 			dialog.show();
 		}
+		/*
+		 * If the teacher app has been installed but not opened, alert the user
+		 * that it must be opened before the student app.
+		 */
 		else {
 			SharedPreferences prefs = application.context.getSharedPreferences("BWT",
 					MODE_PRIVATE);
@@ -86,7 +93,7 @@ public class GameActivity extends Activity {
 		options[3] = getResources().getString(R.string.hangman);
 
 		// Initialize buttons such that it has the same length as options
-		buttons = new Button[5];
+		buttons = new Button[4];
 		buttons[0] = (Button) findViewById(R.id.one);
 		buttons[1] = (Button) findViewById(R.id.two);
 		buttons[2] = (Button) findViewById(R.id.three);
@@ -136,12 +143,14 @@ public class GameActivity extends Activity {
 
 	@Override
 	public void onPause() {
+		// Clear the audio queue
 		application.clearAudio();
 		super.onPause();
 	}
 	
 	@Override
 	public void onDestroy() {
+		// Stop and shutdown text to speech
 		if (tts != null) {
 			tts.stop();
 			tts.shutdown();
@@ -149,9 +158,9 @@ public class GameActivity extends Activity {
 		super.onDestroy();
 	}
 
-	// If the user presses back, go to the home screen
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// If the user presses back, go to the home screen
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			Intent intent = new Intent(Intent.ACTION_MAIN);
 			intent.addCategory(Intent.CATEGORY_HOME);
