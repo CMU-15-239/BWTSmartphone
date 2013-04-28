@@ -103,7 +103,7 @@ Eclipse automatically compiles and installs the app all at once, so there is no 
 19. Device settings
 -------------------------------------------------------------------------------
 
-The Android phone must be rooted and, optimally, running stock Android firmware (as opposed to stock vendor firmware). For testing purposes, you may find it helpful to enable the phone's accessibility features. In particular, it is suggested that you enable **TalkBack** and **Explore By Touch**.
+The Android phone must be rooted and, optimally, running stock Android firmware (as opposed to stock vendor firmware). For testing purposes, you may find it helpful to enable the phone's accessibility features. In particular, it is suggested that you enable **TalkBack** and **Explore By Touch** under Settings > Accessibility.
 
 
 20. Running Instructions
