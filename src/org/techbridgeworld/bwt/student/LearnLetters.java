@@ -23,30 +23,46 @@ import android.view.KeyEvent;
  *
  */
 public class LearnLetters extends Activity {
-
+	// The global application
 	private MyApplication application;
+
+	// Speaks text aloud
 	private TextToSpeech tts;
+
+	// The BWT
+	private final BWT bwt = new BWT(this, LearnLetters.this);
 	
+	// Contains Braille library for mapping braille input to alphabet
 	private static final Braille braille = new Braille();
+	
+	// Mapping of 1-6 to their string counterparts
 	private String[] numbers = { "one", "two", "three", "four", "five", "six" };
 
-	//Grouping of letters to be taught
+	// Grouping of letters to be taught
 	private static final char[][] letters = { { 'a', 'b', 'c', 'd', 'e' },
 			{ 'f', 'g', 'h', 'i', 'j' }, { 'k', 'l', 'm', 'n', 'o' },
 			{ 'p', 'q', 'r', 's', 't' }, { 'u', 'v', 'w', 'x', 'y', 'z' } };
 
-	//Max numbers of attempt before re-teaching letter in test mode
+	// Max numbers of attempt before re-teaching letter in test mode
 	private static final int MAX_ATTEMPTS_WRONG = 3;
 	
+	// Indices of letters in a shuffled order for Test mode
 	private static int[][] shuffledIndices;
+	
+	// Group index in letters being taught/tested
 	private int groupInd;
+	
+	// Letter index in letters[groupInd] being taught/tested
 	private int countLetterInd;
+	
+	// Braille input expected in binary form
 	private int expectedBrailleCode;
+	
+	// Number of wrong attempts in a row (for test mode)
 	private int attemptNum;
-	private boolean introducing; // introduce letters if true; test letters if
-									// false
-
-	private final BWT bwt = new BWT(this, LearnLetters.this);
+	
+	// Boolean to keep track if in Introducing mode or Testing mode
+	private boolean introducing;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -280,10 +296,10 @@ public class LearnLetters extends Activity {
 		return givenArr;
 	}
 	
-	/** If the user presses back, go back properly */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			bwt.removeEventListeners();
 	        Intent intent = new Intent(LearnLetters.this, GameActivity.class);
 			startActivity(intent);
 			return true;

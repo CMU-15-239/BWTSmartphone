@@ -25,14 +25,18 @@ import android.view.KeyEvent;
  * @author Jessica
  */
 public class Hangman extends Activity {
-
-	private MyApplication application;
-	private TextToSpeech tts;
 	
-	private Random generator = new Random(new Date().getTime());
+	// The global application
+	private MyApplication application;
 
+	// Speaks text aloud
+	private TextToSpeech tts;
+
+	// The BWT
 	private final BWT bwt = new BWT(this, Hangman.this);
-	private GenericEventListener HangmanListener;
+	
+	// Helps to randomly generates next word to be guessed
+	private Random generator = new Random(new Date().getTime());
 
 	//Used for audio string in name (for naming number of letters in a word)
 	private String[] numbers = {"one", "two", "three", "four", "five", "six",
@@ -265,7 +269,7 @@ public class Hangman extends Activity {
 	private void createListeners() {
 		// Handles the checking and comparing of the expected word vs
 		// user input
-		HangmanListener = new GenericEventListener() {
+		GenericEventListener HangmanListener = new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
 				bwt.defaultSubmitHandler(arg0, arg1);
@@ -317,6 +321,7 @@ public class Hangman extends Activity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			bwt.removeEventListeners();
 	        Intent intent = new Intent(Hangman.this, GameActivity.class);
 			startActivity(intent);
 			return true;

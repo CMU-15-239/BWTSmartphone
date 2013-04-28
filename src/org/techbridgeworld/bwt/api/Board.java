@@ -47,17 +47,23 @@ public class Board {
 	}
 
 	/**
-	 * Setters and getters for the altFlag. altFlag is false unless an alt
-	 * button is pressed. It is then set to true until cleared.
+	 * Gets the alt flag
 	 */
 	public boolean getAltFlag() {
 		return this.altFlag;
 	}
 
+	/**
+	 * Sets the alt flag to be as specified
+	 * @param altFlag
+	 */
 	public void setAltFlag(boolean altFlag) {
 		this.altFlag = altFlag;
 	}
 
+	/**
+	 * Clears the alt flag to false
+	 */
 	public void clearAltFlag() {
 		setAltFlag(false);
 	}
@@ -225,7 +231,13 @@ public class Board {
 		}
 		return buf.toString();
 	}
-	
+
+	/**
+	 * Gets the first cellInd accessed in inputInfo, and
+	 * returns the trimmed String that includes glyphs from every
+	 * cell ind that follows. Then clears inputInfo
+	 * @return
+	 */
 	public String viewAndEmptyAsIndexed() {
 		int index = inputInfo.getFirst();
 		int end = inputInfo.getLast();

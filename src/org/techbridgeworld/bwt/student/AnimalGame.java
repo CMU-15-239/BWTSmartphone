@@ -32,28 +32,43 @@ import android.view.KeyEvent;
  */
 public class AnimalGame extends Activity {
 
+	// The global application
 	private MyApplication application;
+
+	// Speaks text aloud
 	private TextToSpeech tts;
 
+	// The BWT
+	private final BWT bwt = new BWT(this, AnimalGame.this);
+
+	// Contains Braille library for mapping braille input to alphabet
+	private static final Braille braille = new Braille();
+	
+	// Helps to randomly choose an animal to test
 	private Random generator = new Random(new Date().getTime());
 
-	private final BWT bwt = new BWT(this, AnimalGame.this);
-	private final Braille braille = new Braille();
-	private GenericEventListener AnimalListener;
-
+	// List of all the animals to be tested
 	private final String[] animals = { "bee", "camel", "cat", "cow", "dog", "horse",
 			"pig", "rooster", "sheep", "zebra" };
+
+	//Keeps track of what stage student is in
+	private int stage;
 	
+	// Helps define what stage student is in
 	private final int ANIM_SOUND_STAGE = 0;
 	private final int SPELL_ANIM_STAGE = 1;
 	private final int GIVE_DOTS_STAGE = 2;
 	
+	// Maximum number of mistakes before stage changes
 	private final int MAX_WRONG = 3;
 	
-	private int stage;			//Keeps track of what stage student is in
-	private int wrongCounter;	//number of incorrect input in a row
+	// Number of incorrect input in a row
+	private int wrongCounter;
 	
+	// Current animal being tested
 	private String currAnimal = "";
+	
+	// Current letter index of the animal name the student is on
 	private int currLetterInd;
 
 	@Override
@@ -94,12 +109,6 @@ public class AnimalGame extends Activity {
         super.onDestroy();
     }
 	
-    /**
-     * @return string of animal expected
-     */
-	private String getCurr() {
-		return currAnimal;
-	}
 	
 	/**
 	 * @return string of the wav file of the animal's sound
@@ -154,7 +163,7 @@ public class AnimalGame extends Activity {
 		}
 		//Provide dots to write the last incorrect letter for student
 		else if (stage == GIVE_DOTS_STAGE) {
-			char currLetter = getCurr().charAt(currLetterInd);
+			char currLetter = currAnimal.charAt(currLetterInd);
 			int btns = braille.get(currLetter);
 			
 			application.queueAudio(R.string.to_write_the_letter);
@@ -175,10 +184,10 @@ public class AnimalGame extends Activity {
 	 * Spell out the animal (currWord) for the student
 	 */
 	private void spellCurrWord() {
-		application.queueAudio(getCurr());
+		application.queueAudio(currAnimal);
 		
-		for (int i = 0; i < getCurr().length(); i++) {
-			Character let = getCurr().charAt(i);
+		for (int i = 0; i < currAnimal.length(); i++) {
+			Character let = currAnimal.charAt(i);
 			application.queueAudio(let.toString());
 		}
 	}
@@ -190,7 +199,7 @@ public class AnimalGame extends Activity {
 	 */
 	private void createListeners() {
 		// Handles the checking and comparing of the expected word vs user input
-		AnimalListener = new GenericEventListener() {
+		GenericEventListener AnimalListener = new GenericEventListener() {
 			@Override
 			public void eventTriggered(Object arg0, Event arg1) {
 				bwt.defaultSubmitHandler(arg0, arg1);
@@ -211,7 +220,7 @@ public class AnimalGame extends Activity {
 					application.queueAudio(chStr);
 				}
 
-				char expectedChar = getCurr().charAt(currLetterInd);
+				char expectedChar = currAnimal.charAt(currLetterInd);
 				
 				//Check input against expected char and handle accordingly
 				if (glyphAtCell != expectedChar)	wrongCharacterHandler();
@@ -277,12 +286,12 @@ public class AnimalGame extends Activity {
 			
 			//SPELL_ANIM case: wrong counter should be kept until student
 			//reaches the end of the word
-			if(stage != SPELL_ANIM_STAGE || currLetterInd == getCurr().length()) {
+			if(stage != SPELL_ANIM_STAGE || currLetterInd == currAnimal.length()) {
 				wrongCounter = 0;
 			}
 			
 			// Finished word, go onto next word
-			if (currLetterInd == getCurr().length()) {
+			if (currLetterInd == currAnimal.length()) {
 				application.queueAudio(R.string.good);			
 				bwt.resetBoard();
 				regenerate();
@@ -295,6 +304,7 @@ public class AnimalGame extends Activity {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			bwt.removeEventListeners();
 	        Intent intent = new Intent(AnimalGame.this, GameActivity.class);
 			startActivity(intent);
 			return true;

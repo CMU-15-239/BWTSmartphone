@@ -40,9 +40,6 @@ public class LearnDots extends Activity {
 	// The current dot being tested
 	private int currentDot = -1;
 
-	// Listens for user input
-	private GenericEventListener DotListener;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -120,7 +117,7 @@ public class LearnDots extends Activity {
 	 */
 	private void createListener() {
 		// Listener to detect board input
-		DotListener = new GenericEventListener() {
+		GenericEventListener DotListener = new GenericEventListener() {
 
 			@Override
 			public void eventTriggered(Object arg0, Event event) {
@@ -163,11 +160,7 @@ public class LearnDots extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// If the user presses back, go to GameActivity
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			// If the dot listener has been started, remove it
-			if (DotListener != null) {
-				EventManager.unregisterEventListener(DotListener,
-						BoardEvent.class);
-			}
+			bwt.removeEventListeners();
 			Intent intent = new Intent(LearnDots.this, GameActivity.class);
 			startActivity(intent);
 			return true;

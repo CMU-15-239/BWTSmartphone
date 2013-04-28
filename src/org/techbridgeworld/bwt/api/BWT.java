@@ -68,7 +68,10 @@ public class BWT {
 	private UsbSerialDriver usbDriver;
 	private SerialInputOutputManager serialManager;
 
+	// Debounce handler for filtering bytes from the BWT
 	private Handler debounceHandler = new Handler();
+	
+	// Handler and Runnable to keep track of inactivity
 	private Handler inactivityHandler = new Handler();
 	private Runnable inactivityRunnable;
 	
@@ -639,17 +642,8 @@ public class BWT {
 	 * Registers default event handlers; called in bwt.start();
 	 */
 	public void initializeEventListeners() {
-		EventManager.registerEventListener("onBoardEvent",
-				createOnBoardListener(), BoardEvent.class);
-
-		EventManager.registerEventListener("onMainBtnEvent",
-				createOnMainBtnListener(), MainBtnEvent.class);
-
 		EventManager.registerEventListener("onAltBtnEvent",
 				createOnAltBtnListener(), AltBtnEvent.class);
-
-		EventManager.registerEventListener("onCellsEvent",
-				createOnCellsListener(), CellsEvent.class);
 		
 		EventManager.registerEventListener("onSubmitEvent",
 				createOnSubmitListener(), SubmitEvent.class);
@@ -696,53 +690,37 @@ public class BWT {
 
 	}
 
-	/*
-	 * Default Handlers of the board (accessible to developers)
+	/* Default Handlers of the board (accessible to developers)
 	 */
-	public void defaultBoardHandler(Object sender, Event event) {
-		// API doesn't have a default function. Here for developers
-	}
-
-	public void defaultMainBtnHandler(Object sender, Event event) {
-		Log.i("EventTriggering", "Calling default onMainBtn event handler");
-	}
-
+	
+	/**
+	 * Sets the alt flag to be true
+	 * @param sender
+	 * @param event
+	 */
 	public void defaultAltBtnHandler(Object sender, Event event) {
 		board.setAltFlag(true);
-		Log.i("EventTriggering", "Calling default onAltBtn event handler");
 	}
 	
-	public void defaultCellsHandler(Object sender, Event event) {
-		Log.i("EventTriggering", "Calling default onCells event handler");
-	}
-	
+	/**
+	 * Clears the submitted cell's information on the board
+	 * @param sender
+	 * @param event
+	 */
 	public void defaultSubmitHandler(Object sender, Event event) {
-		board.resetCurrCellInd();
+		SubmitEvent e = (SubmitEvent) event;
+		board.setBitsAtCell(e.getCellInd(), 0);
 		Log.i("EventTriggering", "Calling default onSubmit event handler");
 	}
 
 
-	/**
-	 * Creates the default event Listeners set up for BWT
+	/* Creates the default event Listeners set up for BWT
 	 */
-	private GenericEventListener createOnBoardListener() {
-		return new GenericEventListener() {
-			@Override
-			public void eventTriggered(Object sender, Event event) {
-				defaultBoardHandler(sender, event);
-			}
-		};
-	}
-
-	private GenericEventListener createOnMainBtnListener() {
-		return new GenericEventListener() {
-			@Override
-			public void eventTriggered(Object sender, Event event) {
-				defaultMainBtnHandler(sender, event);
-			}
-		};
-	}
-
+	
+	/**
+	 * Creates EventListener for touching the AltBtn
+	 * @return
+	 */
 	private GenericEventListener createOnAltBtnListener() {
 		return new GenericEventListener() {
 			@Override
@@ -751,16 +729,11 @@ public class BWT {
 			}
 		};
 	}
-
-	private GenericEventListener createOnCellsListener() {
-		return new GenericEventListener() {
-			@Override
-			public void eventTriggered(Object sender, Event event) {
-				defaultCellsHandler(sender, event);
-			}
-		};
-	}
 	
+	/**
+	 * Creates EventListener for a submit event
+	 * @return
+	 */
 	private GenericEventListener createOnSubmitListener() {
 		return new GenericEventListener() {
 			@Override
@@ -769,6 +742,5 @@ public class BWT {
 			}
 		};
 	}
-	/****************************************************************/
 
 }

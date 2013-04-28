@@ -23,15 +23,28 @@ public class SubmitEvent extends EventObject{
 		this.type = type;
 	}
 	
-	//Getters
+	/**
+	 * Get the index of the cell submitted
+	 * @return
+	 */
 	public int getCellInd() {
 		return cell;
 	}
 	
+	/**
+	 * Get bits at the submitted cells
+	 * @return
+	 */
 	public int getCellBits() {
 		return cellBits;
 	}
 	
+	/**
+	 * Get the type of submission
+	 * (change cell, alt button, or inactivity timer)
+	 * 
+	 * @return
+	 */
 	public int getType() {
 		return type;
 	}

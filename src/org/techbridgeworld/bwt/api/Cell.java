@@ -9,9 +9,8 @@ import org.techbridgeworld.bwt.api.libs.Braille;
  *
  */
 public class Cell {
-/**
- * Valid braille codes (dots one through six)
- */
+	
+	// Valid braille codes (dots one through six) 
 	public static final int ONE 	= 0x01;	//top right button
 	public static final int TWO 	= 0x02;
 	public static final int THREE 	= 0x04;
@@ -19,7 +18,7 @@ public class Cell {
 	public static final int FIVE 	= 0x10;
 	public static final int SIX 	= 0x20;	//bottom left button
 
-	/**
+	/*
 	 * The braille code for this cell is the result of bitwise OR
 	 * on the dot values.
 	 * 
@@ -27,6 +26,8 @@ public class Cell {
 	 * cell-to-glyph conversions.
 	 */
 	private int brailleCode;
+	
+	//Library that contains mapping from alphabet/glyph to int
 	private static Braille braille = new Braille();
 	
 	//Constructors
