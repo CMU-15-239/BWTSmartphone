@@ -86,13 +86,14 @@ public class MyApplication extends Application implements OnInitListener {
 		filenames = new ArrayList<String>();
 
 		// Check for teacher app
+		context = null;
 		try {
-			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
+			context = createPackageContext("org.techbridgeworld.bwt.teacher",
+					MODE_PRIVATE);
+			dir = context.getFilesDir().getPath().toString();
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
-
-		dir = context.getFilesDir().getPath().toString();
 
 		new HTTPAsyncTask().execute();
 	}

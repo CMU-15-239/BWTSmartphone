@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Process;
 import android.speech.tts.TextToSpeech;
 import android.view.KeyEvent;
 import android.view.View;
@@ -43,25 +44,38 @@ public class GameActivity extends Activity {
 		
 		/*
 		 * If the teacher app has not yet been opened, provide the user with
-		 * an AlertDialog indicating that the teacher app must be opened first.
+		 * an AlertDialog indicating that the teacher app must be opened
+		 * first.
 		 */
-		SharedPreferences prefs =
-				application.context.getSharedPreferences("BWT", 0);
-		if(prefs.getBoolean("firstRun", true)) {
-			AlertDialog.Builder builder =
-					new AlertDialog.Builder(GameActivity.this);
-			builder.setMessage(R.string.open_message).setPositiveButton(
-					R.string.ok, new DialogInterface.OnClickListener()
-			{
-				public void onClick(DialogInterface dialog, int id) {
-					Intent intent = new Intent(Intent.ACTION_MAIN);
-					intent.addCategory(Intent.CATEGORY_HOME);
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(intent);
-				}
-			});
+		if(application.context == null) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					GameActivity.this);
+			builder.setMessage(R.string.install_message).setPositiveButton(
+					R.string.ok, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							finish();
+							Process.killProcess(Process.myPid());
+						}
+					});
 			AlertDialog dialog = builder.create();
 			dialog.show();
+		}
+		else {
+			SharedPreferences prefs = application.context.getSharedPreferences("BWT",
+					MODE_PRIVATE);
+			if (prefs.getBoolean("firstRun", true)) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						GameActivity.this);
+				builder.setMessage(R.string.open_message).setPositiveButton(
+						R.string.ok, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								finish();
+								Process.killProcess(Process.myPid());
+							}
+						});
+				AlertDialog dialog = builder.create();
+				dialog.show();
+			}
 		}
 
 		// Create an array containing the game options
