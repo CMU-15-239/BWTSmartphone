@@ -73,7 +73,7 @@ To add the project to Eclipse, launch Eclipse and import the project. Specifical
    Click next.
 2. Set the root directory to the directory in which the core resides.
 3. Go to ```Projects > Select All```.
-4. Uncheck "Copy projects into workspace" and "Add project to working sets."
+4. Uncheck "Copy projects into workspace" and "Add project to working sets"
 
 Next, you will need to plug in your Android smartphone into the computer via USB. Right click the BWTForSmartphone project in the Package Explorer (usually visable on the left-hand side of the screen) and select ```Run As > Android Application```. Your phone should appear in a list of connected devices. Select it, and wait until the Console displays that the app has been successfully installed. 
 
