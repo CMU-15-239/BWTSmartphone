@@ -15,6 +15,8 @@ module.exports = function (app) {
         }
     });
 
+    // not currently implemented but tested and functional
+    // not implemented because fucntionality of multuple users not yet       // determined
     app.post('/register', function(req, res) {
         var username = req.body.username;
         
@@ -42,7 +44,7 @@ module.exports = function (app) {
             });  
         });
     });
-
+    // authenticates user with passport
     app.post('/login', passport.authenticate('local'), function(req, res) {
         console.log(req)
         req.user.lastUserAgent = req.headers['user-agent'];

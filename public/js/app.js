@@ -5,7 +5,7 @@ var rawData;
 
 $(document).ready(function(){
 
-  // Turn off Bootstrap's html-to-javascript features. 
+  // Turn off Bootstrap's html-to-javascript features.
   $('body').off('.data-api');
   // Initialize modals:
   $('#helpModal').modal({show: false});
@@ -38,12 +38,12 @@ $(document).ready(function(){
 
   // Takes an array of word items and injects them into the DOM
   function populateWordList(data){
-    // Do at least some sort of type checking.
+    // Type checking
     if(typeof data != "object" || !(data instanceof Array)){
       console.error("Passed invalid data: ", data);
     }
 
-    // For each item, add its number to its object and add it to the DOM.
+    // For each item, add its position to its object and add it to the DOM.
     for(var i in data){
       $(".word-list").append(wordRow(data[i]));
     }

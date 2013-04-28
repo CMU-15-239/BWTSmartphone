@@ -12,7 +12,7 @@ var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb:/
 var mongoOptions = { db: { safe: true }};
 mongoose.connect(mongoUri, mongoOptions, function (err, res) {
   if (err) {
-    console.log ('ERROR connecting to: ' + mongoUri + '. ' + err);
+    console.log ('ERROR in server.js: ' + mongoUri + '. ' + err);
   } else {
     console.log ('Succeeded connected to: ' + mongoUri);
   }
@@ -31,7 +31,7 @@ function init(){
 
   checkForAndCreateRootUser(User);
   checkDefaultWords(Word);
-
+    
   require('./loginRoutes')(app);
   require('./authRoutes')(app);
 
@@ -73,8 +73,8 @@ function initPassportUser(){
   return User;
 }
 
-/* Creates a root user if it doesn't exist. 
- * Used for debugging.
+/* Creates a root user if it doesn't exist. Change admin in line 81
+ * or 85 to change username or password
  */
 function checkForAndCreateRootUser(User){
   User.findOne({username : "admin" }, function(err, existingUser) {

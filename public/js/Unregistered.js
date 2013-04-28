@@ -1,3 +1,4 @@
+//FROM 15237 F2011 - Cross platform mobile web apps
 var App = function(){
   this.registerEvents();
 };
@@ -6,7 +7,7 @@ App.prototype.registerEvents = function(){
   this.registerLogin();
 };
 
-// Wrapper for our POST reqyest. 
+// Wrapper for our POST request. 
 App.prototype.ajaxFormJSON = function(json, url, onSuccess, onError){
   var data = new FormData();
   for (var key in json){

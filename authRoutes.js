@@ -6,7 +6,7 @@ var Word = require('./Words');
 // ******************************
 
 module.exports = function (app) {
-
+  // saves word to server from request
   app.post('/words', function(req, res) {
         if (req.user) {
             var word = new Word();
@@ -15,10 +15,8 @@ module.exports = function (app) {
             word['assns'] = req.body.assns;
             word.save(function(err) {
                 if (err) {
-                    console.log(err, 'ruhroh');
                     return res.send({'err': err});
                 }
-                //console.log(student);
                 return res.send({
                   result : "success",
                   data: word
@@ -26,58 +24,50 @@ module.exports = function (app) {
             });
         }
         console.log(word);
-    });
+  });
+  // finds and returns all words saved on server
+  app.get('/words', function(req, res){
+      if (req.secret !=='i am a really creative secret'){
+          res.status(401);
+      }
+      if (req.user || (req.secret ==='i am a really creative secret')){
+          Word.find({}, function (err, words){
+              if (err) {
+                  res.send(err);
+              }
+              else {
+                  res.send(words);
+              }});
+      }
+  });
+  // finds and returns all words from request made by android
+  app.get('/droid/words', function(req, res){
+      if (req.secret !=='i am a really creative secret'){
+          res.status(401);
+      }
+      if (req.user || (req.secret ==='i am a really creative secret')){
+          Word.find({}, function (err, words){
+              if (err) {
+                  res.send(err);
+              }
+              else {
+                var t = words.map(function(i){
+                  return i.word;
+                });
+                res.send(t);
+              }});
+      }
+  });
 
-    app.get('/words', function(req, res){
-        console.log('here is my get words request');
-        console.log(req.secret);
-        if (req.secret !=='i am a really creative secret'){
-            console.log('401');
-            res.status(401);
-        }
-        if (req.user || (req.secret ==='i am a really creative secret')){
-            Word.find({}, function (err, words){
-                if (err) {
-                    console.log(err, 'tryin to find the username');
-                    res.send(err);
-                }
-                else {
-                    res.send(words);
-                }});
-        }
-    });
-
-    app.get('/droid/words', function(req, res){
-        if (req.secret !=='i am a really creative secret'){
-            console.log('401');
-            res.status(401);
-        }
-        if (req.user || (req.secret ==='i am a really creative secret')){
-            Word.find({}, function (err, words){
-                if (err) {
-                    console.log(err, 'tryin to find the username');
-                    res.send(err);
-                }
-                else {
-                  var t = words.map(function(i){
-                    return i.word;
-                  });
-                  res.send(t);
-                }});
-        }
-    });
-
+  // finds and returns specified word
   app.get('/words/:id', function(req, res) {
-         console.log('im loading user info');
          var id = req.params.word;
         if (!req.user){
-            console.log('401');
             res.status(401);
         }
         if ((req.user)){
             Word.findOne({'_id':new BSON.ObjectID(id)}, function (err, user){
                 if (err) {
-                    console.log(err, 'tryin to find the username');
                     res.send(err);
                 }
                 else {
@@ -86,64 +76,51 @@ module.exports = function (app) {
         }
     });
 
-
+  // lets user edit and modify existing words on server
   app.put('/words/:word', function(req, res) {
     var word = req.params.word;
-    console.log('Updating word: ' + word);
     if ((req.user)){
       Word.find({'word': word}, null, function(err, success){
           if (err) {
-              console.log(err);
-              //throw err;
+            res.send(err);
           }
           else {
               Word.remove({'word': word}, function(err){
                 if(err)
-                  console.log("Error removing file:", err);
-
                 var word = new Word();
                 for (var key in req.body) {
-                    console.log("Payload: ", req.body);
-                    console.log(key, req.body[key]);
                    var value=req.body[key];
                    word[key]=value;
                 }
                 word.save(function(err){
                   if(err){
-                    console.log("Error updating word ", err);
                     res.send({
                       result: 'fail',
                       error: err
                     });
                   }
                   else{
-                    console.log('successful');
                     res.send({
                       result: 'success'
                     });
                   }
                 });
-
-                console.log('successful');
                 res.send({
                   result: 'success',
                 });
-
               });
 
           }});
     }
-
-
-});
-
+  });
+  // lets user delete word form server
+  // never delete all words
   app.delete('/words/:word' , function(req,res) {
     var word = req.params.word;
     console.log('Updating word: ' + word);
     if ((req.user)){
       Word.remove({'word' : word}, function(err){
         if(err){
-          console.log(err);
           res.send({
             'result':'error',
             'message':err
