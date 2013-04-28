@@ -71,7 +71,7 @@ Next, you will need to plug in your Android smartphone into the computer via USB
 
 Naturally, the produced .apk is designed to run exclusively on the Android platform. The packaged .apk file is located in ```BWTTeacher\bin``` after compiling.
 
-***Note:*** *The website must be launched before the teacher app. The teacher app makes calls to the server's database, and if the website isn't running, the Hangman game will not populate with any words. These are both known bugs.*
+***Note:*** *The website must be launched before the teacher app. The teacher app makes calls to the server's database, and if the website isn't running, the Hangman game will not populate with any words. This is a known bugs.*
 
 
 12-17. Input and Output Files
