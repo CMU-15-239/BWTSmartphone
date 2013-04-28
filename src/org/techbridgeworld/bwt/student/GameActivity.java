@@ -6,12 +6,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Process;
 import android.speech.tts.TextToSpeech;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+/**
+ * GameActivity is the first activity in this application. In this activity, the
+ * teacher is prompted to select a game for her student to play.
+ * 
+ * @author neharathi
+ */
 public class GameActivity extends Activity {
 
 	// The global application
@@ -28,10 +35,8 @@ public class GameActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list);
 
-		// Get the global application
+		// Get the global application and global text to speech
 		application = ((MyApplication) getApplicationContext());
-
-		// Retrieve the global objects from application
 		tts = application.myTTS;
 
 		// Set the prompt and help text
@@ -42,26 +47,42 @@ public class GameActivity extends Activity {
 		application.speakOut(application.prompt);
 		
 		/*
-		 * If the teacher app has not yet been opened, provide the user with
-		 * an AlertDialog indicating that the teacher app must be opened first.
+		 * If the teacher app has not been installed, alert the user that it
+		 * must be installed and opened before the student app.
 		 */
-		SharedPreferences prefs =
-				application.context.getSharedPreferences("BWT", 0);
-		if(prefs.getBoolean("firstRun", true)) {
-			AlertDialog.Builder builder =
-					new AlertDialog.Builder(GameActivity.this);
-			builder.setMessage(R.string.open_message).setPositiveButton(
-					R.string.ok, new DialogInterface.OnClickListener()
-			{
-				public void onClick(DialogInterface dialog, int id) {
-					Intent intent = new Intent(Intent.ACTION_MAIN);
-					intent.addCategory(Intent.CATEGORY_HOME);
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(intent);
-				}
-			});
+		if (application.context == null) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					GameActivity.this);
+			builder.setMessage(R.string.install_message).setPositiveButton(
+					R.string.ok, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							finish();
+							Process.killProcess(Process.myPid());
+						}
+					});
 			AlertDialog dialog = builder.create();
 			dialog.show();
+		}
+		/*
+		 * If the teacher app has been installed but not opened, alert the user
+		 * that it must be opened before the student app.
+		 */
+		else {
+			SharedPreferences prefs = application.context.getSharedPreferences("BWT",
+					MODE_PRIVATE);
+			if (prefs.getBoolean("firstRun", true)) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						GameActivity.this);
+				builder.setMessage(R.string.open_message).setPositiveButton(
+						R.string.ok, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								finish();
+								Process.killProcess(Process.myPid());
+							}
+						});
+				AlertDialog dialog = builder.create();
+				dialog.show();
+			}
 		}
 
 		// Create an array containing the game options
@@ -122,12 +143,14 @@ public class GameActivity extends Activity {
 
 	@Override
 	public void onPause() {
+		// Clear the audio queue
 		application.clearAudio();
 		super.onPause();
 	}
 	
 	@Override
 	public void onDestroy() {
+		// Stop and shutdown text to speech
 		if (tts != null) {
 			tts.stop();
 			tts.shutdown();
@@ -135,10 +158,9 @@ public class GameActivity extends Activity {
 		super.onDestroy();
 	}
 
-	/** If the user presses back, go to the home screen
-	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// If the user presses back, go to the home screen
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			Intent intent = new Intent(Intent.ACTION_MAIN);
 			intent.addCategory(Intent.CATEGORY_HOME);

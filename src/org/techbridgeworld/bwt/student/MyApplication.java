@@ -42,25 +42,31 @@ import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 
 /**
- * MyApplication initializes the TTS and media player. It also obtains
- * information from the server (hangmanWords through http request).
+ * MyApplication initializes and stores all global objects and variables.
  * MyApplication is created before any activity in the application.
  * 
  * @author neharathi
  */
 public class MyApplication extends Application implements OnInitListener {
 
-	public Context context;
-
-	// Variables for text-to-speech
+	// Speaks text aloud
 	public TextToSpeech myTTS;
 	HashMap<String, String> params;
 
-	// Variables used for playing audio files
+	// The teacher application context
+	public Context context;
+
+	// Controls playing of audio files
 	public MediaPlayer myPlayer;
-	public String dir;
-	public int currentFile;
+
+	// The directory containing the audio files
+	private String dir;
+
+	// The list of audio files to be played
 	public ArrayList<String> filenames;
+
+	// The current audio file being played
+	public int currentFile;
 
 	// The text given upon opening an activity
 	public String prompt;
@@ -71,40 +77,46 @@ public class MyApplication extends Application implements OnInitListener {
 	// The IP address of the server
 	public final String SERVER_ADDRESS = "http://128.237.196.208:3000";
 
-	// Contains the Hangman words from the server
+	// Stores the Hangman words from the server
 	public ArrayList<String> hangmanWords;
 
 	@Override
 	public void onCreate() {
-		// Initializes TTS and media player variables
+		// Initializes myTTS, myPlayer, and their associated variables
 		myTTS = new TextToSpeech(this, this);
 		params = new HashMap<String, String>();
 		params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "utteranceId");
 
 		myPlayer = new MediaPlayer();
-		currentFile = 0;
 		filenames = new ArrayList<String>();
+		currentFile = 0;
 
-		// Check for teacher app
+		/* 
+		 * If the teacher app has been installed, set context and dir
+		 * accordingly.
+		 */
+		context = null;
 		try {
-			context = createPackageContext("org.techbridgeworld.bwt.teacher", 0);
+			context = createPackageContext("org.techbridgeworld.bwt.teacher",
+					MODE_PRIVATE);
+			dir = context.getFilesDir().getPath().toString();
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
-
-		dir = context.getFilesDir().getPath().toString();
 
 		new HTTPAsyncTask().execute();
 	}
 
 	@Override
-	// Initialize the TTS
 	public void onInit(int status) {
 		if (status == TextToSpeech.SUCCESS) {
 			myTTS.setOnUtteranceProgressListener(new UtteranceProgressListener() {
 				@Override
 				public void onDone(String utteranceId) {
-					// Stops the TTS and finishes up the media player files
+					/*
+					 * When myTTS is done speaking the current audio file, call
+					 * playAudio on the next audio file.
+					 */
 					if (utteranceId.equals("utteranceId")) {
 						myTTS.stop();
 						if (currentFile < filenames.size() - 1) {
@@ -126,23 +138,23 @@ public class MyApplication extends Application implements OnInitListener {
 				}
 			});
 
-			// Sets up the TTS
+			// Set up myTTS
 			int result = myTTS.setLanguage(Locale.US);
 			if (result == TextToSpeech.LANG_MISSING_DATA
 					|| result == TextToSpeech.LANG_NOT_SUPPORTED)
 				Log.e("TTS", "This language is not supported");
 
-			if (prompt != null)
-				speakOut(prompt);
+			// When myTTS is initialized, speak the prompt text aloud
+			speakOut(prompt);
 		} else
 			Log.e("TTS", "Initilization Failed!");
 	}
 
 	/**
-	 * Use TextToSpeech to speak some text out loud
+	 * Speaks text aloud using Text To Speech.
 	 * 
 	 * @param text
-	 *            (the text)
+	 *            the text
 	 */
 	public void speakOut(String text) {
 		myTTS.speak(text, TextToSpeech.QUEUE_ADD, params);
@@ -152,7 +164,7 @@ public class MyApplication extends Application implements OnInitListener {
 	 * Adds the resourceId to filenames
 	 * 
 	 * @param resourceId
-	 *            (i.e. R.string.___)
+	 *            i.e. R.string.___
 	 */
 	public void queueAudio(int resourceId) {
 		filenames.add(getResources().getString(resourceId));
@@ -162,7 +174,7 @@ public class MyApplication extends Application implements OnInitListener {
 	 * Adds the string to filenames
 	 * 
 	 * @param str
-	 *            (the string)
+	 *            the string
 	 */
 	public void queueAudio(String str) {
 		filenames.add(str);
@@ -181,7 +193,7 @@ public class MyApplication extends Application implements OnInitListener {
 	}
 
 	/**
-	 * Begin playing the audio files in filenames
+	 * Starts playing the audio files in filenames
 	 */
 	public void playAudio() {
 		if (filenames.isEmpty())
@@ -190,18 +202,18 @@ public class MyApplication extends Application implements OnInitListener {
 	}
 
 	/**
-	 * Play a certain audio file
+	 * Plays a certain audio file
 	 * 
 	 * @param filename
-	 *            (the audio file)
+	 *            the audio file
 	 */
 	public void playAudio(String filename) {
 		FileInputStream fis;
-		Log.i("Audio", "playing " + filename + ".");
 		try {
 			filename = filename.replaceAll(" ", "_");
 			fis = new FileInputStream(dir + "/" + filename + ".m4a");
-			Log.i("Audio", "Could find file " + filename + ".m4a.");
+
+			// If the audio file exists, use myPlayer to play it
 			myPlayer.reset();
 			myPlayer.setDataSource(fis.getFD());
 			fis.close();
@@ -210,6 +222,10 @@ public class MyApplication extends Application implements OnInitListener {
 			myPlayer.setOnCompletionListener(new OnCompletionListener() {
 				@Override
 				public void onCompletion(MediaPlayer mp) {
+					/*
+					 * When myPlayer is done playing the current audio file,
+					 * call playAudio on the next audio file.
+					 */
 					myPlayer.stop();
 					if (currentFile < filenames.size() - 1) {
 						currentFile++;
@@ -221,7 +237,7 @@ public class MyApplication extends Application implements OnInitListener {
 				}
 			});
 		} catch (FileNotFoundException e) {
-			Log.w("Audio", "Could not find file " + filename + ".m4a.");
+			// If the audio file does not exist, use text to speech to speak it
 			filename = filename.replaceAll("_", " ");
 			speakOut(filename);
 		} catch (IllegalArgumentException e) {
@@ -282,6 +298,7 @@ public class MyApplication extends Application implements OnInitListener {
 	 * Populates hangmanWords using the response stream.
 	 * 
 	 * @param responseStream
+	 *            the response stream
 	 */
 	private void populateHangmanWords(InputStream responseStream) {
 		// Convert responseStream to a JSON-encoded string (json)
