@@ -101,7 +101,7 @@ When the game launches, the user is prompted to select a game, then a category o
 21. Computer Interactions
 -------------------------------------------------------------------------------
 
-The device makes requests to the server/website. Make sure that this is launched and running before you launch the student app. Again be sure to set the ```SERVER_ADDRESS``` value in ```org.techbridgeworld.bwt.teacher.MyApplication.java``` to the address of the server before compiling. If the connection was successful, the words entered on the server will appear in the list of words under hangman -> words.
+The device makes requests to the server/website. Make sure that this is launched and running before you launch the student app. Again be sure to set the ```SERVER_ADDRESS``` value in ```org.techbridgeworld.bwt.teacher.MyApplication.java``` to the address of the server before compiling. If the connection was successful, the words entered on the server will appear in the list of words under Hangman > Words.
 
 
 22. Known Bugs
