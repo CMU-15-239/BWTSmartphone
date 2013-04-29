@@ -91,16 +91,16 @@ public class MyApplication extends Application implements OnInitListener {
 		filenames = new ArrayList<String>();
 		currentFile = 0;
 
-		/* 
+		/*
 		 * If the teacher app has been installed, set context and dir
-		 * accordingly.
+		 * accordingly. Otherwise, set context to null.
 		 */
-		context = null;
 		try {
 			context = createPackageContext("org.techbridgeworld.bwt.teacher",
 					MODE_PRIVATE);
 			dir = context.getFilesDir().getPath().toString();
 		} catch (NameNotFoundException e) {
+			context = null;
 			e.printStackTrace();
 		}
 
@@ -114,8 +114,8 @@ public class MyApplication extends Application implements OnInitListener {
 				@Override
 				public void onDone(String utteranceId) {
 					/*
-					 * When myTTS is done speaking the current audio file, call
-					 * playAudio on the next audio file.
+					 * When myTTS is done speaking the current "audio file",
+					 * call playAudio on the next audio file.
 					 */
 					if (utteranceId.equals("utteranceId")) {
 						myTTS.stop();
@@ -161,7 +161,7 @@ public class MyApplication extends Application implements OnInitListener {
 	}
 
 	/**
-	 * Adds the resourceId to filenames
+	 * Adds a resourceId to filenames
 	 * 
 	 * @param resourceId
 	 *            i.e. R.string.___
@@ -171,7 +171,7 @@ public class MyApplication extends Application implements OnInitListener {
 	}
 
 	/**
-	 * Adds the string to filenames
+	 * Adds a string to filenames
 	 * 
 	 * @param str
 	 *            the string

@@ -16,25 +16,26 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 /**
- * Teach students the numbering of the dots on the BWT
+ * LearnDots replicates the functionality of Learn Dots on the BWT. This game
+ * teaches students the numbering of dots in a Braille cell.
  * 
  * @author salemhilal
  */
 public class LearnDots extends Activity {
-
-	// Mapping of 1-6 to their string counterparts
-	private String[] numbers = { "one", "two", "three", "four", "five", "six" };
 
 	// The global application
 	private MyApplication application;
 
 	// Speaks text aloud
 	private TextToSpeech tts;
-
+	
 	// The BWT
 	private final BWT bwt = new BWT(this, LearnDots.this);
+	
+	// Mapping of 1-6 to their string counterparts
+	private String[] numbers = { "one", "two", "three", "four", "five", "six" };
 
-	// Randomly chooses the dot to test
+	// Randomly generates a new dot to test
 	private Random generator = new Random(15239);
 
 	// The current dot being tested
@@ -67,7 +68,7 @@ public class LearnDots extends Activity {
 
 	@Override
 	public void onPause() {
-		// Clear the audio queue and stop the bwt
+		// Clear the audio queue and stop the BWT
 		application.clearAudio();
 		bwt.stopTracking();
 		bwt.removeEventListeners();
@@ -86,8 +87,8 @@ public class LearnDots extends Activity {
 	}
 
 	/**
-	 * Get a new random dot, and trigger the associated audio. (Audio:
-	 * "Good. Find dot __")
+	 * Randomly generates a new dot to test and queues the associated audio.
+	 * (Audio: "Good. Find dot [number].").
 	 */
 	private void regenerate() {
 		currentDot = generator.nextInt(6) + 1;
@@ -97,51 +98,57 @@ public class LearnDots extends Activity {
 	}
 
 	/**
-	 * Provides the first instructions, then creates a listener for the BWT
-	 * board.
+	 * Provides the first instructions and creates a listener for the BWT board.
 	 */
 	private void runGame() {
-		// Generate the first dot.
+		// Generate the first dot
 		currentDot = generator.nextInt(6) + 1;
+		
+		// Provide the first instructions
 		application.queueAudio(R.string.find_dot);
 		application.queueAudio(numbers[currentDot - 1]);
 		application.playAudio();
 
+		// Create a listener for the BWT board
 		createListener();
 	}
 
 	/**
-	 * Listens for input from the user from anywhere on the board. Gives
-	 * feedback based on the dot they pushed and queues and plays audio as
-	 * necessary.
+	 * Listens for user input from anywhere on the board. Gives feedback based
+	 * on the dot they pressed and queues/plays audio as necessary.
 	 */
 	private void createListener() {
-		// Listener to detect board input
+		// Listens for user input
 		GenericEventListener DotListener = new GenericEventListener() {
 
 			@Override
 			public void eventTriggered(Object arg0, Event event) {
 				Log.d("Learn Dots", "Triggered Board Event");
 
-				// Do nothing in regards to AltBtn being pressed
+				// Ignore AltBtn being pressed
 				if (((BoardEvent) event).getCellInd() == -1) {
 					return;
 				}
 
-				// Cast the given event as a BoardEvent, and get the relevant
-				// dot information
+				/*
+				 * Cast the given event as a BoardEvent, and get the relevant
+				 * dot information.
+				 */
 				int trial = ((BoardEvent) event).getDot();
 
 				bwt.clearTouchedCells();
 
-				// If they pressed the dot, then pick another dot
+				/* 
+				 * If they pressed the correct dot, then randomly generate a new
+				 * dot to test. 
+				 */
 				if (trial == currentDot) {
 					regenerate();
 				}
 
 				/*
-				 *  Otherwise, tell the user that they are incorrect and repeat
-				 *  the prompt.
+				 * Otherwise, tell the user that they are incorrect and repeat
+				 * the prompt.
 				 */
 				else {
 					application.queueAudio(R.string.no);
