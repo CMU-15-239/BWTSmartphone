@@ -1,4 +1,4 @@
-BWT + Smartphone: Student app
+BWT + Smartphone: Student App
 ===============================================================================
 ***All the crunchy goodness of the BWT, without the wall socket.***  
 
