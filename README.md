@@ -1,4 +1,4 @@
-BWT + Smartphone: Teacher app
+BWT + Smartphone: Teacher App
 ===============================================================================
 ***Who doesn't love to customize?***  
 
