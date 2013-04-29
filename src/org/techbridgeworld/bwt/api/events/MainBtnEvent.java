@@ -18,9 +18,9 @@ import android.util.Log;
 public class MainBtnEvent extends EventObject {
 
 	private String message; // Represents the raw signal
-	private int dot; // Represents the dot pressed.
-	private Board board; // Gives us a reference to the state of the board.
-	private char update;
+	private int dot; 		// Represents the dot pressed.
+	private Board board; 	// Gives us a reference to the state of the board.
+	private char update;	// The updated glyph representing the main cell
 
 	public MainBtnEvent(String message, Board board) {
 		this.message = message;

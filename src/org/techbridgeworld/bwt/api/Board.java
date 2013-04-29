@@ -31,8 +31,8 @@ public class Board {
 	private Integer currCellInd;
 
 	/**
-	 * Constructor. Initializes all the cells to 0, and sets the current cell to
-	 * -1.
+	 * Constructor. Initializes all the cells to 0, and sets 
+	 * the current cell to -1.
 	 */
 	public Board() {
 		Cell[] temp = new Cell[33];

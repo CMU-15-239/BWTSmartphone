@@ -10,10 +10,10 @@ import javaEventing.EventObject;
  */
 public class BoardEvent extends EventObject{
 
-	String message;
-	int cell;
-	int cellState;
-	int dot;
+	String message; // The raw message
+	int cell;		// The relevant cell
+	int cellState;	// The state of the cell
+	int dot;		// The relevant dot in the cell
 	
 	public BoardEvent(String message, int cell, int cellState, int dot){
 		this.message = message;

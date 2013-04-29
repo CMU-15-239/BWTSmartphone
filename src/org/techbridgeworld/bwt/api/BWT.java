@@ -244,6 +244,7 @@ public class BWT {
 		for (int i = 0; i < data.length; i++) {
 			// If we are done, and if the buffer represents a non-blocked key,
 			// then log the buffer, clear it, and set its index to 0.
+			// Note: the BWT passes 'n' to denote the end of the signal
 			if (data[i] == 'n' || data[i] == 'N' || data[i] == 't') {
 				// Catch the initial "bt" received from the device.
 				if (data[i] == 't') {
@@ -262,20 +263,22 @@ public class BWT {
 					debounceKey(message.toString());
 
 				} else {
-					//Log.d("DataTransfer", "Button press blocked!");
+					// The button has been debounced, don't fire. 
+					Log.d("DataTransfer", "Button press blocked!");
 				}
 
 				bufferIdx = 0;
-				//reset dataBuffer
+				// Zero out data buffer.
 				for(int j = 0; j < 6; j++) {
 					dataBuffer[j] = 0;
 				}
 
 			} else {
+				// If the buffer is full and we haven't seen an 'n' yet, something is wrong.
 				if (bufferIdx >= 6) {
-					Log.e("DataTransfer", "bufferIdx out of range: "
-							+ bufferIdx);
+					Log.e("DataTransfer", "bufferIdx out of range: " + bufferIdx);
 				} else {
+					// Add the passed character to the buffer and increment the buffers idx.
 					dataBuffer[bufferIdx] = (char)data[i];
 					bufferIdx++;
 				}
@@ -583,7 +586,10 @@ public class BWT {
 		//Reset timer of inactivity
 		resetInactivityTimer(); 
 		
+		// Remove terminating 'n's from commands.
 		message = message.toLowerCase(Locale.getDefault()).replaceAll("n", "").trim();
+		
+		// Catch extraneous messages
 		if (message.equals("bt") || message.length() == 0)
 			return;
 		

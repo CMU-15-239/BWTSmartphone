@@ -22,6 +22,9 @@ public class Cell {
 	 * The braille code for this cell is the result of bitwise OR
 	 * on the dot values.
 	 * 
+	 * So, if dots 1, 2, and 5 are pressed, we represent the resulting
+	 * cell as 010011, or 0x13
+	 * 
 	 * We keep a static instance of the Braille library to do 
 	 * cell-to-glyph conversions.
 	 */
