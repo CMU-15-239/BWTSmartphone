@@ -1,9 +1,9 @@
-BWT + Smartphone: Server
+BWT + Smartphone: Web Server
 ===============================================================================
 ***What's awesome without a server becomes awesome-er with one.***  
 
 
-The BWT server allows for easy modification of the lesson contents for the BWT student app through a simple browser interface.
+The BWT web server allows for easy modification of the lesson contents for the BWT student app through a simple browser interface.
 
 
 
