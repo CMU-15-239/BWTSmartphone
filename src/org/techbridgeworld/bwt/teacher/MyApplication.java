@@ -77,14 +77,14 @@ public class MyApplication extends Application implements
 		myTTS = new TextToSpeech(this, this);
 		myManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		myListener = new ShakeEventListener();
-		
+
 		// When the phone is shaken, speak the help text aloud
 		myListener.setOnShakeListener(new ShakeEventListener.OnShakeListener() {
 			public void onShake() {
 				speakOut(help);
 			}
 		});
-		
+
 		// Populate hangmanWords
 		new HTTPAsyncTask().execute();
 	}
@@ -92,15 +92,12 @@ public class MyApplication extends Application implements
 	@Override
 	public void onInit(int status) {
 		if (status == TextToSpeech.SUCCESS) {
-			// Set up myTTS
-			int result = myTTS.setLanguage(Locale.US);
-			if (result == TextToSpeech.LANG_MISSING_DATA
-					|| result == TextToSpeech.LANG_NOT_SUPPORTED)
-				Log.e("TTS", "This language is not supported");
-			// When myTTS is initialized, speak the prompt text aloud
+			// Set up myTTS and speak the prompt text aloud
+			myTTS.setLanguage(Locale.US);
 			speakOut(prompt);
-		} else
+		} else {
 			Log.e("TTS", "Initilization Failed!");
+		}
 	}
 
 	/**

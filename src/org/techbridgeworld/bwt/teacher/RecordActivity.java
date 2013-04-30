@@ -105,8 +105,7 @@ public class RecordActivity extends Activity {
 		buttons = new Button[3];
 
 		/*
-		 * "play"
-		 * When this button is clicked, play the appropriate sound
+		 * "play" When this button is clicked, play the appropriate sound
 		 */
 		buttons[0] = (Button) findViewById(R.id.one);
 		buttons[0].setOnClickListener(new OnClickListener() {
@@ -154,9 +153,8 @@ public class RecordActivity extends Activity {
 		});
 
 		/*
-		 * "save"
-		 * When this button is clicked, save the teachers' new recording and go
-		 * back to SoundActivity.
+		 * "save" When this button is clicked, save the teachers' new recording
+		 * and go back to SoundActivity.
 		 */
 		buttons[1] = (Button) findViewById(R.id.two);
 		buttons[1].setOnClickListener(new OnClickListener() {
@@ -175,9 +173,8 @@ public class RecordActivity extends Activity {
 		});
 
 		/*
-		 * "cancel"
-		 * When this button is clicked, cancel the teachers' new recording and
-		 * go back to SoundActivity.
+		 * "cancel" When this button is clicked, cancel the teachers' new
+		 * recording and go back to SoundActivity.
 		 */
 		buttons[2] = (Button) findViewById(R.id.three);
 		buttons[2].setOnClickListener(new OnClickListener() {
@@ -190,7 +187,6 @@ public class RecordActivity extends Activity {
 				startActivity(intent);
 			}
 		});
-
 
 		/*
 		 * For each option, set the corresponding buttons' text and content

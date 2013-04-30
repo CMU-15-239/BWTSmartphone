@@ -49,7 +49,7 @@ public class ShakeEventListener implements SensorEventListener {
 	 * Interface for the shake gesture.
 	 */
 	public interface OnShakeListener {
-		
+
 		/**
 		 * Called when the shake gesture is detected
 		 */

@@ -3,6 +3,9 @@
 
     <string name="app_name">BWT for Teachers</string>
 
+    <string name="no_words">Uh oh! There are no Hangman words. Ensure that the server is running and an Internet connection is established.</string>
+    <string name="ok">OK</string>
+    
     <string name="game_prompt_first">Welcome! This app lets you change the reecordings associated with your BWT. Double tap a game to reecord sounds within it. Shake for help at anytime.</string>
     
     <string name="game_prompt">Please select a game.</string>

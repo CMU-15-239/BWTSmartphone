@@ -3,9 +3,10 @@ package org.techbridgeworld.bwt.teacher;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -109,7 +110,7 @@ public class SoundActivity extends Activity {
 			options[7] = getResources().getString(R.string.seven);
 			options[8] = getResources().getString(R.string.eight);
 			break;
-		// Letters (Learn Letters, Animal Game, Hangman) 
+		// Letters (Learn Letters, Animal Game, Hangman)
 		case 3:
 		case 6:
 		case 9:
@@ -204,18 +205,38 @@ public class SoundActivity extends Activity {
 			break;
 		// Words (Hangman)
 		case 11:
+			/*
+			 * If hangmanWords is empty, alert the user and tell to ensure that
+			 * the server is running and an Internet connection is established
+			 * before going to CategoryActivity.
+			 */
+			if (application.hangmanWords.size() == 0) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						SoundActivity.this);
+				builder.setMessage(R.string.no_words).setPositiveButton(
+						R.string.ok, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								Intent intent = new Intent(SoundActivity.this,
+										CategoryActivity.class);
+								startActivity(intent);
+							}
+						});
+				AlertDialog dialog = builder.create();
+				dialog.show();
+			}
+
 			// Populate options using applications' hangmanWords object
-			ArrayList<String> arr = application.hangmanWords;
-			options = new String[arr.size() + arr.size() / 6];
-			if (arr != null) {
+			options = new String[application.hangmanWords.size()
+					+ application.hangmanWords.size() / 6];
+			if (application.hangmanWords != null) {
 				int optCount = 0;
-				for (int i = 0; i < arr.size(); i++) {
+				for (int i = 0; i < application.hangmanWords.size(); i++) {
 					if ((optCount + 1) % 6 == 0) {
 						options[optCount] = getResources().getString(
 								R.string.next_items);
 						i--;
 					} else {
-						options[optCount] = arr.get(i);
+						options[optCount] = application.hangmanWords.get(i);
 					}
 					optCount++;
 				}
@@ -245,8 +266,8 @@ public class SoundActivity extends Activity {
 		// For each button, display it if it has a corresponding option
 		for (int i = 0; i < buttons.length; i++) {
 			final int j = 6 * currentList + i;
-			/* 
-			 * If this button has a corresponding option, set its text and 
+			/*
+			 * If this button has a corresponding option, set its text and
 			 * content description to that option and visibility to true.
 			 */
 			if (j < options.length) {
@@ -267,8 +288,8 @@ public class SoundActivity extends Activity {
 					}
 				});
 				/*
-				 * When a button is hovered, play the current recording for 
-				 * the corresponding sound.
+				 * When a button is hovered, play the current recording for the
+				 * corresponding sound.
 				 */
 				buttons[i].setOnHoverListener(new OnHoverListener() {
 					@Override
@@ -298,7 +319,7 @@ public class SoundActivity extends Activity {
 						return true;
 					}
 				});
-			} 
+			}
 			/*
 			 * If this button does not have a corresponding option, set its
 			 * visibility to false.
@@ -307,9 +328,9 @@ public class SoundActivity extends Activity {
 				buttons[i].setVisibility(View.INVISIBLE);
 		}
 
-		/* 
-		 * When a button that says "next items" is clicked, 
-		 * the next list of sounds will be displayed. 
+		/*
+		 * When a button that says "next items" is clicked, the next list of
+		 * sounds will be displayed.
 		 */
 		if (buttons[5].getText() == getResources().getString(
 				R.string.next_items)) {
