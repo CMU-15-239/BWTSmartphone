@@ -14,7 +14,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Process;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -82,21 +81,25 @@ public class Hangman extends Activity {
 		application.currentFile = 0;
 		application.filenames.clear();
 
-		// If hangmanWords is null, alert the user that an Internet connection is required
+		/*
+		 * If hangmanWords is null, alert the user that an Internet connection
+		 * is required to get the words for Hangman and take them back to
+		 * GameActivity.
+		 */
 		if (application.hangmanWords == null) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(
-					Hangman.this);
+			AlertDialog.Builder builder = new AlertDialog.Builder(Hangman.this);
 			builder.setMessage(R.string.internet_required).setPositiveButton(
 					R.string.ok, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
-							finish();
-							Process.killProcess(Process.myPid());
+							Intent intent = new Intent(Hangman.this,
+									GameActivity.class);
+							startActivity(intent);
 						}
 					});
 			AlertDialog dialog = builder.create();
 			dialog.show();
 		}
-		
+
 		// Populate the word bank with the words from the server
 		wordBank = (String[]) application.hangmanWords.toArray();
 

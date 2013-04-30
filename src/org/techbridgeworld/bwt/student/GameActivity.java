@@ -38,21 +38,6 @@ public class GameActivity extends Activity {
 		// Get the global application and global text to speech
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
-		
-		// If tts is null, alert the user that its initialization failed
-		if (tts == null) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(
-					GameActivity.this);
-			builder.setMessage(R.string.tts_failed).setPositiveButton(
-					R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							finish();
-							Process.killProcess(Process.myPid());
-						}
-					});
-			AlertDialog dialog = builder.create();
-			dialog.show();
-		}
 
 		// Set the prompt and speak it aloud
 		application.prompt = getResources().getString(R.string.game_prompt);

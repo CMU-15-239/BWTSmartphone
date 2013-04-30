@@ -139,7 +139,6 @@ public class MyApplication extends Application implements OnInitListener {
 			myTTS.setLanguage(Locale.US);
 			speakOut(prompt);
 		} else {
-			myTTS = null; 
 			Log.e("TTS", "Initilization Failed!");
 		}
 	}
