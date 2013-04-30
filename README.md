@@ -105,7 +105,23 @@ Eclipse automatically compiles and installs the app all at once, so there is no 
 19. Device Settings
 -------------------------------------------------------------------------------
 
-The Android phone must be rooted and, optimally, running stock Android firmware (as opposed to stock vendor firmware). For testing purposes, you may find it helpful to enable the phone's accessibility features. In particular, it is suggested that you enable **TalkBack** and **Explore By Touch** under Settings > Accessibility.
+The Android phone must be rooted and, optimally, running stock Android firmware (as opposed to stock vendor firmware), as the student app requires USB Host Mode. For testing purposes, you may find it helpful to enable the phone's accessibility features. In particular, it is suggested that you enable **TalkBack** and **Explore By Touch** under Settings > Accessibility.
+
+Check to see if your smartphone supports USB Host Mode [here](http://usbhost.chainfire.eu/). If it doesn't, you'll need to root your phone. Rooting varies from device to device, but a common, all-in-one tool can be found [here](http://forum.xda-developers.com/showthread.php?t=2230934).
+
+Once your phone is rooted, you'll need to create a file titled ```android.hardware.usb.host.xml```, add the following lines to the file: 
+
+    <permissions>
+      <feature name="android.hardware.usb.host"/>
+    </permissions>
+ 
+and add it to ```/system/etc/permissions``` on your phone. In that same directory, find a file named ```handlehd_core_hardware.xml``` or ```tablet_core_hardware.xml``` and add the following to the ```<permissions>``` section:
+
+    <feature name="android.hardware.usb.host">
+  
+Reboot the device. It should now support USB Host Mode. 
+
+**Warning: Rooting can be dangerous, and should be done carefully. Root at your own risk. If you don't feel comfortable rooting, you may need to find a pre-rooted phone.**
 
 
 20. Running Instructions
