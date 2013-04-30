@@ -59,7 +59,7 @@ This should get the correct versions of all the required dependencies needed. It
 You will next need to **set up MongoDB**. This is fairly straightforward. You need to create the directory for Mongo to store data in. By default, Mongo looks for ```/data/db``` on the drive it's installed in (for example, Mongo looks for ```C://data/db```). You need to create both the ```data``` and the ```data/db``` directories. For specific details, look at Mongo's [installation guide](http://docs.mongodb.org/manual/installation/). 
 
 
-8-9. Config files
+8-9. Config Files
 -------------------------------------------------------------------------------
 
 The project lists its dependencies within ```package.json```. Modify this file if you need to update any of its core dependencies. 
