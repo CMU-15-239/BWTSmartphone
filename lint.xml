@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<lint>
-    <issue id="DefaultLocale" severity="ignore" />
-    <issue id="NewApi">
-        <ignore path="src/org/techbridgeworld/bwt/teacher/PlaybackActivity.java" />
-    </issue>
-</lint>
