@@ -82,9 +82,9 @@ public class Hangman extends Activity {
 		application.filenames.clear();
 
 		/*
-		 * If hangmanWords is empty, alert the user and tell to ensure that
-		 * the server is running and an Internet connection is established
-		 * before going to GameActivity.
+		 * If hangmanWords is empty, alert the user and tell to ensure that the
+		 * server is running and an Internet connection is established before
+		 * going to GameActivity.
 		 */
 		if (application.hangmanWords.size() == 0) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(Hangman.this);
@@ -101,7 +101,8 @@ public class Hangman extends Activity {
 		}
 
 		// Populate the word bank with the words from the server
-		wordBank = (String[]) application.hangmanWords.toArray();
+		wordBank = (String[]) application.hangmanWords
+				.toArray(new String[application.hangmanWords.size()]);
 
 		// Initialize the BWT connection.
 		bwt.init();
