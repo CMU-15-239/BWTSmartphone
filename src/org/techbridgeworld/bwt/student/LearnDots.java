@@ -28,10 +28,10 @@ public class LearnDots extends Activity {
 
 	// Speaks text aloud
 	private TextToSpeech tts;
-	
+
 	// The BWT
 	private final BWT bwt = new BWT(this, LearnDots.this);
-	
+
 	// Mapping of 1-6 to their string counterparts
 	private String[] numbers = { "one", "two", "three", "four", "five", "six" };
 
@@ -103,7 +103,7 @@ public class LearnDots extends Activity {
 	private void runGame() {
 		// Generate the first dot
 		currentDot = generator.nextInt(6) + 1;
-		
+
 		// Provide the first instructions
 		application.queueAudio(R.string.find_dot);
 		application.queueAudio(numbers[currentDot - 1]);
@@ -138,9 +138,9 @@ public class LearnDots extends Activity {
 
 				bwt.clearTouchedCells();
 
-				/* 
+				/*
 				 * If they pressed the correct dot, then randomly generate a new
-				 * dot to test. 
+				 * dot to test.
 				 */
 				if (trial == currentDot) {
 					regenerate();

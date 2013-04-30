@@ -42,7 +42,7 @@ public class GameActivity extends Activity {
 		// Set the prompt and speak it aloud
 		application.prompt = getResources().getString(R.string.game_prompt);
 		application.speakOut(application.prompt);
-		
+
 		/*
 		 * If the teacher app has not been installed, alert the user that it
 		 * must be installed and opened before the student app.
@@ -65,8 +65,8 @@ public class GameActivity extends Activity {
 		 * that it must be opened before the student app.
 		 */
 		else {
-			SharedPreferences prefs = application.context.getSharedPreferences("BWT",
-					MODE_PRIVATE);
+			SharedPreferences prefs = application.context.getSharedPreferences(
+					"BWT", MODE_PRIVATE);
 			if (prefs.getBoolean("firstRun", true)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						GameActivity.this);
@@ -100,12 +100,12 @@ public class GameActivity extends Activity {
 		 * For each option, set the corresponding buttons' text and content
 		 * description to that option and visibility to true.
 		 */
-		for(int i = 0; i < options.length; i++) {
-			final int j = i; 
+		for (int i = 0; i < options.length; i++) {
+			final int j = i;
 			buttons[i].setText(options[i]);
 			buttons[i].setContentDescription(options[i]);
 			buttons[i].setVisibility(View.VISIBLE);
-			
+
 			/*
 			 * When a button is clicked, set application's game variable
 			 * accordingly and start specified game activity.
@@ -114,27 +114,27 @@ public class GameActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 					Class<?> c = null;
-					switch(j) {
-						case 0:
-							c = LearnDots.class;
-							break;
-						case 1:
-							c = LearnLetters.class;
-							break;
-						case 2:
-							c = AnimalGame.class;
-							break;
-						case 3:
-							c = Hangman.class;
-							break;
-						default:
-							return;
+					switch (j) {
+					case 0:
+						c = LearnDots.class;
+						break;
+					case 1:
+						c = LearnLetters.class;
+						break;
+					case 2:
+						c = AnimalGame.class;
+						break;
+					case 3:
+						c = Hangman.class;
+						break;
+					default:
+						return;
 					}
-					
+
 					Intent intent = new Intent(GameActivity.this, c);
 					startActivity(intent);
 				}
-			}); 
+			});
 		}
 	}
 
@@ -144,7 +144,7 @@ public class GameActivity extends Activity {
 		application.clearAudio();
 		super.onPause();
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		// Stop and shutdown text to speech

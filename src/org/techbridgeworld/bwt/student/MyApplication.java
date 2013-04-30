@@ -70,7 +70,7 @@ public class MyApplication extends Application implements OnInitListener {
 
 	// The text given upon opening an activity
 	public String prompt;
-	
+
 	// The IP address of the server
 	public final String SERVER_ADDRESS = "http://128.237.196.208:3000";
 
@@ -281,7 +281,7 @@ public class MyApplication extends Application implements OnInitListener {
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
-				hangmanWords = null; 
+				hangmanWords = null;
 				e.printStackTrace();
 			}
 			return null;
