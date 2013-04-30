@@ -1,4 +1,4 @@
-BWT + Smartphone: Teacher app
+BWT + Smartphone: Teacher App
 ===============================================================================
 ***Who doesn't love to customize?***  
 
@@ -71,7 +71,7 @@ Next, you will need to plug in your Android smartphone into the computer via USB
 
 Naturally, the produced .apk is designed to run exclusively on the Android platform. The packaged .apk file is located in ```BWTTeacher\bin``` after compiling.
 
-***Note:*** *The website must be launched **before** the teahcer app. The teacher app makes calls to the server's database, and if the website isn't running, the Hangman game will not populate with any words. These are both known bugs.*
+***Note:*** *The website must be launched before the teacher app. The teacher app makes calls to the server's database, and if the website isn't running, the Hangman game will not populate with any words. This is a known bug.*
 
 
 12-17. Input and Output Files
@@ -101,7 +101,7 @@ When the game launches, the user is prompted to select a game, then a category o
 21. Computer Interactions
 -------------------------------------------------------------------------------
 
-The device makes requests to the server/website. Make sure that this is launched and running before you launch the student app. Again be sure to set the ```SERVER_ADDRESS``` value in ```org.techbridgeworld.bwt.teacher.MyApplication.java``` to the address of the server before compiling. If the connection was successful, the words entered on the server will appear in the list of words under hangman -> words.
+The device makes requests to the server/website. Make sure that this is launched and running before you launch the student app. Again be sure to set the ```SERVER_ADDRESS``` value in ```org.techbridgeworld.bwt.teacher.MyApplication.java``` to the address of the server before compiling. If the connection was successful, the words entered on the server will appear in the list of words under Hangman > Words.
 
 
 22. Known Bugs
