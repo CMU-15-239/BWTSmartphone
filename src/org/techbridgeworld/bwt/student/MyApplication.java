@@ -281,7 +281,6 @@ public class MyApplication extends Application implements OnInitListener {
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
-				hangmanWords = null;
 				e.printStackTrace();
 			}
 			return null;

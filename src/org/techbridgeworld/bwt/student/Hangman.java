@@ -82,13 +82,13 @@ public class Hangman extends Activity {
 		application.filenames.clear();
 
 		/*
-		 * If hangmanWords is null, alert the user that an Internet connection
-		 * is required to get the words for Hangman and take them back to
-		 * GameActivity.
+		 * If hangmanWords is empty, alert the user and tell to ensure that
+		 * the server is running and an Internet connection is established
+		 * before going to GameActivity.
 		 */
-		if (application.hangmanWords == null) {
+		if (application.hangmanWords.size() == 0) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(Hangman.this);
-			builder.setMessage(R.string.internet_required).setPositiveButton(
+			builder.setMessage(R.string.no_words).setPositiveButton(
 					R.string.ok, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							Intent intent = new Intent(Hangman.this,
