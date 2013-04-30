@@ -38,12 +38,24 @@ public class GameActivity extends Activity {
 		// Get the global application and global text to speech
 		application = ((MyApplication) getApplicationContext());
 		tts = application.myTTS;
+		
+		// If tts is null, alert the user that its initialization failed
+		if (tts == null) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					GameActivity.this);
+			builder.setMessage(R.string.tts_failed).setPositiveButton(
+					R.string.ok, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							finish();
+							Process.killProcess(Process.myPid());
+						}
+					});
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}
 
-		// Set the prompt and help text
+		// Set the prompt and speak it aloud
 		application.prompt = getResources().getString(R.string.game_prompt);
-		application.help = getResources().getString(R.string.game_help);
-
-		// Speak the prompt text aloud
 		application.speakOut(application.prompt);
 		
 		/*
@@ -53,7 +65,7 @@ public class GameActivity extends Activity {
 		if (application.context == null) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
 					GameActivity.this);
-			builder.setMessage(R.string.install_message).setPositiveButton(
+			builder.setMessage(R.string.install_teacher).setPositiveButton(
 					R.string.ok, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							finish();
@@ -73,7 +85,7 @@ public class GameActivity extends Activity {
 			if (prefs.getBoolean("firstRun", true)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						GameActivity.this);
-				builder.setMessage(R.string.open_message).setPositiveButton(
+				builder.setMessage(R.string.open_teacher).setPositiveButton(
 						R.string.ok, new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
 								finish();

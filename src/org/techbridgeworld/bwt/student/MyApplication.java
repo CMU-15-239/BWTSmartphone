@@ -70,10 +70,7 @@ public class MyApplication extends Application implements OnInitListener {
 
 	// The text given upon opening an activity
 	public String prompt;
-
-	// The text given upon shaking the phone
-	public String help;
-
+	
 	// The IP address of the server
 	public final String SERVER_ADDRESS = "http://128.237.196.208:3000";
 
@@ -138,16 +135,13 @@ public class MyApplication extends Application implements OnInitListener {
 				}
 			});
 
-			// Set up myTTS
-			int result = myTTS.setLanguage(Locale.US);
-			if (result == TextToSpeech.LANG_MISSING_DATA
-					|| result == TextToSpeech.LANG_NOT_SUPPORTED)
-				Log.e("TTS", "This language is not supported");
-
-			// When myTTS is initialized, speak the prompt text aloud
+			// Set up myTTS and speak the prompt text aloud
+			myTTS.setLanguage(Locale.US);
 			speakOut(prompt);
-		} else
+		} else {
+			myTTS = null; 
 			Log.e("TTS", "Initilization Failed!");
+		}
 	}
 
 	/**
@@ -288,6 +282,7 @@ public class MyApplication extends Application implements OnInitListener {
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
+				hangmanWords = null; 
 				e.printStackTrace();
 			}
 			return null;

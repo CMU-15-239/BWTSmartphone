@@ -6,8 +6,10 @@
 	<string name="game_prompt">Please select a game.</string>
 	<string name="game_help">This app lets you play the games associated with your BWT. Double tap a game to start.</string>
 	
-	<string name="install_message">BWT for Teachers must be installed and opened before BWT for Students.</string>	
-	<string name="open_message">BWT for Teachers must be opened before BWT for Students.</string>
+	<string name="tts_failed">The initialization of Text to Speech failed.</string>
+	<string name="internet_required">An internet connection is required to play Hangman.</string>
+	<string name="install_teacher">BWT for Teachers must be installed and opened before BWT for Students.</string>	
+	<string name="open_teacher">BWT for Teachers must be opened before BWT for Students.</string>
 	<string name="ok">OK</string>
 
 	<string name="replay">Replay</string>

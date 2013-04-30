@@ -10,8 +10,11 @@ import org.techbridgeworld.bwt.api.BWT;
 import org.techbridgeworld.bwt.api.events.SubmitEvent;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Process;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -79,13 +82,23 @@ public class Hangman extends Activity {
 		application.currentFile = 0;
 		application.filenames.clear();
 
-		// Populate the word bank with the words from the server
-		ArrayList<String> arr = application.hangmanWords;
-		if (arr != null) {
-			wordBank = new String[arr.size()];
-			for (int i = 0; i < arr.size(); i++)
-				wordBank[i] = arr.get(i);
+		// If hangmanWords is null, alert the user that an Internet connection is required
+		if (application.hangmanWords == null) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					Hangman.this);
+			builder.setMessage(R.string.internet_required).setPositiveButton(
+					R.string.ok, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							finish();
+							Process.killProcess(Process.myPid());
+						}
+					});
+			AlertDialog dialog = builder.create();
+			dialog.show();
 		}
+		
+		// Populate the word bank with the words from the server
+		wordBank = (String[]) application.hangmanWords.toArray();
 
 		// Initialize the BWT connection.
 		bwt.init();
@@ -342,8 +355,9 @@ public class Hangman extends Activity {
 					promptGuess();
 					application.playAudio();
 					return;
-				} else
+				} else {
 					guessedLetters.add(glyphAtCell);
+				}
 
 				/*
 				 * Compare the glyph to the expected character and handle the
