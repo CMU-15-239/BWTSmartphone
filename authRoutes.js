@@ -27,10 +27,10 @@ module.exports = function (app) {
   });
   // finds and returns all words saved on server
   app.get('/words', function(req, res){
-      if (req.secret !=='i am a really creative secret'){
+      if (req.secret !=='U84gAFW3QrJ7B56GLf2EzT2n2hY1vVZu'){
           res.status(401);
       }
-      if (req.user || (req.secret ==='i am a really creative secret')){
+      if (req.user || (req.secret ==='U84gAFW3QrJ7B56GLf2EzT2n2hY1vVZu')){
           Word.find({}, function (err, words){
               if (err) {
                   res.send(err);
@@ -42,10 +42,10 @@ module.exports = function (app) {
   });
   // finds and returns all words from request made by android
   app.get('/droid/words', function(req, res){
-      if (req.secret !=='i am a really creative secret'){
+      if (req.secret !=='U84gAFW3QrJ7B56GLf2EzT2n2hY1vVZu'){
           res.status(401);
       }
-      if (req.user || (req.secret ==='i am a really creative secret')){
+      if (req.user || (req.secret ==='U84gAFW3QrJ7B56GLf2EzT2n2hY1vVZu')){
           Word.find({}, function (err, words){
               if (err) {
                   res.send(err);

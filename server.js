@@ -14,8 +14,8 @@ var LocalStrategy = require('passport-local').Strategy;
 var mongo = require('mongodb');
 
 
-/* Connect to the local instance of mongo. */ 
-var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/myApp';
+/* Connect to the local instance of mongo.process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || */ 
+var mongoUri = 'mongodb://localhost/BWT4Android';
 var mongoOptions = { db: { safe: true }};
 mongoose.connect(mongoUri, mongoOptions, function (err, res) {
   if (err) {
@@ -56,7 +56,7 @@ function configureExpress(app){
     app.use(express.bodyParser());
     app.use(express.methodOverride());
 
-    app.use(express.cookieParser('i am a really creative secret'));
+    app.use(express.cookieParser('U84gAFW3QrJ7B56GLf2EzT2n2hY1vVZu'));
     app.use(express.session());
 
     app.use(passport.initialize());
@@ -107,8 +107,11 @@ function checkDefaultWords(Word) {
     word.def = 'a cloud on the ground';
     word.pos = 'noun';
     word.assns = ['Level 1'];
-    word.save(function(err) {console.log(err);});
-  });
+    word.save(function(err) {
+                if (err) {
+                    return res.send({'err': err});
+                }
+                });  });
 
   Word.findOne({word : "predict" }, function(err, existingWord) {
     if (err || existingWord) return;
@@ -116,8 +119,11 @@ function checkDefaultWords(Word) {
     word.def = 'to tell the future';
     word.pos = 'verb';
     word.assns = ['Level 1'];
-    word.save(function(err) {console.log(err);});
-  });
+    word.save(function(err) {
+                if (err) {
+                    return res.send({'err': err});
+                }
+                });  });
 
   Word.findOne({word : "snowflakes" }, function(err, existingWord) {
     if (err || existingWord) return;
@@ -125,14 +131,21 @@ function checkDefaultWords(Word) {
     word.def = 'frozen water droplets';
     word.pos = 'noun';
     word.assns = ['Level 1'];
-    word.save(function(err) {console.log(err);});
-  });
+    word.save(function(err) {
+                if (err) {
+                    return res.send({'err': err});
+                }
+                });  });
    Word.findOne({word : "humidity" }, function(err, existingWord) {
     if (err || existingWord) return;
     var word = new Word({ word : "humidity" });
     word.def = 'moisture in the air';
     word.pos = 'noun';
     word.assns = ['Level 1'];
-    word.save(function(err) {console.log(err);});
+    word.save(function(err) {
+                if (err) {
+                    return res.send({'err': err});
+                }
+                });
   });
 }
