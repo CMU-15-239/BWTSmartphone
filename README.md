@@ -50,7 +50,7 @@ You will also need to download and install the drivers for the phone you will be
 This BWT teacher app requires no additional libraries.
 
 
-8-9. Config files
+8-9. Config Files
 -------------------------------------------------------------------------------
 
 The BWT teacher app has no config files, but there is one setting that needs to be updated. In ```org.techbridgeworld.bwt.teacher.MyApplication.java```, the address of the web server needs to be set. Modify the ```SERVER_ADDRESS``` value with the address of the webserver. 
@@ -86,7 +86,7 @@ The teacher app does not require input files or generate output files, nor does 
 Eclipse automatically compiles and installs the app all at once, so there is no need to additionally install the app. 
 
 
-19. Device settings
+19. Device Settings
 -------------------------------------------------------------------------------
 
 For testing purposes, you may find it helpful to enable the phone's accessibility features. In particular, it is suggested that you enable **TalkBack** and **Explore By Touch** under Settings > Accessibility. 
