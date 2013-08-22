@@ -1,0 +1,17 @@
+ {
+  "name": "bwt-server",
+  "description": "BWT Assignment Server",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "3.0.4",
+    "mongodb": "1.2.2",
+    "mongoose":"3.4.0",
+    "passport":"0.1.15",
+    "passport-local-mongoose": "0.1.0",
+    "passport-local":"0.1.6"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+}

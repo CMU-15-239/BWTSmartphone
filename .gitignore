@@ -1,0 +1,4 @@
+*.sublime-*
+.DS_STORE
+node_modules
+/data/*
