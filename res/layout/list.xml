@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:background="#000000"
+    android:orientation="vertical" >
+    
+    <Button
+        android:id="@+id/one"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".16"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/two"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".16"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/three"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".16"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/four"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".16"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+    
+    <Button
+        android:id="@+id/five"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".16"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+    
+	<Button
+        android:id="@+id/six"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".16"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+    
+</LinearLayout>

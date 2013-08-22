@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BWT for Teachers</string>
+
+    <string name="no_words">Uh oh! There are no Hangman words. Ensure that the server is running and an Internet connection is established.</string>
+    <string name="ok">OK</string>
+    
+    <string name="game_prompt_first">Welcome! This app lets you change the reecordings associated with your BWT. Double tap a game to reecord sounds within it. Shake for help at anytime.</string>
+    
+    <string name="game_prompt">Please select a game.</string>
+    <string name="category_prompt">Please select a category.</string>
+	<string name="sound_prompt">Please select a sound.</string>
+	<string name="record_prompt">Please hold the volume up button to reecord. Release when you are done.</string>
+	
+	<string name="game_help">This app lets you change the reecordings associated with your BWT. Double tap a game to reecord sounds within it.</string>
+	<string name="category_help">Double tap a category to reecord sounds within it.</string>
+	<string name="sound_help">Double tap a sound to reecord it.</string>
+	<string name="record_help">Hold the volume up button to reecord. Release when you are done.</string>
+
+	<string name="hangman">hangman</string>
+	<string name="animal_game">animal game</string>
+	<string name="learn_letters">learn letters</string>
+	<string name="learn_dots">learn dots</string>
+
+	<string name="numbers">numbers</string>
+	<string name="letters">letters</string>
+	<string name="instructions">instructions</string>
+	<string name="words">words</string>
+		
+	<string name="one">one</string>
+	<string name="two">two</string>
+	<string name="three">three</string>
+	<string name="four">four</string>
+	<string name="five">five</string>
+	<string name="six">six</string>
+	<string name="seven">seven</string>
+	<string name="eight">eight</string>
+	
+	<string name="a">a</string>
+	<string name="b">b</string>
+	<string name="c">c</string>
+	<string name="d">d</string>
+	<string name="e">e</string>
+	<string name="f">f</string>
+	<string name="g">g</string>
+	<string name="h">h</string>
+	<string name="i">i</string>
+	<string name="j">j</string>
+	<string name="k">k</string>
+	<string name="l">l</string>
+	<string name="m">m</string>
+	<string name="n">n</string>
+	<string name="o">o</string>
+	<string name="p">p</string>
+	<string name="q">q</string>
+	<string name="r">r</string>
+	<string name="s">s</string>
+	<string name="t">t</string>
+	<string name="u">u</string>
+	<string name="v">v</string>
+	<string name="w">w</string>
+	<string name="x">x</string>
+	<string name="y">y</string>
+	<string name="z">z</string>
+	
+	<string name="find_dot">find dot</string>
+	<string name="good">good</string>
+	<string name="no">no</string>	
+	
+	<string name="please_press">please press</string>
+	<string name="please_write">please write</string>
+	<string name="to_write_the_letter">to write the letter</string>
+	
+	<string name="invalid_input">invalid input</string>
+	<string name="please_write_the_name">please write the name of the animal that makes the sound</string>
+	<string name="the_correct_answer_was">the correct answer was</string>
+	<string name="press">press</string>
+	
+	<string name="but_you_have">but you have one last chance to guess the entire word</string>
+	<string name="dash">dash</string>
+	<string name="guess_a_letter">guess a letter</string>
+	<string name="mistake">mistake</string>
+	<string name="mistakes">mistakes</string>
+	<string name="so_far">so far the word is</string>
+	<string name="the_new_word">the new word has</string>
+	<string name="youve_already">you\'ve already guessed that letter.</string>
+	<string name="youve_made">you\'ve made</string>
+	
+	<string name="next_items">next items</string>
+	
+	<string name="play">play</string>
+	<string name="save">save</string>
+	<string name="save_and_next">save and next</string>
+	<string name="cancel">cancel</string>
+</resources>
